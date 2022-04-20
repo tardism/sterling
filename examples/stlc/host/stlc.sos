@@ -1,0 +1,56 @@
+Module host:stlc
+
+
+#Syntax Constructors#
+term ::= app(term, term)
+       | abs(string, type, term)
+       | var(string)
+
+type ::= arrow(type, type)
+       | base
+
+ctx ::= nil
+      | add(string, type, ctx)
+
+
+
+#Judgments#
+Judgment typeOf : ctx term* type
+Fixed Judgment lookup : string ctx type
+
+#Translation Types#
+Translation term : ctx #ctx |- term ~~> term#
+Translation type :     #|- type ~~> type#
+Translation ctx :      #|- ctx ~~> ctx#
+
+
+#Typing Rules#
+
+typeOf G T1 arrow(Ty1, Ty2)
+typeOf G T2 Ty1
+--------------------------- [T-App]
+typeOf G app(T1, T2) Ty2
+
+
+typeOf add(X, Ty1, G) Body Ty2
+------------------------------------------ [T-Abs]
+typeOf G abs(X, Ty1, Body) arrow(Ty1, Ty2)
+
+
+lookup G X Ty
+------------------ [T-Var]
+typeOf G var(X) Ty
+
+
+
+#Lookup Rules#
+
+lookup G X Ty
+X != Y
+========================== [L-Later]
+lookup add(Y, YTy, G) X Ty
+
+
+========================= [L-Here]
+lookup add(X, Ty, G) X Ty
+
