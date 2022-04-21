@@ -14,10 +14,10 @@ inherited attribute index::Integer;
 closed nonterminal File_c with ast<File>, location;
 
 concrete productions top::File_c
-| 'Module' name::LowerQName_t Newline_t d::DeclList_c
+| 'Module' name::LowerQName_t x::EmptyNewlines d::DeclList_c
   { top.ast = file(toQName(name.lexeme, name.location),
                    d.ast, location=top.location); }
-| 'Module' name::LowerId_t Newline_t d::DeclList_c
+| 'Module' name::LowerId_t x::EmptyNewlines d::DeclList_c
   { top.ast = file(toQName(name.lexeme, name.location),
                    d.ast, location=top.location); }
 
@@ -28,10 +28,10 @@ closed nonterminal DeclList_c with ast<Decls>, location;
 concrete productions top::DeclList_c
 |
   { top.ast = nilDecls(location=top.location); }
-| d::TopDecl_c rest::DeclList_c
+| d::TopDecl_c x::EmptyNewlines rest::DeclList_c
   { top.ast = branchDecls(d.ast, rest.ast, location=top.location); }
-| Newline_t rest::DeclList_c
-  { top.ast = rest.ast; }
+{-| Newline_t rest::DeclList_c
+  { top.ast = rest.ast; }-}
 
 
 
@@ -166,22 +166,12 @@ concrete productions top::AbsSyntaxDecl_c
 | tyName::LowerId_t '::=' '|' decls::AbsConstructorDecls_c
   { top.ast = initialAbsSyntaxDecl(tyName.lexeme, decls.ast,
                                    location=top.location); }
-| ty::LowerId_t '::=' '.' '.' '.' Newline_t
-                      decls::AbsConstructorDecls_c
-  { top.ast =
-        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
-                         decls.ast, location=top.location); }
-| ty::LowerId_t '::=' '.' '.' '.' Newline_t
+| ty::LowerId_t '::=' '.' '.' '.' x::EmptyNewlines
                   '|' decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
                          decls.ast, location=top.location); }
-| ty::LowerQName_t '::=' '.' '.' '.' Newline_t
-                         decls::AbsConstructorDecls_c
-  { top.ast =
-        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
-                         decls.ast, location=top.location); }
-| ty::LowerQName_t '::=' '.' '.' '.' Newline_t
+| ty::LowerQName_t '::=' '.' '.' '.' x::EmptyNewlines
                      '|' decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
@@ -215,7 +205,8 @@ concrete productions top::AbsConstructorDecl_c
         oneConstructorDecl(name.lexeme,
            nilTypeList(location=name.location),
            location=top.location); }
-| name::LowerId_t '(' args::CommaTypeList_c ')'
+| name::LowerId_t '(' x1::EmptyNewlines args::CommaTypeList_c
+                      x2::EmptyNewlines ')'
   { top.ast = oneConstructorDecl(name.lexeme, args.ast,
                                  location=top.location); }
 
@@ -229,7 +220,7 @@ concrete productions top::CommaTypeList_c
   { top.ast =
         consTypeList(ty.ast, nilTypeList(location=top.location),
                      location=top.location); }
-| ty::Type_c c::',' rest::CommaTypeList_c
+| ty::Type_c ',' x2::EmptyNewlines rest::CommaTypeList_c
   { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
 
 
@@ -238,17 +229,17 @@ closed nonterminal Rule_c with ast<Rule>, location;
 
 concrete productions top::Rule_c
 | premises::JudgmentList_c
-  ExtLine_t '[' r::RuleName_t ']' Newline_t
+  ExtLine_t '[' r::RuleName_t ']' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
   { top.ast = extRule(premises.ast, r.lexeme, conclusion.ast,
                       location=top.location); }
 | premises::JudgmentList_c
-  ExtLine_t '[' r::RuleName_t ']' '*' Newline_t
+  ExtLine_t '[' r::RuleName_t ']' '*' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
   { top.ast = transRule(premises.ast, r.lexeme, conclusion.ast,
                         location=top.location); }
 | premises::JudgmentList_c
-  FixedLine_t '[' r::RuleName_t ']' Newline_t
+  FixedLine_t '[' r::RuleName_t ']' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
   { top.ast = fixedRule(premises.ast, r.lexeme, conclusion.ast,
                         location=top.location); }
@@ -276,11 +267,12 @@ concrete productions top::Judgment_c
   { top.ast = eqJudgment(t1.ast, t2.ast, location=top.location); }
 | t1::Term_c '!=' t2::Term_c
   { top.ast = neqJudgment(t1.ast, t2.ast, location=top.location); }
-| '|-' t1::Term_c '~~>' t2::Term_c
+| '|-' t1::Term_c x2::EmptyNewlines '~~>' x3::EmptyNewlines t2::Term_c
   { top.ast = transJudgment(nilTermList(location=top.location),
                             t1.ast, t2.ast,
                             location=top.location); }
-| args::CommaTermList_c '|-' t1::Term_c '~~>' t2::Term_c
+| args::CommaTermList_c '|-' x1::EmptyNewlines t1::Term_c
+             x2::EmptyNewlines '~~>' x3::EmptyNewlines t2::Term_c
   { top.ast = transJudgment(args.ast, t1.ast, t2.ast,
                             location=top.location); }
 | t1::Term_c op::BinOp_c t2::Term_c '=' t3::Term_c
@@ -315,7 +307,8 @@ closed nonterminal JudgmentList_c with ast<JudgmentList>, location;
 concrete productions top::JudgmentList_c
 |
   { top.ast = nilJudgmentList(location=top.location); }
-| j::Judgment_c Newline_t rest::JudgmentList_c
+              -- 1+ lines between
+| j::Judgment_c Newline_t x::EmptyNewlines rest::JudgmentList_c
   { top.ast = consJudgmentList(j.ast, rest.ast,
                                location=top.location); }
 
@@ -340,29 +333,32 @@ concrete productions top::Term_c
   { top.ast =
         stringConst(substring(1, length(s.lexeme) - 1, s.lexeme),
                     location=top.location); }
-| constructor::LowerId_t '(' args::CommaTermList_c ')'
+| constructor::LowerId_t '(' x1::EmptyNewlines args::CommaTermList_c
+                             x2::EmptyNewlines ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
                 args.ast, location=top.location); }
-| constructor::LowerQName_t '(' args::CommaTermList_c ')'
+| constructor::LowerQName_t '(' x1::EmptyNewlines args::CommaTermList_c
+                                x2::EmptyNewlines ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
                 args.ast, location=top.location); }
-| constructor::LowerId_t '(' ')'
+| constructor::LowerId_t '(' x::EmptyNewlines ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
                 nilTermList(location=top.location),
                 location=top.location); }
-| constructor::LowerQName_t '(' ')'
+| constructor::LowerQName_t '(' x::EmptyNewlines ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
                 nilTermList(location=top.location),
                 location=top.location); }
-| '<' t::Term_c ':' ty::Type_c '>'
+| '<' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
+      x3::EmptyNewlines ty::Type_c x4::EmptyNewlines '>'
   { top.ast = ascriptionTerm(t.ast, ty.ast, location=top.location); }
 
 
@@ -384,6 +380,26 @@ concrete productions top::CommaTermList_c
 | t::Term_c
   { top.ast = consTermList(t.ast, nilTermList(location=top.location),
                            location=top.location); }
-| t::Term_c ',' rest::CommaTermList_c
+--Because we require the comma to be on the same line, we can let the
+--user put in extra newlines to organize things nicer without making
+--the grammar ambiguous
+| t::Term_c ',' x::EmptyNewlines rest::CommaTermList_c
   { top.ast = consTermList(t.ast, rest.ast, location=top.location); }
+
+
+
+{-
+  Because newlines are not a part of our ignore terminals and are used
+  as part of the actual syntax, we need to explicitly add them in the
+  places where we want to allow them but not require them.  We use
+  this nonterminal to allow the extra, unneeded newlines, but also not
+  require them.
+-}
+closed nonterminal EmptyNewlines;
+
+concrete productions top::EmptyNewlines
+|
+  { }
+| Newline_t rest::EmptyNewlines
+  { }
 

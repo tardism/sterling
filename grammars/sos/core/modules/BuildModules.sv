@@ -123,8 +123,8 @@ IOVal<Either<String Files>> ::=
    fileParse::(ParseResult<File_c> ::= String String)
    ioIn::IOToken
 {
-  local fileContents::IOVal<String> =
-        readFileT(directory ++ "/" ++ head(files), ioIn);
+  local filename::String = directory ++ "/" ++ head(files);
+  local fileContents::IOVal<String> = readFileT(filename, ioIn);
   local parsed::ParseResult<File_c> =
         fileParse(fileContents.iovalue, head(files));
   local rest::IOVal<Either<String Files>> =
@@ -136,7 +136,7 @@ IOVal<Either<String Files>> ::=
      | f::r ->
        if !parsed.parseSuccess
        then ioval(fileContents.io,
-                  left("File " ++ f ++ " did not parse:\n" ++
+                  left("File " ++ filename ++ " did not parse:\n" ++
                        parsed.parseErrors))
        else case rest.iovalue of
             | left(err) -> ioval(rest.io, left(err))
