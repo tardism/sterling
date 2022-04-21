@@ -1,4 +1,4 @@
-grammar sos:core:abstractSyntax;
+grammar sos:core:files:abstractSyntax;
 
 
 type Env<a> = [(QName, a)];
@@ -8,6 +8,28 @@ function lookupEnv
 [a] ::= name::QName env::Env<a>
 {
   return lookupAll(name, env);
+}
+
+
+function buildTyEnv
+Env<TypeEnvItem> ::= l::[TypeEnvItem]
+{
+  return map(\ x::TypeEnvItem -> (x.name, x), l);
+}
+function buildConstructorEnv
+Env<ConstructorEnvItem> ::= l::[ConstructorEnvItem]
+{
+  return map(\ x::ConstructorEnvItem -> (x.name, x), l);
+}
+function buildJudgmentEnv
+Env<JudgmentEnvItem> ::= l::[JudgmentEnvItem]
+{
+  return map(\ x::JudgmentEnvItem -> (x.name, x), l);
+}
+function buildTranslationEnv
+Env<TranslationEnvItem> ::= l::[TranslationEnvItem]
+{
+  return map(\ x::TranslationEnvItem -> (x.name, x), l);
 }
 
 

@@ -1,4 +1,4 @@
-grammar sos:core:abstractSyntax;
+grammar sos:core:files:abstractSyntax;
 
 
 synthesized attribute pp::String;
@@ -23,6 +23,7 @@ synthesized attribute tyDecls::[TypeEnvItem];
 synthesized attribute constructorDecls::[ConstructorEnvItem];
 synthesized attribute judgmentDecls::[JudgmentEnvItem];
 synthesized attribute translationDecls::[TranslationEnvItem];
+synthesized attribute buildsOnDecls::[QName];
 
 --Turn a list-like thing into a list
 synthesized attribute toList<a>::[a];

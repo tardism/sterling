@@ -1,4 +1,4 @@
-grammar sos:core:abstractSyntax;
+grammar sos:core:files:abstractSyntax;
 
 
 synthesized attribute substituted<a>::a;

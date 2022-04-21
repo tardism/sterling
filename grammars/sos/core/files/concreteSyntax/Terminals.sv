@@ -1,13 +1,15 @@
-grammar sos:core:concreteSyntax;
+grammar sos:core:files:concreteSyntax;
 
 
-imports sos:core:abstractSyntax;
+imports sos:core:files:abstractSyntax;
 
 
 lexer class KEYWORD dominates {UpperId_t, LowerId_t};
 
 
 terminal Module_t       'Module'        lexer classes {KEYWORD};
+terminal Builds_t       'Builds'        lexer classes {KEYWORD};
+terminal On_t           'on'            lexer classes {KEYWORD};
 terminal Jdgmt_t        'Judgment'      lexer classes {KEYWORD};
 terminal Fixed_t        'Fixed'         lexer classes {KEYWORD};
 terminal Translate_t    'Translation'   lexer classes {KEYWORD};

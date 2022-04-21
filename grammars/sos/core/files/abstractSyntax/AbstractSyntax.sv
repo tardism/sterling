@@ -1,4 +1,4 @@
-grammar sos:core:abstractSyntax;
+grammar sos:core:files:abstractSyntax;
 
 
 nonterminal AbsSyntaxDecl with
@@ -44,7 +44,7 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
             "declarations for " ++ fullName.pp, location=top.location)]
       end;
 
-  --Check there is only one declariotn of this type
+  --Check there is only one declaration of this type
   local possibleTys::[TypeEnvItem] = lookupEnv(fullName, top.tyEnv);
   top.errors <-
       case possibleTys of
@@ -54,6 +54,25 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
         [errorMessage("Found multiple declarations for type " ++
             fullName.pp, location=top.location)]
       end;
+}
+
+
+--When we add to a type and constructors
+abstract production addAbsSyntaxDecl
+top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
+{
+  top.pp = type.pp ++ " ::= ...\n" ++ constructors.pp ++ "\n";
+
+  constructors.moduleName = top.moduleName;
+  constructors.builtType = error("temp");
+
+  top.constructorDecls = constructors.constructorDecls;
+  top.tyDecls = constructors.tyDecls;
+  top.judgmentDecls = constructors.judgmentDecls;
+  top.translationDecls = [];
+
+  constructors.tyEnv = top.tyEnv;
+  constructors.constructorEnv = top.constructorEnv;
 }
 
 

@@ -1,7 +1,14 @@
-grammar sos:core:abstractSyntax;
+grammar sos:core:files:abstractSyntax;
 
 
-nonterminal File with pp, errors, location;
+nonterminal File with
+   pp,
+   tyDecls, constructorDecls, judgmentDecls, translationDecls,
+   buildsOnDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   moduleName,
+   errors,
+   location;
 propagate errors on File;
 
 abstract production file
@@ -9,18 +16,24 @@ top::File ::= moduleName::QName decls::Decls
 {
   top.pp = "Module " ++ moduleName.pp ++ "\n\n" ++ decls.pp;
 
-  decls.moduleName = moduleName;
+  decls.moduleName = top.moduleName;
 
-  decls.tyEnv = map(\ t::TypeEnvItem -> (t.name, t), decls.tyDecls);
-  decls.constructorEnv =
-        map(\ c::ConstructorEnvItem -> (c.name, c),
-            decls.constructorDecls);
-  decls.judgmentEnv =
-        map(\ j::JudgmentEnvItem -> (j.name, j),
-            decls.judgmentDecls);
-  decls.translationEnv =
-        map(\ t::TranslationEnvItem -> (t.name, t),
-            decls.translationDecls);
+  top.errors <-
+      if moduleName.pp == top.moduleName.pp
+      then []
+      else [errorMessage("Module declaration is incorrect:  " ++
+                         moduleName.pp, location=top.location)];
+
+  top.tyDecls = decls.tyDecls;
+  top.constructorDecls = decls.constructorDecls;
+  top.judgmentDecls = decls.judgmentDecls;
+  top.translationDecls = decls.translationDecls;
+  top.buildsOnDecls = decls.buildsOnDecls;
+
+  decls.tyEnv = top.tyEnv;
+  decls.constructorEnv = top.constructorEnv;
+  decls.judgmentEnv = top.judgmentEnv;
+  decls.translationEnv = top.translationEnv;
 }
 
 
@@ -33,7 +46,8 @@ nonterminal Decls with
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    errors,
-   location;
+   location,
+   buildsOnDecls;
 propagate errors on Decls;
 
 abstract production nilDecls
@@ -45,6 +59,20 @@ top::Decls ::=
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.buildsOnDecls = [];
+}
+
+
+abstract production buildsOnDecls
+top::Decls ::= importName::QName
+{
+  top.pp = "Builds on " ++ importName.pp ++ "\n";
+
+  top.tyDecls = [];
+  top.constructorDecls = [];
+  top.judgmentDecls = [];
+  top.translationDecls = [];
+  top.buildsOnDecls = [importName];
 }
 
 
@@ -59,6 +87,7 @@ top::Decls ::= r::Rule
   top.constructorDecls = r.constructorDecls;
   top.judgmentDecls = r.judgmentDecls;
   top.translationDecls = r.translationDecls;
+  top.buildsOnDecls = [];
 
   r.tyEnv = top.tyEnv;
   r.constructorEnv = top.constructorEnv;
@@ -78,6 +107,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.constructorDecls = a.constructorDecls;
   top.judgmentDecls = a.judgmentDecls;
   top.translationDecls = a.translationDecls;
+  top.buildsOnDecls = [];
 
   a.tyEnv = top.tyEnv;
   a.constructorEnv = top.constructorEnv;
@@ -97,6 +127,7 @@ top::Decls ::= j::JudgmentDecl
   top.constructorDecls = j.constructorDecls;
   top.judgmentDecls = j.judgmentDecls;
   top.translationDecls = j.translationDecls;
+  top.buildsOnDecls = [];
 
   j.tyEnv = top.tyEnv;
   j.constructorEnv = top.constructorEnv;
@@ -117,6 +148,7 @@ top::Decls ::= d1::Decls d2::Decls
   top.constructorDecls = d1.constructorDecls ++ d2.constructorDecls;
   top.judgmentDecls = d1.judgmentDecls ++ d2.judgmentDecls;
   top.translationDecls = d1.translationDecls ++ d2.translationDecls;
+  top.buildsOnDecls = d1.buildsOnDecls ++ d2.buildsOnDecls;
 
   d1.tyEnv = top.tyEnv;
   d1.constructorEnv = top.constructorEnv;

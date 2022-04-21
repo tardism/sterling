@@ -1,0 +1,25 @@
+Module stlc:letPair
+
+Builds on stlc:let
+Bulids on stlc:pair
+
+
+#New syntax#
+term ::= ...
+       | letPair(string, string, term, term)
+
+
+#Typing Rule#
+typeOf G T1 pairTy(Ty1)
+typeOf add(X, Ty1, add(Y, Ty2, G)) T2 Ty2
+----------------------------------------- [T-LetPair]
+typeOf G letPair(X, Y, T1, T2) Ty2
+
+
+#Translation Rule#
+typeOf G T1 pairTy(Ty)
+-------------------------- [Trans-LetPair]
+#G |- let x, y = T1 in T2  ~~>#
+#   let X = fst(T1) in let Y = snd(T1) in T2#
+G |- letPair(X, Y, T1, T2) ~~> let(X, fst(T1), let(Y, snd(T1), T2))
+

@@ -1,4 +1,4 @@
-grammar sos:core:concreteSyntax;
+grammar sos:core:files:concreteSyntax;
 
 
 synthesized attribute ast<a>::a;
@@ -38,6 +38,12 @@ concrete productions top::DeclList_c
 closed nonterminal TopDecl_c with ast<Decls>, location;
 
 concrete productions top::TopDecl_c
+| 'Builds' 'on' i::LowerId_t
+  { top.ast = buildsOnDecls(toQName(i.lexeme, i.location),
+                            location=top.location); }
+| 'Builds' 'on' i::LowerQName_t
+  { top.ast = buildsOnDecls(toQName(i.lexeme, i.location),
+                            location=top.location); }
 | r::Rule_c
   { top.ast = ruleDecls(r.ast, location=top.location); }
 | decl::AbsSyntaxDecl_c
@@ -160,6 +166,23 @@ concrete productions top::AbsSyntaxDecl_c
 | tyName::LowerId_t '::=' '|' decls::AbsConstructorDecls_c
   { top.ast = initialAbsSyntaxDecl(tyName.lexeme, decls.ast,
                                    location=top.location); }
+| ty::LowerId_t '::=' '.' '.' '.' decls::AbsConstructorDecls_c
+  { top.ast =
+        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
+                         decls.ast, location=top.location); }
+| ty::LowerId_t '::=' '.' '.' '.' '|' decls::AbsConstructorDecls_c
+  { top.ast =
+        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
+                         decls.ast, location=top.location); }
+| ty::LowerQName_t '::=' '.' '.' '.' decls::AbsConstructorDecls_c
+  { top.ast =
+        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
+                         decls.ast, location=top.location); }
+| ty::LowerQName_t '::=' '.' '.' '.'
+                     '|' decls::AbsConstructorDecls_c
+  { top.ast =
+        addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
+                         decls.ast, location=top.location); }
 
 
 
