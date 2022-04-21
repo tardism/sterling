@@ -33,8 +33,8 @@ IOVal<Integer> ::= args::[String]
      [
       \ m::ModuleList a::Decorated CmdArgs i::IOToken ->
         if m.errorString != ""
-        then ioval(printT(m.errorString, i), 1)
-        else ioval(i, 0)
+        then ioval(printT(m.errorString ++ "\n", i), 1)
+        else ioval(printT("No errors found\n", i), 0)
      ];
 
   local e::Either<String Decorated CmdArgs> = parseArgs(args);
@@ -54,7 +54,7 @@ IOVal<Integer> ::= args::[String]
      | right(_) ->
        case modules.iovalue of
        | left(err) ->
-         ioval(printT(err, modules.io), 1)
+         ioval(printT(err ++ "\n", modules.io), 1)
        | right(mods) ->
          --run all actions in the order in which they occur
          foldr(\ act::(IOVal<Integer> ::= ModuleList Decorated CmdArgs

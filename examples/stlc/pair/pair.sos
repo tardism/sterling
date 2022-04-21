@@ -37,8 +37,8 @@ typeOf G snd(P) Ty
 
 typeOf G pair(T1, T2) pairTy(Ty)
 ------------------------------------------------ [Trans-Pair]
-#G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2#
 G |- pair(T1, T2) ~~> app(app(abs("a", Ty, abs("b", Ty, abs("s", arrow(Ty, arrow(Ty, Ty)), app(app(var("s"), var("a")), var("b"))))), T2), T1)
+#G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2#
 
 
 typeOf G P pairTy(Ty)

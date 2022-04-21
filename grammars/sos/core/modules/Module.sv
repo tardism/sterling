@@ -14,7 +14,7 @@ synthesized attribute moduleJudgmentDecls::[(String, [JudgmentEnvItem])];
 synthesized attribute moduleTranslationDecls::[(String, [TranslationEnvItem])];
 
 synthesized attribute nameList::[String];
-synthesized attribute name::String;
+synthesized attribute modName::String;
 
 synthesized attribute errorString::String;
 
@@ -59,22 +59,34 @@ top::ModuleList ::=
 abstract production consModuleList
 top::ModuleList ::= m::Module rest::ModuleList
 {
-  top.nameList = m.name::rest.nameList;
+  top.nameList = m.modName::rest.nameList;
 
   local tys::[TypeEnvItem] =
-        lookupAllModules(m.buildsOnDecls, rest.moduleTyDecls);
+        nubBy(\ t1::TypeEnvItem t2::TypeEnvItem -> t1.name == t2.name,
+           lookupAllModules(m.buildsOnDecls, rest.moduleTyDecls) ++
+           m.tyDecls);
   local cons::[ConstructorEnvItem] =
-        lookupAllModules(m.buildsOnDecls, rest.moduleConstructorDecls);
+        nubBy(\ c1::ConstructorEnvItem c2::ConstructorEnvItem ->
+                c1.name == c2.name,
+           lookupAllModules(m.buildsOnDecls,
+              rest.moduleConstructorDecls) ++ m.constructorDecls);
   local jdgs::[JudgmentEnvItem] =
-        lookupAllModules(m.buildsOnDecls, rest.moduleJudgmentDecls);
+        nubBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
+                j1.name == j2.name,
+           lookupAllModules(m.buildsOnDecls,
+              rest.moduleJudgmentDecls) ++ m.judgmentDecls);
   local trns::[TranslationEnvItem] =
-        lookupAllModules(m.buildsOnDecls, rest.moduleTranslationDecls);
-  top.moduleTyDecls = (m.name, tys)::rest.moduleTyDecls;
+        nubBy(\ t1::TranslationEnvItem t2::TranslationEnvItem ->
+                t1.name == t2.name,
+           lookupAllModules(m.buildsOnDecls,
+              rest.moduleTranslationDecls) ++ m.translationDecls);
+  top.moduleTyDecls = (m.modName, tys)::rest.moduleTyDecls;
   top.moduleConstructorDecls =
-      (m.name, cons)::rest.moduleConstructorDecls;
-  top.moduleJudgmentDecls = (m.name, jdgs)::rest.moduleJudgmentDecls;
+      (m.modName, cons)::rest.moduleConstructorDecls;
+  top.moduleJudgmentDecls =
+      (m.modName, jdgs)::rest.moduleJudgmentDecls;
   top.moduleTranslationDecls =
-      (m.name, trns)::rest.moduleTranslationDecls;
+      (m.modName, trns)::rest.moduleTranslationDecls;
 
   m.tyEnv = buildTyEnv(tys);
   m.constructorEnv = buildConstructorEnv(cons);
@@ -107,13 +119,13 @@ nonterminal Module with
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    buildsOnDecls,
-   name,
+   modName,
    errorString;
 
 abstract production module
 top::Module ::= name::String files::Files
 {
-  top.name = name;
+  top.modName = name;
 
   files.moduleName = toQName(name, bogusLoc());
 
@@ -136,11 +148,11 @@ top::Module ::= name::String files::Files
 
 
 instance Eq Module {
-  eq = \ x::Module y::Module -> x.name == y.name;
+  eq = \ x::Module y::Module -> x.modName == y.modName;
 }
 
 instance Ord Module {
-  compare = \ x::Module y::Module -> compare(x.name, y.name);
+  compare = \ x::Module y::Module -> compare(x.modName, y.modName);
 }
 
 

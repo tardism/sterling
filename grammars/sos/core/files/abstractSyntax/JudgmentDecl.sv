@@ -32,7 +32,8 @@ top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
         lookupEnv(fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
-      | [] -> error("Impossible")
+      | [] -> error("Impossible:  Extensible judgment " ++
+                    fullName.pp ++ " must exist; we declared it")
       | [_] -> []
       | l ->
         [errorMessage("Found multiple declarations for judgment " ++
@@ -65,7 +66,8 @@ top::JudgmentDecl ::= name::String ty::TypeList
         lookupEnv(fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
-      | [] -> error("Impossible")
+      | [] -> error("Impossible:  Fixed judgment " ++ fullName.pp ++
+                    " must exist; we declared it")
       | [_] -> []
       | l ->
         [errorMessage("Found multiple declarations for judgment " ++
@@ -98,7 +100,8 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
         lookupEnv(fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
-      | [] -> error("Impossible")
+      | [] -> error("Impossible:  Error judgment " ++ fullName.pp ++
+                    " must exist; we declared it")
       | [_] -> []
       | l ->
         [errorMessage("Found multiple declarations for judgment " ++

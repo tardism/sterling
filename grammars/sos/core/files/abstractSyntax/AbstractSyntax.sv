@@ -48,7 +48,8 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
   local possibleTys::[TypeEnvItem] = lookupEnv(fullName, top.tyEnv);
   top.errors <-
       case possibleTys of
-      | [] -> error("Impossible")
+      | [] -> error("Impossible:  Type " ++ fullName.pp ++
+                    " must exist; we declared it")
       | [_] -> []
       | l ->
         [errorMessage("Found multiple declarations for type " ++
@@ -64,7 +65,13 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   top.pp = type.pp ++ " ::= ...\n" ++ constructors.pp ++ "\n";
 
   constructors.moduleName = top.moduleName;
-  constructors.builtType = error("temp");
+
+  type.tyEnv = top.tyEnv;
+  constructors.builtType =
+     if type.tyFound
+     then type.fullTy
+     else errorType(location=top.location);
+  top.errors <- type.tyErrors;
 
   top.constructorDecls = constructors.constructorDecls;
   top.tyDecls = constructors.tyDecls;
@@ -148,7 +155,8 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
         lookupEnv(fullName, top.constructorEnv);
   top.errors <-
       case possibleCons of
-      | [] -> error("Impossible")
+      | [] -> error("Impossible:  Constructor " ++ fullName.pp ++
+                    "must exist; we declared it")
       | [_] -> []
       | l ->
         [errorMessage("Found multiple declarations for " ++

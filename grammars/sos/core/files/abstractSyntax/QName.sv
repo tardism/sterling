@@ -23,6 +23,7 @@ synthesized attribute isQualified::Boolean occurs on QName;
 --Specific errors and types, depending on what we expect a name to be
 synthesized attribute tyErrors::[Message] occurs on QName;
 synthesized attribute tyFound::Boolean occurs on QName;
+synthesized attribute fullTy::Type occurs on QName;
 --
 synthesized attribute constrErrors::[Message] occurs on QName;
 synthesized attribute constrType::Type occurs on QName;
@@ -61,6 +62,8 @@ top::QName ::= name::String
             location=top.location)]
       end;
   top.tyFound = length(possibleTys) == 1;
+  top.fullTy =
+      nameType(head(possibleTys).name, location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
   possibleCons = lookupEnv(top, top.constructorEnv);
@@ -126,6 +129,8 @@ top::QName ::= name::String rest::QName
             location=top.location)]
       end;
   top.tyFound = length(possibleTys) == 1;
+  top.fullTy =
+      nameType(head(possibleTys).name, location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
   possibleCons = lookupEnv(top, top.constructorEnv);

@@ -38,10 +38,10 @@ concrete productions top::DeclList_c
 closed nonterminal TopDecl_c with ast<Decls>, location;
 
 concrete productions top::TopDecl_c
-| 'Builds' 'on' i::LowerId_t
+| 'Builds' 'on' i::LowerId_t Newline_t
   { top.ast = buildsOnDecls(toQName(i.lexeme, i.location),
                             location=top.location); }
-| 'Builds' 'on' i::LowerQName_t
+| 'Builds' 'on' i::LowerQName_t Newline_t
   { top.ast = buildsOnDecls(toQName(i.lexeme, i.location),
                             location=top.location); }
 | r::Rule_c
@@ -166,19 +166,22 @@ concrete productions top::AbsSyntaxDecl_c
 | tyName::LowerId_t '::=' '|' decls::AbsConstructorDecls_c
   { top.ast = initialAbsSyntaxDecl(tyName.lexeme, decls.ast,
                                    location=top.location); }
-| ty::LowerId_t '::=' '.' '.' '.' decls::AbsConstructorDecls_c
+| ty::LowerId_t '::=' '.' '.' '.' Newline_t
+                      decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
                          decls.ast, location=top.location); }
-| ty::LowerId_t '::=' '.' '.' '.' '|' decls::AbsConstructorDecls_c
+| ty::LowerId_t '::=' '.' '.' '.' Newline_t
+                  '|' decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
                          decls.ast, location=top.location); }
-| ty::LowerQName_t '::=' '.' '.' '.' decls::AbsConstructorDecls_c
+| ty::LowerQName_t '::=' '.' '.' '.' Newline_t
+                         decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),
                          decls.ast, location=top.location); }
-| ty::LowerQName_t '::=' '.' '.' '.'
+| ty::LowerQName_t '::=' '.' '.' '.' Newline_t
                      '|' decls::AbsConstructorDecls_c
   { top.ast =
         addAbsSyntaxDecl(toQName(ty.lexeme, ty.location),

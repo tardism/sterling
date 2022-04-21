@@ -104,6 +104,7 @@ top::Judgment ::= args::TermList t::Term translation::Term
   top.errors <-
       case finalTransType of
       | nameType(name) -> []
+      | errorType() -> []
       | _ ->
         [errorMessage("Cannot translate type " ++ finalTransType.pp,
                       location=top.location)]
