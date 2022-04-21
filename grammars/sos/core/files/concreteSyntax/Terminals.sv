@@ -39,6 +39,8 @@ terminal Colon_t      ':';
 terminal Period_t     '.';
 terminal LAngle_t     '<';
 terminal RAngle_t     '>';
+terminal Geq_t        '>=';
+terminal Leq_t        '<=';
 
 terminal Plus_t    '+';
 terminal Minus_t   '-';

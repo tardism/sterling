@@ -76,6 +76,106 @@ top::Judgment ::= t1::Term t2::Term
 }
 
 
+abstract production greaterJudgment
+top::Judgment ::= t1::Term t2::Term
+{
+  top.pp = t1.pp ++ " > " ++ t2.pp;
+
+  t1.moduleName = top.moduleName;
+  t2.moduleName = top.moduleName;
+
+  t1.tyEnv = top.tyEnv;
+  t1.constructorEnv = top.constructorEnv;
+  t2.tyEnv = top.tyEnv;
+  t2.constructorEnv = top.constructorEnv;
+
+  local unifyTys1::TypeUnify =
+        typeUnify(t1.type, intType(location=top.location));
+  local unifyTys2::TypeUnify =
+        typeUnify(t2.type, intType(location=top.location));
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  unifyTys1.downSubst = t2.upSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production lessJudgment
+top::Judgment ::= t1::Term t2::Term
+{
+  top.pp = t1.pp ++ " < " ++ t2.pp;
+
+  t1.moduleName = top.moduleName;
+  t2.moduleName = top.moduleName;
+
+  t1.tyEnv = top.tyEnv;
+  t1.constructorEnv = top.constructorEnv;
+  t2.tyEnv = top.tyEnv;
+  t2.constructorEnv = top.constructorEnv;
+
+  local unifyTys1::TypeUnify =
+        typeUnify(t1.type, intType(location=top.location));
+  local unifyTys2::TypeUnify =
+        typeUnify(t2.type, intType(location=top.location));
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  unifyTys1.downSubst = t2.upSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production geqJudgment
+top::Judgment ::= t1::Term t2::Term
+{
+  top.pp = t1.pp ++ " >= " ++ t2.pp;
+
+  t1.moduleName = top.moduleName;
+  t2.moduleName = top.moduleName;
+
+  t1.tyEnv = top.tyEnv;
+  t1.constructorEnv = top.constructorEnv;
+  t2.tyEnv = top.tyEnv;
+  t2.constructorEnv = top.constructorEnv;
+
+  local unifyTys1::TypeUnify =
+        typeUnify(t1.type, intType(location=top.location));
+  local unifyTys2::TypeUnify =
+        typeUnify(t2.type, intType(location=top.location));
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  unifyTys1.downSubst = t2.upSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production leqJudgment
+top::Judgment ::= t1::Term t2::Term
+{
+  top.pp = t1.pp ++ " <= " ++ t2.pp;
+
+  t1.moduleName = top.moduleName;
+  t2.moduleName = top.moduleName;
+
+  t1.tyEnv = top.tyEnv;
+  t1.constructorEnv = top.constructorEnv;
+  t2.tyEnv = top.tyEnv;
+  t2.constructorEnv = top.constructorEnv;
+
+  local unifyTys1::TypeUnify =
+        typeUnify(t1.type, intType(location=top.location));
+  local unifyTys2::TypeUnify =
+        typeUnify(t2.type, intType(location=top.location));
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  unifyTys1.downSubst = t2.upSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
 abstract production transJudgment
 top::Judgment ::= args::TermList t::Term translation::Term
 {

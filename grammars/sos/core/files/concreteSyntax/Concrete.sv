@@ -267,6 +267,14 @@ concrete productions top::Judgment_c
   { top.ast = eqJudgment(t1.ast, t2.ast, location=top.location); }
 | t1::Term_c '!=' t2::Term_c
   { top.ast = neqJudgment(t1.ast, t2.ast, location=top.location); }
+| t1::Term_c '>' t2::Term_c
+  { top.ast = greaterJudgment(t1.ast, t2.ast, location=top.location); }
+| t1::Term_c '<' t2::Term_c
+  { top.ast = lessJudgment(t1.ast, t2.ast, location=top.location); }
+| t1::Term_c '>=' t2::Term_c
+  { top.ast = geqJudgment(t1.ast, t2.ast, location=top.location); }
+| t1::Term_c '<=' t2::Term_c
+  { top.ast = leqJudgment(t1.ast, t2.ast, location=top.location); }
 | '|-' t1::Term_c x2::EmptyNewlines '~~>' x3::EmptyNewlines t2::Term_c
   { top.ast = transJudgment(nilTermList(location=top.location),
                             t1.ast, t2.ast,

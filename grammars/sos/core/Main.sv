@@ -121,7 +121,7 @@ Either<String  Decorated CmdArgs> ::= args::[String]
                flagParser=option(locationOption))];
 
   local usage::String = 
-        "Usage: silverabella [options] [filenames]\n\n" ++
+        "Usage: <this program> [options] <module name>\n\n" ++
         "Flag options:\n" ++ flagSpecsToHelpText(flags) ++ "\n";
 
   -- Parse the command line

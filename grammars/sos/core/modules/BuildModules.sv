@@ -97,9 +97,11 @@ IOVal<Either<String Module>> ::=
   local isDir::IOVal<Boolean> = isDirectoryT(dirLoc, ioIn);
   local dirContents::IOVal<[String]> =
         listContentsT(dirLoc, isDir.io);
+  local sosFiles::[String] =
+        filter(\ s::String -> splitFileNameAndExtension(s).2 == "sos",
+               dirContents.iovalue);
   local files::IOVal<Either<String Files>> =
-        buildFiles(dirLoc, dirContents.iovalue, fileParse,
-                   dirContents.io);
+        buildFiles(dirLoc, sosFiles, fileParse, dirContents.io);
   return
      if !isDir.iovalue
      then ioval(isDir.io, left("Could not find module " ++ moduleName))
