@@ -1,0 +1,164 @@
+Module imp:host
+
+
+evalctx ::= empty
+          | addeval(string, int, evalctx)
+Translation evalctx :
+
+Fixed Judgment elookup : evalctx string int
+
+=============================== [EL-Here]
+elookup addeval(X, I, Rest) X I
+
+
+elookup Rest X I
+X != Y
+=============================== [EL-Later]
+elookup addeval(Y, J, Rest) X I
+
+
+#Because we don't have Booleans built in, roll our own Boolean values#
+bval ::= btrue | bfalse
+Translation bval :
+
+
+Judgment eval_a : evalctx a* int
+Judgment eval_b : evalctx b* bval
+Judgment eval_c : evalctx c* evalctx
+
+
+
+
+#Arithmetic Evaluation#
+
+----------------- [E-Num]
+eval_a E num(I) I
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 + I2 = I
+----------------------- [E-Plus]
+eval_a E plus(A1, A2) I
+
+
+elookup E X I
+------------------ [E-Name]
+eval_a E name(X) I
+
+
+
+
+#Boolean Evaluation#
+
+------------------- [E-True]
+eval_b E true btrue
+
+
+--------------------- [E-False]
+eval_b E false bfalse
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 > I2
+------------------------------ [E-GreaterTrue]
+eval_a E greater(A1, A2) btrue
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 <= I2
+------------------------------ [E-GreaterFalse]
+eval_a E greater(A1, A2) btrue
+
+
+eval_a E A1 I
+eval_a E A2 I
+------------------------- [E-EqTrue]
+eval_a E eq(A1, A2) btrue
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 != I2
+-------------------------- [E-EqFalse]
+eval_a E eq(A1, A2) bfalse
+
+
+eval_b E B1 bfalse
+--------------------------- [E-AndFalse1]
+eval_b E and(B1, B2) bfalse
+
+
+eval_b E B1 btrue
+eval_b E B2 bfalse
+--------------------------- [E-AndFalse2]
+eval_b E and(B1, B2) bfalse
+
+
+eval_b E B1 btrue
+eval_b E B2 btrue
+-------------------------- [E-AndTrue]
+eval_b E and(B1, B2) btrue
+
+
+eval_b E B1 btrue
+------------------------- [E-OrTrue1]
+eval_b E or(B1, B2) btrue
+
+
+eval_b E B1 bfalse
+eval_b E B2 btrue
+------------------------- [E-OrTrue2]
+eval_b E or(B1, B2) btrue
+
+
+eval_b E B1 bfalse
+eval_b E B2 bfalse
+-------------------------- [E-OrFalse]
+eval_b E or(B1, B2) bfalse
+
+
+
+
+#Command Evaluation#
+
+--------------- [E-Noop]
+eval_c E noop E
+
+
+eval_c E1 C1 E2
+eval_c E2 C2 E3
+------------------------ [E-Seq]
+eval_c E1 seq(C1, C2) E3
+
+
+eval_a E A I
+-------------------------------------- [E-Assign]
+eval_c E assign(X, A) addeval(X, I, E)
+
+
+eval_b E B btrue
+eval_c E C1 ERes
+----------------------------------- [E-IfThenElseTrue]
+eval_c E ifThenElse(B, C1, C2) ERes
+
+
+eval_b E B bfalse
+eval_c E C2 ERes
+----------------------------------- [E-IfThenElseFalse]
+eval_c E ifThenElse(B, C1, C2) ERes
+
+
+eval_b E B bfalse
+---------------------- [E-WhileFalse]
+eval_c E while(B, C) E
+
+
+eval_b E1 B btrue
+eval_c E1 C E2
+eval_c E2 while(B, C) E3
+------------------------ [E-WhileTrue]
+eval_c E1 while(B, C) E3
+

@@ -1,0 +1,137 @@
+Module imp:security
+
+Builds on imp:host
+
+
+#Security contexts hold public and private variables#
+secctx ::= emptysec
+         | addprivate(string, secctx)
+         | addpublic(string, secctx)
+Translation secctx :
+
+
+
+Fixed Judgment is_private : secctx string
+Fixed Judgment is_public  : secctx string
+
+
+==================================== [Private-Here]
+is_private addprivate(X, Rest) X
+
+
+is_private Rest X
+================================ [Private-SkipPrivate]
+is_private addprivate(Y, Rest) X
+
+
+is_private Rest X
+=============================== [Private-SkipPublic]
+is_private addpublic(Y, Rest) X
+
+
+============================== [Public-Here]
+is_public addpublic(X, Rest) X
+
+
+is_public Rest X
+============================== [Public-SkipPublic]
+is_public addpublic(Y, Rest) X
+
+
+is_public Rest X
+Y != X  #Because of Public-NotPresent rule, can only skip if neq#
+=============================== [Public-SkipPrivate]
+is_public addprivate(Y, Rest) X
+
+
+#Anything not contained in the context is assumed to be public#
+==================== [Public-NotPresent]
+is_public emptysec X
+
+
+
+
+
+#Security Analysis#
+Judgment is_private_a : secctx a* #Anything not private is public#
+Judgment is_private_b : secctx b*
+Judgment is_secure : secctx c*
+#It would be a better idea to define is_public_a and is_public_b.  We want to make sure we don't leak anything private into the publics, so it is more useful to be able to say something is public.  That, or we need to add negation to the rule logic, and I don't think we want that for anything but inequality.#
+
+
+
+#Security Level for Arithmetic Expressions#
+is_private_a SC A1
+---------------------------- [S-Plus1]
+is_private_a SC plus(A1, A2)
+
+
+is_private_a SC A2
+---------------------------- [S-Plus2]
+is_private_a SC plus(A1, A2)
+
+
+is_private SC X
+----------------------- [S-Name]
+is_private_a SC name(X)
+
+
+
+#Security Level for Boolean Expressions#
+is_private_a SC A1
+------------------------------- [S-Greater1]
+is_private_b SC greater(A1, A2)
+
+
+is_private_a SC A2
+------------------------------- [S-Greater2]
+is_private_b SC greater(A1, A2)
+
+
+is_private_a SC A1
+-------------------------- [S-Eq1]
+is_private_b SC eq(A1, A2)
+
+
+is_private_a SC A2
+-------------------------- [S-Eq2]
+is_private_b SC eq(A1, A2)
+
+
+is_private_a SC A1
+--------------------------- [S-And1]
+is_private_b SC and(A1, A2)
+
+
+is_private_a SC A2
+--------------------------- [S-And2]
+is_private_b SC and(A1, A2)
+
+
+is_private_a SC A1
+-------------------------- [S-Or1]
+is_private_b SC or(A1, A2)
+
+
+is_private_a SC A2
+-------------------------- [S-Or2]
+is_private_b SC or(A1, A2)
+
+
+
+#Security for Commands#
+----------------- [S-Noop]
+is_secure SC noop
+
+
+is_secure SC C1
+is_secure SC C2
+------------------------ [S-Seq]
+is_secure SC seq(C1, C2)
+
+
+#Can put anything into a private var, since it won't leak#
+is_private SC X
+------------------------- [S-AssignPrivate]
+is_secure SC assign(X, A)
+

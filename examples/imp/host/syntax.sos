@@ -1,0 +1,27 @@
+Module imp:host
+
+#Arithmetic Expressions#
+a ::= num(int)
+    | plus(int, int)
+    | name(string)
+Translation a :
+
+
+#Boolean Expressions#
+b ::= greater(a, a)
+    | eq(a, a)
+    | and(b, b)
+    | or(b, b)
+    | true
+    | false
+Translation b :
+
+
+#Statement Commands#
+c ::= noop
+    | seq(c, c)
+    | assign(string, a)
+    | ifThenElse(b, c, c)
+    | while(b, c)
+Translation c :
+
