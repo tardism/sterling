@@ -98,7 +98,7 @@ top::ModuleList ::= m::Module rest::ModuleList
       then m.errorString
       else if m.errorString == ""
            then rest.errorString
-           else m.errorString ++ "\n\n" ++ rest.errorString;
+           else rest.errorString ++ "\n\n" ++ m.errorString;
 }
 
 function lookupAllModules

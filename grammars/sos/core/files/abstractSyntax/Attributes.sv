@@ -42,5 +42,11 @@ synthesized attribute upSubst::Substitution;
 inherited attribute finalSubst::Substitution;
 
 
+--We need to pass around the types of variable names as we generate
+--them so all occurrences of the same var have the same type
+inherited attribute downVarTypes::[(String, Type)];
+synthesized attribute upVarTypes::[(String, Type)];
+
+
 synthesized attribute isExtensible::Boolean;
 

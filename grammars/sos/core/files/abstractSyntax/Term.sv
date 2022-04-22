@@ -6,6 +6,7 @@ nonterminal Term with
    moduleName,
    tyEnv, constructorEnv,
    type, upSubst, downSubst, finalSubst,
+   downVarTypes, upVarTypes,
    errors,
    location;
 propagate errors on Term;
@@ -19,10 +20,12 @@ top::Term ::= name::QName
 
   top.errors <- name.constrErrors;
   top.type = if name.constrFound
-             then freshenType(name.constrType)
+             then freshenType(name.constrType, top.location)
              else errorType(location=top.location);
 
   top.upSubst = top.downSubst;
+
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -31,8 +34,17 @@ top::Term ::= name::String
 {
   top.pp = name;
 
+  top.upVarTypes =
+      if lookup(name, top.downVarTypes).isJust
+      then top.downVarTypes
+      else (name, top.type)::top.downVarTypes;
   top.type =
-      varType("__var_" ++ toString(genInt()), location=top.location);
+      case lookup(name, top.downVarTypes) of
+      | just(ty) -> ty
+      | nothing() ->
+        varType("__var_" ++ name ++ "_" ++ toString(genInt()),
+                location=top.location)
+      end;
 
   top.upSubst = top.downSubst;
 }
@@ -46,6 +58,8 @@ top::Term ::= int::Integer
   top.type = intType(location=top.location);
 
   top.upSubst = top.downSubst;
+
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -57,6 +71,8 @@ top::Term ::= s::String
   top.type = stringType(location=top.location);
 
   top.upSubst = top.downSubst;
+
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -73,25 +89,28 @@ top::Term ::= constructor::QName args::TermList
 
   top.errors <- constructor.constrErrors;
   top.type = if constructor.constrFound
-             then freshenType(constructor.constrType)
+             then freshenType(constructor.constrType,
+                              constructor.location)
              else errorType(location=top.location);
 
   local unifyArgs::TypeUnify =
         typeListUnify(args.types, constructor.constrTypeArgs);
-  unifyArgs.downSubst = args.upSubst;
-
   args.downSubst = top.downSubst;
+  unifyArgs.downSubst = args.upSubst;
   top.upSubst = if constructor.constrFound
                 then unifyArgs.upSubst
                 else args.upSubst;
   args.finalSubst = top.finalSubst;
+
+  args.downVarTypes = top.downVarTypes;
+  top.upVarTypes = args.upVarTypes;
 }
 
 
 abstract production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {
-  top.pp = "(" ++ tm.pp ++ " : " ++ ty.pp ++ ")";
+  top.pp = "<" ++ tm.pp ++ " : " ++ ty.pp ++ ">";
 
   tm.moduleName = top.moduleName;
 
@@ -106,6 +125,9 @@ top::Term ::= tm::Term ty::Type
   tm.finalSubst = top.finalSubst;
 
   top.type = ty;
+
+  tm.downVarTypes = top.downVarTypes;
+  top.upVarTypes = tm.upVarTypes;
 }
 
 
@@ -117,6 +139,7 @@ nonterminal TermList with
    moduleName,
    tyEnv, constructorEnv,
    types, upSubst, downSubst, finalSubst,
+   downVarTypes, upVarTypes,
    toList<Term>, len,
    errors,
    location;
@@ -134,6 +157,8 @@ top::TermList ::=
   top.upSubst = top.downSubst;
 
   top.types = nilTypeList(location=top.location);
+
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -163,5 +188,9 @@ top::TermList ::= t::Term rest::TermList
   rest.finalSubst = top.finalSubst;
 
   top.types = consTypeList(t.type, rest.types, location=top.location);
+
+  t.downVarTypes = top.downVarTypes;
+  rest.downVarTypes = t.upVarTypes;
+  top.upVarTypes = rest.upVarTypes;
 }
 

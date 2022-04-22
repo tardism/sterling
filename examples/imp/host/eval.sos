@@ -63,27 +63,27 @@ eval_a E A1 I1
 eval_a E A2 I2
 I1 > I2
 ------------------------------ [E-GreaterTrue]
-eval_a E greater(A1, A2) btrue
+eval_b E greater(A1, A2) btrue
 
 
 eval_a E A1 I1
 eval_a E A2 I2
 I1 <= I2
 ------------------------------ [E-GreaterFalse]
-eval_a E greater(A1, A2) btrue
+eval_b E greater(A1, A2) btrue
 
 
 eval_a E A1 I
 eval_a E A2 I
 ------------------------- [E-EqTrue]
-eval_a E eq(A1, A2) btrue
+eval_b E eq(A1, A2) btrue
 
 
 eval_a E A1 I1
 eval_a E A2 I2
 I1 != I2
 -------------------------- [E-EqFalse]
-eval_a E eq(A1, A2) bfalse
+eval_b E eq(A1, A2) bfalse
 
 
 eval_b E B1 bfalse

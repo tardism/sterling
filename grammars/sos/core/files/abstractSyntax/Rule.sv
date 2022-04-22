@@ -42,6 +42,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 
   --get any unification errors
   top.errors <- errorsFromSubst(conclusion.upSubst);
+
+  --initially no variable types are known
+  premises.downVarTypes = [];
+  conclusion.downVarTypes = premises.upVarTypes;
 }
 
 abstract production transRule
@@ -73,11 +77,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --rule is unit of determining var types, so turn finalSubst here
   premises.finalSubst = unsafeTrace(conclusion.upSubst,
       printT("Final substitution for " ++ name ++ ":  " ++
-             showSubst(conclusion.upSubst) ++ "\n\n", unsafeIO()));
+             showSubst(conclusion.upSubst) ++ "\n\n\n\n", unsafeIO()));
   conclusion.finalSubst = conclusion.upSubst;
 
   --get any unification errors
   top.errors <- errorsFromSubst(conclusion.upSubst);
+
+  --initially no variable types are known
+  premises.downVarTypes = [];
+  conclusion.downVarTypes = premises.upVarTypes;
 }
 
 
@@ -113,6 +121,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 
   --get any unification errors
   top.errors <- errorsFromSubst(conclusion.upSubst);
+
+  --initially no variable types are known
+  premises.downVarTypes = [];
+  conclusion.downVarTypes = premises.upVarTypes;
 }
 
 
@@ -125,6 +137,7 @@ nonterminal JudgmentList with
    toList<Judgment>,
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    errors, downSubst, upSubst, finalSubst,
+   downVarTypes, upVarTypes,
    location;
 propagate errors on JudgmentList;
 
@@ -136,6 +149,8 @@ top::JudgmentList ::=
   top.toList = [];
 
   top.upSubst = top.downSubst;
+
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -163,5 +178,9 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   top.upSubst = rest.upSubst;
   j.finalSubst = top.finalSubst;
   rest.finalSubst = top.finalSubst;
+
+  j.downVarTypes = top.downVarTypes;
+  rest.downVarTypes = j.upVarTypes;
+  top.upVarTypes = rest.upVarTypes;
 }
 

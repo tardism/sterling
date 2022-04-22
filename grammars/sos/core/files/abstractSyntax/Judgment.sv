@@ -6,6 +6,7 @@ nonterminal Judgment with
    moduleName,
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    upSubst, downSubst, finalSubst,
+   downVarTypes, upVarTypes,
    errors,
    location;
 propagate errors on Judgment;
@@ -23,14 +24,23 @@ top::Judgment ::= rel::QName args::TermList
   rel.judgmentEnv = top.judgmentEnv;
   top.errors <- rel.judgmentErrors;
 
-  local unifyArgs::TypeUnify =
-        typeListUnify(args.types, freshenTypeList(rel.judgmentType));
-  unifyArgs.downSubst = args.upSubst;
+  local freshened::TypeList =
+        freshenTypeList(rel.judgmentType, rel.location);
+  local unifyArgs::TypeUnify = typeListUnify(args.types, freshened);
   args.downSubst = top.downSubst;
+  unifyArgs.downSubst = args.upSubst;
   top.upSubst = if rel.judgmentFound
-                then unifyArgs.upSubst
+                then unsafeTracePrint(unifyArgs.upSubst,
+                        "UpSubst for " ++ top.pp ++ ":  " ++
+                        showSubst(unifyArgs.upSubst) ++
+                        "\nFreshened:  " ++ freshened.pp_space ++
+                        "\nArg types:  " ++ args.types.pp_space ++
+                        "\n\n")
                 else args.upSubst;
   args.finalSubst = top.finalSubst;
+
+  args.downVarTypes = top.downVarTypes;
+  top.upVarTypes = args.upVarTypes;
 }
 
 
@@ -52,6 +62,10 @@ top::Judgment ::= t1::Term t2::Term
   t2.downSubst = t1.upSubst;
   unifyTys.downSubst = t2.upSubst;
   top.upSubst = unifyTys.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -73,6 +87,10 @@ top::Judgment ::= t1::Term t2::Term
   t2.downSubst = t1.upSubst;
   unifyTys.downSubst = t2.upSubst;
   top.upSubst = unifyTys.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -98,6 +116,10 @@ top::Judgment ::= t1::Term t2::Term
   unifyTys1.downSubst = t2.upSubst;
   unifyTys2.downSubst = unifyTys1.upSubst;
   top.upSubst = unifyTys2.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -123,6 +145,10 @@ top::Judgment ::= t1::Term t2::Term
   unifyTys1.downSubst = t2.upSubst;
   unifyTys2.downSubst = unifyTys1.upSubst;
   top.upSubst = unifyTys2.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -148,6 +174,10 @@ top::Judgment ::= t1::Term t2::Term
   unifyTys1.downSubst = t2.upSubst;
   unifyTys2.downSubst = unifyTys1.upSubst;
   top.upSubst = unifyTys2.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -173,6 +203,10 @@ top::Judgment ::= t1::Term t2::Term
   unifyTys1.downSubst = t2.upSubst;
   unifyTys2.downSubst = unifyTys1.upSubst;
   top.upSubst = unifyTys2.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
 }
 
 
@@ -221,6 +255,11 @@ top::Judgment ::= args::TermList t::Term translation::Term
         end;
   unifyTypes.downSubst = unifyTerms.upSubst;
   top.upSubst = unifyTypes.upSubst;
+
+  args.downVarTypes = top.downVarTypes;
+  t.downVarTypes = args.upVarTypes;
+  translation.downVarTypes = t.upVarTypes;
+  top.upVarTypes = translation.upVarTypes;
 }
 
 
@@ -249,6 +288,11 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   op.leftTy = t1.type;
   op.rightTy = t2.type;
   op.resultTy = result.type;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  result.downVarTypes = t2.upVarTypes;
+  top.upVarTypes = result.upVarTypes;
 }
 
 

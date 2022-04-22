@@ -9,6 +9,7 @@ synthesized attribute unify::Substitution;
 --freshen a type by creating new ty vars for each variable
 synthesized attribute freshenSubst::Substitution;
 synthesized attribute freshen<a>::a;
+inherited attribute freshenLoc::Location;
 
 
 nonterminal Type with
@@ -16,7 +17,7 @@ nonterminal Type with
    tyEnv, errors,
    downSubst, substituted<Type>,
    unifyWith<Type>, unify,
-   freshen<Type>, freshenSubst,
+   freshen<Type>, freshenSubst, freshenLoc,
    isExtensible,
    location;
 propagate errors on Type;
@@ -43,7 +44,7 @@ top::Type ::= name::QName
                  top.pp, top.location)
       end;
 
-  top.freshen = top;
+  top.freshen = nameType(name, location=top.freshenLoc);
   top.freshenSubst = emptySubst();
 
   --assume all name types are extensible
@@ -69,7 +70,8 @@ top::Type ::= name::String
       end;
 
   top.freshen =
-      varType("_var" ++ toString(genInt()), location=top.location);
+      varType("_var_" ++ name ++ "_" ++ toString(genInt()),
+              location=top.freshenLoc);
   top.freshenSubst = varSubst(name, top.freshen);
 
   --assume variable types are not extensible, as undetermined
@@ -93,7 +95,7 @@ top::Type ::=
                  top.pp, top.location)
       end;
 
-  top.freshen = top;
+  top.freshen = intType(location=top.freshenLoc);
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
@@ -116,7 +118,7 @@ top::Type ::=
                  top.pp, top.location)
       end;
 
-  top.freshen = top;
+  top.freshen = stringType(location=top.freshenLoc);
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
@@ -132,7 +134,7 @@ top::Type ::=
 
   top.unify = emptySubst();
 
-  top.freshen = top;
+  top.freshen = errorType(location=top.freshenLoc);
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
@@ -148,7 +150,7 @@ nonterminal TypeList with
    toList<Type>, len,
    downSubst, substituted<TypeList>,
    unifyWith<TypeList>, unify,
-   freshen<TypeList>, freshenSubst,
+   freshen<TypeList>, freshenSubst, freshenLoc,
    location;
 propagate errors on TypeList;
 
@@ -175,7 +177,7 @@ top::TypeList ::=
                  "type list", top.location)
       end;
 
-  top.freshen = top;
+  top.freshen = nilTypeList(location=top.freshenLoc);
   top.freshenSubst = emptySubst();
 }
 
@@ -203,7 +205,7 @@ top::TypeList ::= t::Type rest::TypeList
   top.unify =
       case top.unifyWith of
       | consTypeList(ty, r) ->
-        let s::Substitution = unifyTypes(t, t)
+        let s::Substitution = unifyTypes(t, ty)
         in
           joinSubst(s,
              unifyTypeLists(performSubstitutionTypeList(rest, s),
@@ -214,11 +216,13 @@ top::TypeList ::= t::Type rest::TypeList
                  "type list", top.location)
       end;
 
+  t.freshenLoc = top.freshenLoc;
   local freshenSubstituted::TypeList =
         performSubstitutionTypeList(rest, t.freshenSubst);
+  freshenSubstituted.freshenLoc = top.freshenLoc;
   top.freshen =
       consTypeList(t.freshen, freshenSubstituted.freshen,
-                   location=top.location);
+                   location=top.freshenLoc);
   top.freshenSubst =
       joinSubst(t.freshenSubst, freshenSubstituted.freshenSubst);
 
@@ -372,15 +376,17 @@ TypeList ::= t::TypeList s::Substitution
 
 
 function freshenType
-Type ::= ty::Type
+Type ::= ty::Type loc::Location
 {
+  ty.freshenLoc = loc;
   return ty.freshen;
 }
 
 
 function freshenTypeList
-TypeList ::= ty::TypeList
+TypeList ::= ty::TypeList loc::Location
 {
+  ty.freshenLoc = loc;
   return ty.freshen;
 }
 
