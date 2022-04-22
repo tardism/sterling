@@ -24,7 +24,7 @@ top::Judgment ::= rel::QName args::TermList
   top.errors <- rel.judgmentErrors;
 
   local unifyArgs::TypeUnify =
-        typeListUnify(args.types, rel.judgmentType);
+        typeListUnify(args.types, freshenTypeList(rel.judgmentType));
   unifyArgs.downSubst = args.upSubst;
   args.downSubst = top.downSubst;
   top.upSubst = if rel.judgmentFound
@@ -196,11 +196,6 @@ top::Judgment ::= args::TermList t::Term translation::Term
   --type being translated
   local finalTransType::Type =
         performSubstitutionType(t.type, top.finalSubst);
-  local foundTransType::[TranslationEnvItem] =
-        case finalTransType of
-        | nameType(name) -> lookupEnv(name, top.translationEnv)
-        | _ -> error("Should not access")
-        end;
   top.errors <-
       case finalTransType of
       | nameType(name) -> []
@@ -216,14 +211,16 @@ top::Judgment ::= args::TermList t::Term translation::Term
   local unifyTerms::TypeUnify = typeUnify(t.type, translation.type);
   unifyTerms.downSubst = translation.upSubst;
   local unifyTypes::TypeUnify =
-        typeListUnify(args.types, head(foundTransType).types);
+        case performSubstitutionType(t.type, unifyTerms.upSubst) of
+        | nameType(name) when
+          lookupEnv(name, top.translationEnv) matches [tenvi] ->
+          typeListUnify(args.types, tenvi.types)
+          --if not extensible and known, just unify something useless
+        | _ -> typeUnify(intType(location=top.location),
+                         intType(location=top.location))
+        end;
   unifyTypes.downSubst = unifyTerms.upSubst;
-  top.upSubst =
-      case finalTransType of
-        --only access unifyTypes if it is defined
-      | nameType(_) when !null(foundTransType) -> unifyTypes.upSubst
-      | _ -> unifyTerms.upSubst
-      end;
+  top.upSubst = unifyTypes.upSubst;
 }
 
 

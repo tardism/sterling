@@ -71,7 +71,9 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
   --rule is unit of determining var types, so turn finalSubst here
-  premises.finalSubst = conclusion.upSubst;
+  premises.finalSubst = unsafeTrace(conclusion.upSubst,
+      printT("Final substitution for " ++ name ++ ":  " ++
+             showSubst(conclusion.upSubst) ++ "\n\n", unsafeIO()));
   conclusion.finalSubst = conclusion.upSubst;
 
   --get any unification errors

@@ -295,6 +295,23 @@ function errorsFromSubst
 }
 
 
+function showSubst
+String ::= s::Either<[Message] [(String, Type)]>
+{
+  return
+     case s of
+     | left(errs) ->
+       "Error:  [" ++ implode("; ", map((.pp), errs)) ++ "]"
+     | right(lst) ->
+       "Subst:  [" ++ 
+          implode(", ",
+             map(\ p::(String, Type) ->
+                   "(" ++ p.1 ++ ", " ++ p.2.pp ++ ")",
+                 lst)) ++ "]"
+     end;
+}
+
+
 
 
 

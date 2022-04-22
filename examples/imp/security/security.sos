@@ -4,134 +4,175 @@ Builds on imp:host
 
 
 #Security contexts hold public and private variables#
+status ::= private
+         | public
+Translation status :
+
 secctx ::= emptysec
-         | addprivate(string, secctx)
-         | addpublic(string, secctx)
+         | addsec(string, status, secctx)
 Translation secctx :
 
 
 
-Fixed Judgment is_private : secctx string
-Fixed Judgment is_public  : secctx string
+Fixed Judgment slookup : secctx string status
 
 
-==================================== [Private-Here]
-is_private addprivate(X, Rest) X
+============================== [SL-Here]
+slookup addsec(X, S, Rest) X S
 
 
-is_private Rest X
-================================ [Private-SkipPrivate]
-is_private addprivate(Y, Rest) X
-
-
-is_private Rest X
-=============================== [Private-SkipPublic]
-is_private addpublic(Y, Rest) X
-
-
-============================== [Public-Here]
-is_public addpublic(X, Rest) X
-
-
-is_public Rest X
-============================== [Public-SkipPublic]
-is_public addpublic(Y, Rest) X
-
-
-is_public Rest X
-Y != X  #Because of Public-NotPresent rule, can only skip if neq#
-=============================== [Public-SkipPrivate]
-is_public addprivate(Y, Rest) X
+slookup Rest X S
+Y != X
+============================== [SL-Later]
+slookup addsec(Y, T, Rest) X S
 
 
 #Anything not contained in the context is assumed to be public#
-==================== [Public-NotPresent]
-is_public emptysec X
+========================== [SL-NotPresent]
+slookup emptysec X private
+
+
+
+Fixed Judgment smax : status status status
+
+====================== [SM-Private1]
+smax private S private
+
+
+====================== [SM-Private2]
+smax S private private
+
+
+========================= [SM-Public]
+smax public public public
 
 
 
 
 
 #Security Analysis#
-Judgment is_private_a : secctx a* #Anything not private is public#
-Judgment is_private_b : secctx b*
-Judgment is_secure : secctx c*
-#It would be a better idea to define is_public_a and is_public_b.  We want to make sure we don't leak anything private into the publics, so it is more useful to be able to say something is public.  That, or we need to add negation to the rule logic, and I don't think we want that for anything but inequality.#
+Judgment sec_level_a : secctx a* status
+Judgment sec_level_b : secctx b* status
+Judgment is_secure : status secctx c* #program counter, ctx, cmd#
+
 
 
 
 #Security Level for Arithmetic Expressions#
-is_private_a SC A1
----------------------------- [S-Plus1]
-is_private_a SC plus(A1, A2)
+sec_level_a SC A1 S1
+sec_level_a SC A2 S2
+smax S1 S2 S
+----------------------------- [S-Plus]
+sec_level_a SC plus(A1, A2) S
 
 
-is_private_a SC A2
----------------------------- [S-Plus2]
-is_private_a SC plus(A1, A2)
+---------------------------- [S-Num]
+sec_level_a SC num(I) public
 
 
-is_private SC X
------------------------ [S-Name]
-is_private_a SC name(X)
+slookup SC X S
+------------------------ [S-Name]
+sec_level_a SC name(X) S
+
+
+
+|- A ~~> A_t
+sec_level_a SC A_t S
+-------------------- [S-A-Trans]*
+sec_level_a SC A S
+
 
 
 
 #Security Level for Boolean Expressions#
-is_private_a SC A1
-------------------------------- [S-Greater1]
-is_private_b SC greater(A1, A2)
+sec_level_a SC A1 S1
+sec_level_a SC A2 S2
+smax S1 S2 S
+-------------------------------- [S-Greater]
+sec_level_b SC greater(A1, A2) S
 
 
-is_private_a SC A2
-------------------------------- [S-Greater2]
-is_private_b SC greater(A1, A2)
+sec_level_a SC A1 S1
+sec_level_a SC A2 S2
+smax S1 S2 S
+--------------------------- [S-Eq]
+sec_level_b SC eq(A1, A2) S
 
 
-is_private_a SC A1
--------------------------- [S-Eq1]
-is_private_b SC eq(A1, A2)
+sec_level_b SC A1 S1
+sec_level_b SC A2 S2
+smax S1 S2 S
+---------------------------- [S-And]
+sec_level_b SC and(A1, A2) S
 
 
-is_private_a SC A2
--------------------------- [S-Eq2]
-is_private_b SC eq(A1, A2)
+sec_level_b SC A1 S1
+sec_level_b SC A2 S2
+smax S1 S2 S
+--------------------------- [S-Or]
+sec_level_b SC or(A1, A2) S
 
 
-is_private_a SC A1
---------------------------- [S-And1]
-is_private_b SC and(A1, A2)
+-------------------------- [S-True]
+sec_level_b SC true public
 
 
-is_private_a SC A2
---------------------------- [S-And2]
-is_private_b SC and(A1, A2)
+--------------------------- [S-False]
+sec_level_b SC false public
 
 
-is_private_a SC A1
--------------------------- [S-Or1]
-is_private_b SC or(A1, A2)
 
+|- B ~~> B_t
+sec_level_b SC B_t S
+-------------------- [S-B-Trans]*
+sec_level_b SC B S
 
-is_private_a SC A2
--------------------------- [S-Or2]
-is_private_b SC or(A1, A2)
 
 
 
 #Security for Commands#
------------------ [S-Noop]
-is_secure SC noop
+-------------------- [S-Noop]
+is_secure PC SC noop
 
 
-is_secure SC C1
-is_secure SC C2
------------------------- [S-Seq]
-is_secure SC seq(C1, C2)
+is_secure PC SC C1
+is_secure PC SC C2
+--------------------------- [S-Seq]
+is_secure PC SC seq(C1, C2)
 
 
 #Can put anything into a private var, since it won't leak#
-is_private SC X
-------------------------- [S-AssignPrivate]
-is_secure SC assign(X, A)
+slookup SC X private
+---------------------------- [S-AssignPrivate]
+is_secure PC SC assign(X, A)
+
+
+#Can only assign into public if private hasn't made us reach here (PC#
+#is public) and A doesn't have private information#
+slookup SC X public
+sec_level_a SC A public
+-------------------------------- [S-AssignPublic]
+is_secure public SC assign(X, A)
+
+
+is_secure SC B SB
+smax SB PC S
+is_secure S SC C1
+is_secure S SC C2
+------------------------------------- [S-IfThenElse]
+is_secure PC SC ifThenElse(B, C1, C2)
+
+
+is_secure SC B SB
+smax SB PC S
+is_secure S SC C
+--------------------------- [S-While]
+is_secure PC SC while(B, C)
+
+
+
+|- C ~~> C_t
+is_secure PC SC C_t
+------------------- [S-C-Trans]*
+is_secure PC SC C
 
