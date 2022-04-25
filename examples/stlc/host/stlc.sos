@@ -37,7 +37,7 @@ typeOf add(X, Ty1, G) Body Ty2
 typeOf G abs(X, Ty1, Body) arrow(Ty1, Ty2)
 
 
-lookup G X Ty
+lookup X G Ty
 ------------------ [T-Var]
 typeOf G var(X) Ty
 
@@ -45,12 +45,12 @@ typeOf G var(X) Ty
 
 #Lookup Rules#
 
-lookup G X Ty
+lookup X G Ty
 X != Y
 ========================== [L-Later]
-lookup add(Y, YTy, G) X Ty
+lookup X add(Y, YTy, G) Ty
 
 
 ========================= [L-Here]
-lookup add(X, Ty, G) X Ty
+lookup X add(X, Ty, G) Ty
 

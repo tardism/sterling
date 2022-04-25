@@ -24,12 +24,11 @@ top::Judgment ::= rel::QName args::TermList
   rel.judgmentEnv = top.judgmentEnv;
   top.errors <- rel.judgmentErrors;
 
-  local freshened::TypeList =
-        freshenTypeList(rel.judgmentType, rel.location);
-  args.expectedTypes = error("");
-       {-if rel.judgmentFound
+  local freshened::TypeList = freshenTypeList(rel.judgmentType);
+  args.expectedTypes =
+       if rel.judgmentFound
        then just(rel.judgmentType)
-       else nothing();-}
+       else nothing();
   args.lastConstructor = rel;
   args.downSubst = top.downSubst;
   top.upSubst = args.upSubst;
@@ -53,7 +52,8 @@ top::Judgment ::= t1::Term t2::Term
   t2.tyEnv = top.tyEnv;
   t2.constructorEnv = top.constructorEnv;
 
-  local unifyTys::TypeUnify = typeUnify(t1.type, t2.type);
+  local unifyTys::TypeUnify =
+        typeUnify(t1.type, t2.type, location=top.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys.downSubst = t2.upSubst;
@@ -78,7 +78,8 @@ top::Judgment ::= t1::Term t2::Term
   t2.tyEnv = top.tyEnv;
   t2.constructorEnv = top.constructorEnv;
 
-  local unifyTys::TypeUnify = typeUnify(t1.type, t2.type);
+  local unifyTys::TypeUnify =
+        typeUnify(t1.type, t2.type, location=top.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys.downSubst = t2.upSubst;
@@ -104,9 +105,11 @@ top::Judgment ::= t1::Term t2::Term
   t2.constructorEnv = top.constructorEnv;
 
   local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location));
+        typeUnify(t1.type, intType(location=top.location),
+                  location=t1.location);
   local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location));
+        typeUnify(t2.type, intType(location=top.location),
+                  location=t2.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys1.downSubst = t2.upSubst;
@@ -133,9 +136,11 @@ top::Judgment ::= t1::Term t2::Term
   t2.constructorEnv = top.constructorEnv;
 
   local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location));
+        typeUnify(t1.type, intType(location=top.location),
+                  location=top.location);
   local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location));
+        typeUnify(t2.type, intType(location=top.location),
+                  location=top.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys1.downSubst = t2.upSubst;
@@ -162,9 +167,11 @@ top::Judgment ::= t1::Term t2::Term
   t2.constructorEnv = top.constructorEnv;
 
   local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location));
+        typeUnify(t1.type, intType(location=top.location),
+                  location=top.location);
   local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location));
+        typeUnify(t2.type, intType(location=top.location),
+                  location=top.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys1.downSubst = t2.upSubst;
@@ -191,9 +198,11 @@ top::Judgment ::= t1::Term t2::Term
   t2.constructorEnv = top.constructorEnv;
 
   local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location));
+        typeUnify(t1.type, intType(location=top.location),
+                  location=top.location);
   local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location));
+        typeUnify(t2.type, intType(location=top.location),
+                  location=top.location);
   t1.downSubst = top.downSubst;
   t2.downSubst = t1.upSubst;
   unifyTys1.downSubst = t2.upSubst;
@@ -242,20 +251,23 @@ top::Judgment ::= args::TermList t::Term translation::Term
         typeUnify(
            performSubstitutionType(t.type, translation.upSubst),
            performSubstitutionType(translation.type,
-              translation.upSubst));
+              translation.upSubst), location=top.location);
   unifyTerms.downSubst = translation.upSubst;
   args.lastConstructor =
-       error(""); --toQName("<translation>", location=top.location);
-  args.expectedTypes = error("");
-       {-case performSubstitutionType(t.type, unifyTerms.upSubst) of
+       toQName("<translation>", top.location);
+  args.expectedTypes =
+       case performSubstitutionType(t.type, unifyTerms.upSubst) of
        | nameType(name) when
          lookupEnv(name, top.translationEnv) matches [tenvi] ->
          just(tenvi.types)
          --not extensible and known
        | _ -> nothing()
-       end;-}
-  unifyTypes.downSubst = unifyTerms.upSubst;
-  top.upSubst = unifyTypes.upSubst;
+       end;
+  top.upSubst = unifyTerms.upSubst;
+
+  args.finalSubst = top.finalSubst;
+  t.finalSubst = top.finalSubst;
+  translation.finalSubst = top.finalSubst;
 
   args.downVarTypes = top.downVarTypes;
   t.downVarTypes = args.upVarTypes;
@@ -316,11 +328,14 @@ top::BinOp ::=
 
   --everything should be int
   local unifyLeft::TypeUnify =
-        typeUnify(intType(location=top.location), top.leftTy);
+        typeUnify(intType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(intType(location=top.location), top.rightTy);
+        typeUnify(intType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(intType(location=top.location), top.resultTy);
+        typeUnify(intType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
@@ -335,11 +350,14 @@ top::BinOp ::=
 
   --everything should be int
   local unifyLeft::TypeUnify =
-        typeUnify(intType(location=top.location), top.leftTy);
+        typeUnify(intType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(intType(location=top.location), top.rightTy);
+        typeUnify(intType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(intType(location=top.location), top.resultTy);
+        typeUnify(intType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
@@ -354,11 +372,14 @@ top::BinOp ::=
 
   --everything should be int
   local unifyLeft::TypeUnify =
-        typeUnify(intType(location=top.location), top.leftTy);
+        typeUnify(intType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(intType(location=top.location), top.rightTy);
+        typeUnify(intType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(intType(location=top.location), top.resultTy);
+        typeUnify(intType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
@@ -373,11 +394,14 @@ top::BinOp ::=
 
   --everything should be int
   local unifyLeft::TypeUnify =
-        typeUnify(intType(location=top.location), top.leftTy);
+        typeUnify(intType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(intType(location=top.location), top.rightTy);
+        typeUnify(intType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(intType(location=top.location), top.resultTy);
+        typeUnify(intType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
@@ -392,11 +416,14 @@ top::BinOp ::=
 
   --everything should be int
   local unifyLeft::TypeUnify =
-        typeUnify(intType(location=top.location), top.leftTy);
+        typeUnify(intType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(intType(location=top.location), top.rightTy);
+        typeUnify(intType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(intType(location=top.location), top.resultTy);
+        typeUnify(intType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
@@ -411,11 +438,14 @@ top::BinOp ::=
 
   --everything should be string
   local unifyLeft::TypeUnify =
-        typeUnify(stringType(location=top.location), top.leftTy);
+        typeUnify(stringType(location=top.location), top.leftTy,
+                  location=top.location);
   local unifyRight::TypeUnify =
-        typeUnify(stringType(location=top.location), top.rightTy);
+        typeUnify(stringType(location=top.location), top.rightTy,
+                  location=top.location);
   local unifyResult::TypeUnify =
-        typeUnify(stringType(location=top.location), top.resultTy);
+        typeUnify(stringType(location=top.location), top.resultTy,
+                  location=top.location);
   unifyLeft.downSubst = top.downSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;

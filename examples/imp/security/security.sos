@@ -14,6 +14,7 @@ Translation secctx :
 
 
 
+#Lookup the security level of a variable in a security context#
 Fixed Judgment slookup : secctx string status
 
 
@@ -33,6 +34,7 @@ slookup emptysec X private
 
 
 
+#Get the highest of two security levels#
 Fixed Judgment smax : status status status
 
 ====================== [SM-Private1]

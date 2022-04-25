@@ -20,7 +20,7 @@ top::Term ::= name::QName
 
   top.errors <- name.constrErrors;
   top.type = if name.constrFound
-             then freshenType(name.constrType, top.location)
+             then freshenType(name.constrType)
              else errorType(location=top.location);
 
   top.upSubst = top.downSubst;
@@ -89,8 +89,7 @@ top::Term ::= constructor::QName args::TermList
 
   top.errors <- constructor.constrErrors;
   top.type = if constructor.constrFound
-             then freshenType(constructor.constrType,
-                              constructor.location)
+             then freshenType(constructor.constrType)
              else errorType(location=top.location);
 
   args.lastConstructor = constructor;
@@ -118,7 +117,8 @@ top::Term ::= tm::Term ty::Type
   tm.tyEnv = top.tyEnv;
   ty.tyEnv = top.tyEnv;
 
-  local unify::TypeUnify = typeUnify(tm.type, ty);
+  local unify::TypeUnify =
+        typeUnify(tm.type, ty, location=top.location);
   tm.downSubst = top.downSubst;
   unify.downSubst = tm.upSubst;
   top.upSubst = unify.upSubst;
@@ -192,15 +192,17 @@ top::TermList ::= t::Term rest::TermList
   top.len = 1 + rest.len;
 
   t.downSubst = top.downSubst;
-  rest.downSubst = t.upSubst;
-  top.upSubst =
+  local unifyFirst::TypeUnify =
       case top.expectedTypes of
       | just(consTypeList(ty, l)) ->
-        joinSubst(rest.upSubst,
-           unifyTypes(performSubstitutionType(ty, rest.upSubst),
-              performSubstitutionType(t.type, rest.upSubst)))
-      | _ -> rest.upSubst
+        typeUnify(t.type, ty, location=top.location)
+             --unify useless as a placeholder
+      | _ -> typeUnify(errorType(location=top.location), t.type,
+                       location=top.location)
       end;
+  rest.downSubst = t.upSubst;
+  unifyFirst.downSubst = rest.upSubst;
+  top.upSubst = unifyFirst.upSubst;
   t.finalSubst = top.finalSubst;
   rest.finalSubst = top.finalSubst;
 
