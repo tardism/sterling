@@ -78,7 +78,7 @@ sec_level_a SC name(X) S
 
 
 
-|- A ~~> A_t
+|{a}- A ~~> A_t
 sec_level_a SC A_t S
 -------------------- [S-A-Trans]*
 sec_level_a SC A S
@@ -124,7 +124,7 @@ sec_level_b SC false public
 
 
 
-|- B ~~> B_t
+|{b}- B ~~> B_t
 sec_level_b SC B_t S
 -------------------- [S-B-Trans]*
 sec_level_b SC B S
@@ -173,7 +173,7 @@ is_secure PC SC while(B, C)
 
 
 
-|- C ~~> C_t
+|{c}- C ~~> C_t
 is_secure PC SC C_t
 ------------------- [S-C-Trans]*
 is_secure PC SC C

@@ -216,10 +216,11 @@ top::Judgment ::= t1::Term t2::Term
 
 
 abstract production transJudgment
-top::Judgment ::= args::TermList t::Term translation::Term
+top::Judgment ::= args::TermList ty::QName t::Term translation::Term
 {
   top.pp =
-      args.pp_comma ++ " |- " ++ t.pp ++ " ~~> " ++ translation.pp;
+      args.pp_comma ++ " |{" ++ ty.pp ++ "}- " ++ t.pp ++ " ~~> " ++
+                                                  translation.pp;
 
   args.moduleName = top.moduleName;
   t.moduleName = top.moduleName;
@@ -232,38 +233,32 @@ top::Judgment ::= args::TermList t::Term translation::Term
   translation.tyEnv = top.tyEnv;
   translation.constructorEnv = top.constructorEnv;
 
-  --type being translated
-  local finalTransType::Type =
-        performSubstitutionType(t.type, top.finalSubst);
-  top.errors <-
-      case finalTransType of
-      | nameType(name) -> []
-      | errorType() -> []
-      | _ ->
-        [errorMessage("Cannot translate type " ++ finalTransType.pp,
-                      location=top.location)]
-      end;
+  ty.tyEnv = top.tyEnv;
+  top.errors <- ty.tyErrors;
 
   args.downSubst = top.downSubst;
   t.downSubst = args.upSubst;
   translation.downSubst = t.upSubst;
-  local unifyTerms::TypeUnify =
-        typeUnify(
-           performSubstitutionType(t.type, translation.upSubst),
-           performSubstitutionType(translation.type,
-              translation.upSubst), location=top.location);
-  unifyTerms.downSubst = translation.upSubst;
+  local unifyT::TypeUnify =
+        typeUnify(t.type, ty.fullTy, location=t.location);
+  local unifyTranslation::TypeUnify =
+        typeUnify(translation.type, ty.fullTy,
+                  location=translation.location);
+  unifyT.downSubst = translation.upSubst;
+  unifyTranslation.downSubst = unifyT.upSubst;
   args.lastConstructor =
        toQName("<translation>", top.location);
   args.expectedTypes =
-       case performSubstitutionType(t.type, unifyTerms.upSubst) of
-       | nameType(name) when
-         lookupEnv(name, top.translationEnv) matches [tenvi] ->
-         just(tenvi.types)
-         --not extensible and known
-       | _ -> nothing()
-       end;
-  top.upSubst = unifyTerms.upSubst;
+       if ty.tyFound
+       then case ty.fullTy of
+            | nameType(name)
+              when lookupEnv(name, top.translationEnv)
+                   matches [tenvi] ->
+              just(tenvi.types)
+            | _ -> nothing()
+            end
+       else nothing();
+  top.upSubst = unifyTranslation.upSubst;
 
   args.finalSubst = top.finalSubst;
   t.finalSubst = top.finalSubst;

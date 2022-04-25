@@ -63,7 +63,9 @@ top::QName ::= name::String
       end;
   top.tyFound = length(possibleTys) == 1;
   top.fullTy =
-      nameType(head(possibleTys).name, location=top.location);
+      if top.tyFound
+      then nameType(head(possibleTys).name, location=top.location)
+      else errorType(location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
   possibleCons = lookupEnv(top, top.constructorEnv);
@@ -130,7 +132,9 @@ top::QName ::= name::String rest::QName
       end;
   top.tyFound = length(possibleTys) == 1;
   top.fullTy =
-      nameType(head(possibleTys).name, location=top.location);
+      if top.tyFound
+      then nameType(head(possibleTys).name, location=top.location)
+      else errorType(location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
   possibleCons = lookupEnv(top, top.constructorEnv);

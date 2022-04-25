@@ -20,6 +20,7 @@ typeOf G letPair(X, Y, T1, T2) Ty2
 typeOf G T1 pairTy(Ty)
 -------------------------- [Trans-LetPair]
 #G |- let x, y = T1 in T2  ~~>#
-#   let X = fst(T1) in let Y = snd(T1) in T2#
-G |- letPair(X, Y, T1, T2) ~~> let(X, fst(T1), let(Y, snd(T1), T2))
+#   let X = T1 in let Y = snd(X) in let X = fst(X) in T2#
+G |{term}- letPair(X, Y, T1, T2) ~~>
+           let(X, T1, let(Y, snd(var(X)), let(X, fst(var(X)), T2)))
 

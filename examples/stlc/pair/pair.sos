@@ -31,28 +31,28 @@ typeOf G snd(P) Ty
 
 
 #Translation Rules#
------------------------------------------------------ [Trans-PairTy]
-|- pairTy(Ty) ~~> arrow(arrow(Ty, arrow(Ty, Ty)), Ty)
+----------------------------------------------------------- [Trans-PairTy]
+|{type}- pairTy(Ty) ~~> arrow(arrow(Ty, arrow(Ty, Ty)), Ty)
 
 
 typeOf G pair(T1, T2) pairTy(Ty)
 ------------------------------------------------ [Trans-Pair]
 #G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2#
-G |- pair(T1, T2) ~~>
-     app(app(abs("a", Ty, abs("b", Ty,
-                abs("s", arrow(Ty, arrow(Ty, Ty)),
-                     app(app(var("s"), var("a")), var("b"))))),
-             T2), T1)
+G |{term}- pair(T1, T2) ~~>
+           app(app(abs("a", Ty, abs("b", Ty,
+                      abs("s", arrow(Ty, arrow(Ty, Ty)),
+                           app(app(var("s"), var("a")), var("b"))))),
+                   T2), T1)
 
 
 typeOf G P pairTy(Ty)
 ------------------------------------------------- [Trans-Fst]
-G |- fst(P) ~~>
-     app(P, abs("a", Ty, abs("b", Ty, var("a"))))
+G |{stlc:host:term}- fst(P) ~~>
+                     app(P, abs("a", Ty, abs("b", Ty, var("a"))))
 
 
 typeOf G P pairTy(Ty)
 ------------------------------------------------- [Trans-Snd]
-G |- snd(P) ~~>
-     app(P, abs("a", Ty, abs("b", Ty, var("a"))))
+G |{term}- snd(P) ~~>
+           app(P, abs("a", Ty, abs("b", Ty, var("a"))))
 

@@ -275,13 +275,29 @@ concrete productions top::Judgment_c
   { top.ast = geqJudgment(t1.ast, t2.ast, location=top.location); }
 | t1::Term_c '<=' t2::Term_c
   { top.ast = leqJudgment(t1.ast, t2.ast, location=top.location); }
-| '|-' t1::Term_c x2::EmptyNewlines '~~>' x3::EmptyNewlines t2::Term_c
+| '|{' ty::LowerId_t '}-' t1::Term_c x2::EmptyNewlines '~~>'
+                                     x3::EmptyNewlines t2::Term_c
   { top.ast = transJudgment(nilTermList(location=top.location),
+                            toQName(ty.lexeme, ty.location),
                             t1.ast, t2.ast,
                             location=top.location); }
-| args::CommaTermList_c '|-' x1::EmptyNewlines t1::Term_c
-             x2::EmptyNewlines '~~>' x3::EmptyNewlines t2::Term_c
-  { top.ast = transJudgment(args.ast, t1.ast, t2.ast,
+| '|{' ty::LowerQName_t '}-' t1::Term_c x2::EmptyNewlines '~~>'
+                                        x3::EmptyNewlines t2::Term_c
+  { top.ast = transJudgment(nilTermList(location=top.location),
+                            toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| args::CommaTermList_c '|{' ty::LowerId_t '}-' x1::EmptyNewlines
+                          t1::Term_c x2::EmptyNewlines '~~>'
+                                     x3::EmptyNewlines t2::Term_c
+  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| args::CommaTermList_c '|{' ty::LowerQName_t '}-' x1::EmptyNewlines
+                         t1::Term_c x2::EmptyNewlines '~~>'
+                                    x3::EmptyNewlines t2::Term_c
+  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
                             location=top.location); }
 | t1::Term_c op::BinOp_c t2::Term_c '=' t3::Term_c
   { top.ast = binOpJudgment(t1.ast, op.ast, t2.ast, t3.ast,
