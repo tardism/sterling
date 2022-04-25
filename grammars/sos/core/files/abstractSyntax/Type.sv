@@ -149,7 +149,6 @@ nonterminal TypeList with
    tyEnv, errors,
    toList<Type>, len,
    downSubst, substituted<TypeList>,
-   unifyWith<TypeList>, unify,
    freshen<TypeList>, freshenSubst, freshenLoc,
    location;
 propagate errors on TypeList;
@@ -168,14 +167,6 @@ top::TypeList ::=
   top.len = 0;
 
   top.substituted = nilTypeList(location=top.location);
-
-  top.unify =
-      case top.unifyWith of
-      | nilTypeList() -> emptySubst()
-      | _ ->
-        errSubst("Cannot unify empty type list with a non-empty " ++
-                 "type list", top.location)
-      end;
 
   top.freshen = nilTypeList(location=top.freshenLoc);
   top.freshenSubst = emptySubst();
@@ -201,20 +192,6 @@ top::TypeList ::= t::Type rest::TypeList
   top.substituted =
       consTypeList(t.substituted, rest.substituted,
                    location=top.location);
-
-  top.unify =
-      case top.unifyWith of
-      | consTypeList(ty, r) ->
-        let s::Substitution = unifyTypes(t, ty)
-        in
-          joinSubst(s,
-             unifyTypeLists(performSubstitutionTypeList(rest, s),
-                            performSubstitutionTypeList(r, s)))
-        end
-      | nilTypeList() ->
-        errSubst("Cannot unify empty type list with a non-empty " ++
-                 "type list", top.location)
-      end;
 
   t.freshenLoc = top.freshenLoc;
   local freshenSubstituted::TypeList =
@@ -331,27 +308,9 @@ top::TypeUnify ::= ty1::Type ty2::Type
 }
 
 
-abstract production typeListUnify
-top::TypeUnify ::= t1::TypeList t2::TypeList
-{
-  top.upSubst =
-      joinSubst(top.downSubst,
-        unifyTypeLists(performSubstitutionTypeList(t1, top.downSubst),
-           performSubstitutionTypeList(t2, top.downSubst)));
-}
-
-
 
 function unifyTypes
 Substitution ::= t1::Type t2::Type
-{
-  t1.unifyWith = t2;
-  return t1.unify;
-}
-
-
-function unifyTypeLists
-Substitution ::= t1::TypeList t2::TypeList
 {
   t1.unifyWith = t2;
   return t1.unify;

@@ -93,13 +93,13 @@ top::Term ::= constructor::QName args::TermList
                               constructor.location)
              else errorType(location=top.location);
 
-  local unifyArgs::TypeUnify =
-        typeListUnify(args.types, constructor.constrTypeArgs);
+  args.lastConstructor = constructor;
+  args.expectedTypes =
+       if constructor.constrFound
+       then just(constructor.constrTypeArgs)
+       else nothing();
   args.downSubst = top.downSubst;
-  unifyArgs.downSubst = args.upSubst;
-  top.upSubst = if constructor.constrFound
-                then unifyArgs.upSubst
-                else args.upSubst;
+  top.upSubst = args.upSubst;
   args.finalSubst = top.finalSubst;
 
   args.downVarTypes = top.downVarTypes;
@@ -139,6 +139,7 @@ nonterminal TermList with
    moduleName,
    tyEnv, constructorEnv,
    types, upSubst, downSubst, finalSubst,
+   expectedTypes, lastConstructor,
    downVarTypes, upVarTypes,
    toList<Term>, len,
    errors,
@@ -155,6 +156,15 @@ top::TermList ::=
   top.len = 0;
 
   top.upSubst = top.downSubst;
+
+  top.errors <-
+      case top.expectedTypes of
+      | nothing() -> []
+      | just(nilTypeList()) -> []
+      | just(consTypeList(x, l)) ->
+        [errorMessage("Too many arguments to " ++
+            top.lastConstructor.pp, location=top.location)]
+      end;
 
   top.types = nilTypeList(location=top.location);
 
@@ -183,9 +193,30 @@ top::TermList ::= t::Term rest::TermList
 
   t.downSubst = top.downSubst;
   rest.downSubst = t.upSubst;
-  top.upSubst = rest.upSubst;
+  top.upSubst =
+      case top.expectedTypes of
+      | just(consTypeList(ty, l)) ->
+        joinSubst(rest.upSubst,
+           unifyTypes(performSubstitutionType(ty, rest.upSubst),
+              performSubstitutionType(t.type, rest.upSubst)))
+      | _ -> rest.upSubst
+      end;
   t.finalSubst = top.finalSubst;
   rest.finalSubst = top.finalSubst;
+
+  rest.lastConstructor = top.lastConstructor;
+  rest.expectedTypes =
+       case top.expectedTypes of
+       | just(consTypeList(_, l)) -> just(l)
+       | _ -> nothing()
+       end;
+  top.errors <-
+      case top.expectedTypes of
+      | just(nilTypeList()) ->
+        [errorMessage("Too few arguments to " ++
+            top.lastConstructor.pp, location=top.location)]
+      | _ -> []
+      end;
 
   top.types = consTypeList(t.type, rest.types, location=top.location);
 

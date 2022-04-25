@@ -26,17 +26,13 @@ top::Judgment ::= rel::QName args::TermList
 
   local freshened::TypeList =
         freshenTypeList(rel.judgmentType, rel.location);
-  local unifyArgs::TypeUnify = typeListUnify(args.types, freshened);
+  args.expectedTypes = error("");
+       {-if rel.judgmentFound
+       then just(rel.judgmentType)
+       else nothing();-}
+  args.lastConstructor = rel;
   args.downSubst = top.downSubst;
-  unifyArgs.downSubst = args.upSubst;
-  top.upSubst = if rel.judgmentFound
-                then unsafeTracePrint(unifyArgs.upSubst,
-                        "UpSubst for " ++ top.pp ++ ":  " ++
-                        showSubst(unifyArgs.upSubst) ++
-                        "\nFreshened:  " ++ freshened.pp_space ++
-                        "\nArg types:  " ++ args.types.pp_space ++
-                        "\n\n")
-                else args.upSubst;
+  top.upSubst = args.upSubst;
   args.finalSubst = top.finalSubst;
 
   args.downVarTypes = top.downVarTypes;
@@ -242,17 +238,22 @@ top::Judgment ::= args::TermList t::Term translation::Term
   args.downSubst = top.downSubst;
   t.downSubst = args.upSubst;
   translation.downSubst = t.upSubst;
-  local unifyTerms::TypeUnify = typeUnify(t.type, translation.type);
+  local unifyTerms::TypeUnify =
+        typeUnify(
+           performSubstitutionType(t.type, translation.upSubst),
+           performSubstitutionType(translation.type,
+              translation.upSubst));
   unifyTerms.downSubst = translation.upSubst;
-  local unifyTypes::TypeUnify =
-        case performSubstitutionType(t.type, unifyTerms.upSubst) of
-        | nameType(name) when
-          lookupEnv(name, top.translationEnv) matches [tenvi] ->
-          typeListUnify(args.types, tenvi.types)
-          --if not extensible and known, just unify something useless
-        | _ -> typeUnify(intType(location=top.location),
-                         intType(location=top.location))
-        end;
+  args.lastConstructor =
+       error(""); --toQName("<translation>", location=top.location);
+  args.expectedTypes = error("");
+       {-case performSubstitutionType(t.type, unifyTerms.upSubst) of
+       | nameType(name) when
+         lookupEnv(name, top.translationEnv) matches [tenvi] ->
+         just(tenvi.types)
+         --not extensible and known
+       | _ -> nothing()
+       end;-}
   unifyTypes.downSubst = unifyTerms.upSubst;
   top.upSubst = unifyTypes.upSubst;
 

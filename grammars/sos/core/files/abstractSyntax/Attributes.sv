@@ -40,6 +40,9 @@ synthesized attribute types::TypeList;
 inherited attribute downSubst::Substitution;
 synthesized attribute upSubst::Substitution;
 inherited attribute finalSubst::Substitution;
+--constructor whose argument types we are unifying
+inherited attribute lastConstructor::QName;
+inherited attribute expectedTypes::Maybe<TypeList>;
 
 
 --We need to pass around the types of variable names as we generate
