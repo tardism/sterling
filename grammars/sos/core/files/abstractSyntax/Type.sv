@@ -1,11 +1,11 @@
 grammar sos:core:files:abstractSyntax;
 
 
+inherited attribute subst::Substitution;
 synthesized attribute substituted<a>::a;
 
 inherited attribute unifyLoc::Location;
 inherited attribute unifyWith<a>::a;
-synthesized attribute unify::Substitution;
 
 --freshen a type by creating new ty vars for each variable
 synthesized attribute freshenSubst::Substitution;
@@ -16,8 +16,8 @@ inherited attribute freshenLoc::Location;
 nonterminal Type with
    pp,
    tyEnv, errors,
-   downSubst, substituted<Type>,
-   unifyWith<Type>, unify, unifyLoc,
+   subst, substituted<Type>,
+   unifyWith<Type>, unifyLoc, downSubst, upSubst,
    freshen<Type>, freshenSubst,
    isExtensible,
    location;
@@ -33,13 +33,13 @@ top::Type ::= name::QName
 
   top.substituted = nameType(name, location=top.location);
 
-  top.unify =
+  top.upSubst =
       case top.unifyWith of
-      | nameType(n) when n == name -> emptySubst()
+      | nameType(n) when n == name -> top.downSubst
       | nameType(n) ->
         errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                  top.pp, top.unifyLoc)
-      | varType(v) -> varSubst(v, top)
+      | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
         errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                  top.pp, top.unifyLoc)
@@ -59,21 +59,21 @@ top::Type ::= name::String
   top.pp = name;
 
   top.substituted =
-      case lookupSubst(name, top.downSubst) of
+      case lookupSubst(name, top.subst) of
       | nothing() -> varType(name, location=top.location)
       | just(ty) -> ty
       end;
 
-  top.unify =
+  top.upSubst =
       case top.unifyWith of
-      | varType(v) when v == name -> emptySubst()
-      | ty -> varSubst(name, ty)
+      | varType(v) when v == name -> top.downSubst
+      | ty -> addSubst(name, ty, top.downSubst)
       end;
 
   top.freshen =
       varType("_var_" ++ name ++ "_" ++ toString(genInt()),
               location=top.location);
-  top.freshenSubst = varSubst(name, top.freshen);
+  top.freshenSubst = addSubst(name, top.freshen, emptySubst());
 
   --assume variable types are not extensible, as undetermined
   top.isExtensible = false;
@@ -87,10 +87,10 @@ top::Type ::=
 
   top.substituted = intType(location=top.location);
 
-  top.unify =
+  top.upSubst =
       case top.unifyWith of
-      | intType() -> emptySubst()
-      | varType(v) -> varSubst(v, top)
+      | intType() -> top.downSubst
+      | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
         errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                  top.pp, top.unifyLoc)
@@ -110,10 +110,10 @@ top::Type ::=
 
   top.substituted = stringType(location=top.location);
 
-  top.unify =
+  top.upSubst =
       case top.unifyWith of
-      | stringType() -> emptySubst()
-      | varType(v) -> varSubst(v, top)
+      | stringType() -> top.downSubst
+      | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
         errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                  top.pp, top.unifyLoc)
@@ -133,7 +133,7 @@ top::Type ::=
 
   top.substituted = errorType(location=top.location);
 
-  top.unify = emptySubst();
+  top.upSubst = top.downSubst;
 
   top.freshen = errorType(location=top.location);
   top.freshenSubst = emptySubst();
@@ -149,7 +149,7 @@ nonterminal TypeList with
    pp_comma, pp_space,
    tyEnv, errors,
    toList<Type>, len,
-   downSubst, substituted<TypeList>,
+   subst, substituted<TypeList>,
    freshen<TypeList>, freshenSubst,
    location;
 propagate errors on TypeList;
@@ -188,8 +188,8 @@ top::TypeList ::= t::Type rest::TypeList
   top.toList = t::rest.toList;
   top.len = 1 + rest.len;
 
-  t.downSubst = top.downSubst;
-  rest.downSubst = top.downSubst;
+  t.subst = top.subst;
+  rest.subst = top.subst;
   top.substituted =
       consTypeList(t.substituted, rest.substituted,
                    location=top.location);
@@ -227,10 +227,41 @@ Substitution ::=
 }
 
 
-function varSubst
-Substitution ::= varName::String ty::Type
+--Need to be certain
+-- 1. varName must not have a binding in base
+-- 2. No vars from base occur in ty
+function addSubst
+Substitution ::= varName::String ty::Type base::Substitution
 {
-  return right([(varName, ty)]);
+  return
+     case base of
+     | left(err) -> left(err)
+     | right(lst) ->
+       right((varName, ty)::
+          --replace any occurrences of varName with ty in base
+          map(\ p::(String, Type) ->
+                (p.1,
+                 performSubstitutionType(p.2,
+                    right([(varName, ty)]))),
+              lst))
+     end;
+}
+
+
+--When using joinSubst, you need to be sure
+-- 1. No vars from either substitution occur in the types referenced
+--    in each other
+-- 2. The vars bound in each are disjoint
+function joinSubst
+Substitution ::= s1::Substitution s2::Substitution
+{
+  return
+     case s1, s2 of
+     | left(err1), left(err2) -> left(err1 ++ err2)
+     | left(err), right(_) -> left(err)
+     | right(_), left(err) -> left(err)
+     | right(l1), right(l2) -> right(l1 ++ l2)
+     end;
 }
 
 
@@ -238,19 +269,6 @@ function errSubst
 Substitution ::= err::String loc::Location
 {
   return left([errorMessage(err, location=loc)]);
-}
-
-
-function joinSubst
-Substitution ::= s1::Substitution s2::Substitution
-{
-  return
-     case s1, s2 of
-     | left(e1), left(e2) -> left(e1 ++ e2)
-     | left(e1), _ -> left(e1)
-     | _, left(e2) -> left(e2)
-     | right(l1), right(l2) -> right(l1 ++ l2)
-     end;
 }
 
 
@@ -300,28 +318,20 @@ nonterminal TypeUnify with upSubst, downSubst, finalSubst, location;
 abstract production typeUnify
 top::TypeUnify ::= ty1::Type ty2::Type
 {
-  top.upSubst =
-      joinSubst(top.downSubst,
-         unifyTypes(performSubstitutionType(ty1, top.downSubst),
-                    performSubstitutionType(ty2, top.downSubst),
-                    top.location));
+  local substTy1::Type = performSubstitutionType(ty1, top.downSubst);
+  local substTy2::Type = performSubstitutionType(ty2, top.downSubst);
+  substTy1.unifyLoc = top.location;
+  substTy1.unifyWith = substTy2;
+  substTy1.downSubst = top.downSubst;
+  top.upSubst = substTy1.upSubst;
 }
 
-
-
-function unifyTypes
-Substitution ::= t1::Type t2::Type loc::Location
-{
-  t1.unifyLoc = loc;
-  t1.unifyWith = t2;
-  return t1.unify;
-}
 
 
 function performSubstitutionType
 Type ::= t::Type s::Substitution
 {
-  t.downSubst = s;
+  t.subst = s;
   return t.substituted;
 }
 
@@ -329,7 +339,7 @@ Type ::= t::Type s::Substitution
 function performSubstitutionTypeList
 TypeList ::= t::TypeList s::Substitution
 {
-  t.downSubst = s;
+  t.subst = s;
   return t.substituted;
 }
 
