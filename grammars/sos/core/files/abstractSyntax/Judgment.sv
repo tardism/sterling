@@ -7,9 +7,15 @@ nonterminal Judgment with
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    upSubst, downSubst, finalSubst,
    downVarTypes, upVarTypes,
+   headRel, isRelJudgment, isTransJudgment,
    errors,
    location;
 propagate errors on Judgment;
+
+--relation being applied to form a judgment
+synthesized attribute headRel::JudgmentEnvItem;
+synthesized attribute isRelJudgment::Boolean;
+synthesized attribute isTransJudgment::Boolean;
 
 abstract production relation
 top::Judgment ::= rel::QName args::TermList
@@ -36,182 +42,10 @@ top::Judgment ::= rel::QName args::TermList
 
   args.downVarTypes = top.downVarTypes;
   top.upVarTypes = args.upVarTypes;
-}
 
-
-abstract production eqJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " = " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys::TypeUnify =
-        typeUnify(t1.type, t2.type, location=top.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys.downSubst = t2.upSubst;
-  top.upSubst = unifyTys.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
-}
-
-
-abstract production neqJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " != " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys::TypeUnify =
-        typeUnify(t1.type, t2.type, location=top.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys.downSubst = t2.upSubst;
-  top.upSubst = unifyTys.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
-}
-
-
-abstract production greaterJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " > " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location),
-                  location=t1.location);
-  local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location),
-                  location=t2.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys1.downSubst = t2.upSubst;
-  unifyTys2.downSubst = unifyTys1.upSubst;
-  top.upSubst = unifyTys2.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
-}
-
-
-abstract production lessJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " < " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location),
-                  location=top.location);
-  local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location),
-                  location=top.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys1.downSubst = t2.upSubst;
-  unifyTys2.downSubst = unifyTys1.upSubst;
-  top.upSubst = unifyTys2.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
-}
-
-
-abstract production geqJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " >= " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location),
-                  location=top.location);
-  local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location),
-                  location=top.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys1.downSubst = t2.upSubst;
-  unifyTys2.downSubst = unifyTys1.upSubst;
-  top.upSubst = unifyTys2.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
-}
-
-
-abstract production leqJudgment
-top::Judgment ::= t1::Term t2::Term
-{
-  top.pp = t1.pp ++ " <= " ++ t2.pp;
-
-  t1.moduleName = top.moduleName;
-  t2.moduleName = top.moduleName;
-
-  t1.tyEnv = top.tyEnv;
-  t1.constructorEnv = top.constructorEnv;
-  t2.tyEnv = top.tyEnv;
-  t2.constructorEnv = top.constructorEnv;
-
-  local unifyTys1::TypeUnify =
-        typeUnify(t1.type, intType(location=top.location),
-                  location=top.location);
-  local unifyTys2::TypeUnify =
-        typeUnify(t2.type, intType(location=top.location),
-                  location=top.location);
-  t1.downSubst = top.downSubst;
-  t2.downSubst = t1.upSubst;
-  unifyTys1.downSubst = t2.upSubst;
-  unifyTys2.downSubst = unifyTys1.upSubst;
-  top.upSubst = unifyTys2.upSubst;
-
-  t1.downVarTypes = top.downVarTypes;
-  t2.downVarTypes = t1.upVarTypes;
-  top.upVarTypes = t2.upVarTypes;
+  top.headRel = rel.fullJudgment;
+  top.isRelJudgment = true;
+  top.isTransJudgment = false;
 }
 
 
@@ -268,6 +102,11 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
   t.downVarTypes = args.upVarTypes;
   translation.downVarTypes = t.upVarTypes;
   top.upVarTypes = translation.upVarTypes;
+
+  top.headRel =
+      error("Should not access headRel on non-relation");
+  top.isRelJudgment = false;
+  top.isTransJudgment = true;
 }
 
 
@@ -301,12 +140,49 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   t2.downVarTypes = t1.upVarTypes;
   result.downVarTypes = t2.upVarTypes;
   top.upVarTypes = result.upVarTypes;
+
+  top.headRel =
+      error("Should not access headRel on non-relation");
+  top.isRelJudgment = false;
+  top.isTransJudgment = false;
+}
+
+
+abstract production topBinOpJudgment
+top::Judgment ::= t1::Term op::TopBinOp t2::Term
+{
+  top.pp = t1.pp ++ op.pp ++ t2.pp;
+
+  t1.moduleName = top.moduleName;
+  t2.moduleName = top.moduleName;
+
+  t1.tyEnv = top.tyEnv;
+  t1.constructorEnv = top.constructorEnv;
+  t2.tyEnv = top.tyEnv;
+  t2.constructorEnv = top.constructorEnv;
+
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  op.leftTy = t1.type;
+  op.rightTy = t2.type;
+  op.downSubst = t2.upSubst;
+  top.upSubst = op.upSubst;
+
+  t1.downVarTypes = top.downVarTypes;
+  t2.downVarTypes = t1.upVarTypes;
+  top.upVarTypes = t2.upVarTypes;
+
+  top.headRel =
+      error("Should not access headRel on non-relation");
+  top.isRelJudgment = false;
+  top.isTransJudgment = false;
 }
 
 
 
 
 
+--A binary operator for the judgment form  T1 <op> T2 = T3
 nonterminal BinOp with
    pp,
    leftTy, rightTy, resultTy, downSubst, upSubst, finalSubst,
@@ -445,5 +321,106 @@ top::BinOp ::=
   unifyRight.downSubst = unifyLeft.upSubst;
   unifyResult.downSubst = unifyRight.upSubst;
   top.upSubst = unifyResult.upSubst;
+}
+
+
+
+
+
+--A binary operator for the judgment form  T1 <op> T2
+nonterminal TopBinOp with
+   pp,
+   leftTy, rightTy, downSubst, upSubst, finalSubst,
+   location;
+
+abstract production eqOp
+top::TopBinOp ::=
+{
+  top.pp = " = ";
+
+  local unifyTys::TypeUnify =
+        typeUnify(top.leftTy, top.rightTy, location=top.location);
+  unifyTys.downSubst = top.downSubst;
+  top.upSubst = unifyTys.upSubst;
+}
+
+
+abstract production neqOp
+top::TopBinOp ::=
+{
+  top.pp = " != ";
+
+  local unifyTys::TypeUnify =
+        typeUnify(top.leftTy, top.rightTy, location=top.location);
+  unifyTys.downSubst = top.downSubst;
+  top.upSubst = unifyTys.upSubst;
+}
+
+
+abstract production lessOp
+top::TopBinOp ::=
+{
+  top.pp = " < ";
+
+  local unifyTys1::TypeUnify =
+        typeUnify(top.leftTy, intType(location=top.location),
+                  location=top.location);
+  local unifyTys2::TypeUnify =
+        typeUnify(top.rightTy, intType(location=top.location),
+                  location=top.location);
+  unifyTys1.downSubst = top.downSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production greaterOp
+top::TopBinOp ::=
+{
+  top.pp = " > ";
+
+  local unifyTys1::TypeUnify =
+        typeUnify(top.leftTy, intType(location=top.location),
+                  location=top.location);
+  local unifyTys2::TypeUnify =
+        typeUnify(top.rightTy, intType(location=top.location),
+                  location=top.location);
+  unifyTys1.downSubst = top.downSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production leqOp
+top::TopBinOp ::=
+{
+  top.pp = " <= ";
+
+  local unifyTys1::TypeUnify =
+        typeUnify(top.leftTy, intType(location=top.location),
+                  location=top.location);
+  local unifyTys2::TypeUnify =
+        typeUnify(top.rightTy, intType(location=top.location),
+                  location=top.location);
+  unifyTys1.downSubst = top.downSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
+}
+
+
+abstract production geqOp
+top::TopBinOp ::=
+{
+  top.pp = " >= ";
+
+  local unifyTys1::TypeUnify =
+        typeUnify(top.leftTy, intType(location=top.location),
+                  location=top.location);
+  local unifyTys2::TypeUnify =
+        typeUnify(top.rightTy, intType(location=top.location),
+                  location=top.location);
+  unifyTys1.downSubst = top.downSubst;
+  unifyTys2.downSubst = unifyTys1.upSubst;
+  top.upSubst = unifyTys2.upSubst;
 }
 

@@ -2,6 +2,8 @@ grammar sos:core:files:abstractSyntax;
 
 
 synthesized attribute pp::String;
+--list separated by commas or by spaces
+--have both rather than just using pp because some lists have both
 synthesized attribute pp_comma::String;
 synthesized attribute pp_space::String;
 
@@ -12,18 +14,20 @@ monoid attribute errors::[Message] with [], ++;
 
 inherited attribute moduleName::QName;
 
+
 --Environments to pass things down
 inherited attribute tyEnv::Env<TypeEnvItem>;
 inherited attribute constructorEnv::Env<ConstructorEnvItem>;
 inherited attribute judgmentEnv::Env<JudgmentEnvItem>;
 inherited attribute translationEnv::Env<TranslationEnvItem>;
 
---Pass things up to build the environment
+--Pass things up to build the environments
 synthesized attribute tyDecls::[TypeEnvItem];
 synthesized attribute constructorDecls::[ConstructorEnvItem];
 synthesized attribute judgmentDecls::[JudgmentEnvItem];
 synthesized attribute translationDecls::[TranslationEnvItem];
 synthesized attribute buildsOnDecls::[QName];
+
 
 --Turn a list-like thing into a list
 synthesized attribute toList<a>::[a];
@@ -34,9 +38,10 @@ synthesized attribute len::Integer;
 synthesized attribute name::QName;
 
 
+--Typing for terms and term lists
 synthesized attribute type::Type;
 synthesized attribute types::TypeList;
---
+--Substitutions to thread around to fill in type variables
 inherited attribute downSubst::Substitution;
 synthesized attribute upSubst::Substitution;
 inherited attribute finalSubst::Substitution;
@@ -52,4 +57,5 @@ synthesized attribute upVarTypes::[(String, Type)];
 
 
 synthesized attribute isExtensible::Boolean;
+synthesized attribute isError::Boolean;
 

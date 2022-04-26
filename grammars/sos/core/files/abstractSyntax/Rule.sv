@@ -46,6 +46,22 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --initially no variable types are known
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
+
+  top.errors <-
+      if !conclusion.isRelJudgment
+      then if !conclusion.isTransJudgment
+           then [errorMessage("Extensible rule " ++ name ++
+                    " must have either a relation or translation " ++
+                    "as its conclusion",
+                    location=conclusion.location)]
+           else [] --trans judgment is OK as conclusion
+           else if !conclusion.headRel.isError &&
+                   conclusion.headRel.isExtensible
+                then []
+                else [errorMessage("Extensible rule " ++ name ++
+                         " must have an extensible relation as " ++
+                         "its conclusion",
+                         location=conclusion.location)];
 }
 
 abstract production transRule
@@ -84,6 +100,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --initially no variable types are known
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
+
+  top.errors <-
+      if !conclusion.isRelJudgment ||
+         (!conclusion.headRel.isError &&
+          !conclusion.headRel.isExtensible)
+      then [errorMessage("Translation rule " ++ name ++
+               " must have an extensible relation judgment as its " ++
+               "conclusion", location=conclusion.location)]
+      else [];
 }
 
 
@@ -123,6 +148,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --initially no variable types are known
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
+
+  top.errors <-
+      if !conclusion.isRelJudgment ||
+         (!conclusion.headRel.isError &&
+          conclusion.headRel.isExtensible)
+      then [errorMessage("Fixed rule " ++ name ++ " must have a " ++
+               "fixed relation judgment as its conclusion",
+               location=conclusion.location)]
+      else [];
 }
 
 

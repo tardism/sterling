@@ -36,12 +36,14 @@ Env<TranslationEnvItem> ::= l::[TranslationEnvItem]
 
 
 
-nonterminal TypeEnvItem with name;
+nonterminal TypeEnvItem with name, isError;
 
 abstract production typeEnvItem
 top::TypeEnvItem ::= name::QName
 {
   top.name = name;
+
+  top.isError = false;
 }
 
 
@@ -49,7 +51,7 @@ top::TypeEnvItem ::= name::QName
 
 -- .type is built type
 -- .types is arguments
-nonterminal ConstructorEnvItem with name, type, types;
+nonterminal ConstructorEnvItem with name, type, types, isError;
 
 abstract production constructorEnvItem
 top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
@@ -58,13 +60,16 @@ top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
 
   top.type = builtType;
   top.types = args;
+
+  top.isError = false;
 }
 
 
 
 
 
-nonterminal JudgmentEnvItem with name, types, isExtensible, pcIndex;
+nonterminal JudgmentEnvItem with
+   name, types, isExtensible, pcIndex, isError;
 
 synthesized attribute pcIndex::Integer; --zero-based
 
@@ -78,6 +83,8 @@ top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
   top.isExtensible = true;
 
   top.pcIndex = pcIndex;
+
+  top.isError = false;
 }
 
 
@@ -91,6 +98,8 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
   top.isExtensible = false;
 
   top.pcIndex = error("Should not access on non-extensible judgment");
+
+  top.isError = false;
 }
 
 
@@ -104,13 +113,15 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
   top.isExtensible = true; --default to assuming this
 
   top.pcIndex = 0; --default value
+
+  top.isError = true;
 }
 
 
 
 
 
-nonterminal TranslationEnvItem with name, types;
+nonterminal TranslationEnvItem with name, types, isError;
 
 abstract production translationEnvItem
 top::TranslationEnvItem ::= name::QName args::TypeList
@@ -118,5 +129,7 @@ top::TranslationEnvItem ::= name::QName args::TypeList
   top.name = name;
 
   top.types = args;
+
+  top.isError = false;
 }
 

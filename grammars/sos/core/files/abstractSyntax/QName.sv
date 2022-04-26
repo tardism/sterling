@@ -33,6 +33,7 @@ synthesized attribute constrFound::Boolean occurs on QName;
 synthesized attribute judgmentErrors::[Message] occurs on QName;
 synthesized attribute judgmentType::TypeList occurs on QName;
 synthesized attribute judgmentFound::Boolean occurs on QName;
+synthesized attribute fullJudgment::JudgmentEnvItem occurs on QName;
 
 abstract production baseName
 top::QName ::= name::String
@@ -99,6 +100,11 @@ top::QName ::= name::String
       end;
   top.judgmentType = head(possibleJudgments).types;
   top.judgmentFound = length(possibleJudgments) == 1;
+  top.fullJudgment =
+      if top.judgmentFound
+      then head(possibleJudgments)
+      else errorJudgmentEnvItem(top,
+              nilTypeList(location=top.location));
 
   top.isEqual = top.compareTo.base == name;
 }
@@ -168,6 +174,7 @@ top::QName ::= name::String rest::QName
       end;
   top.judgmentType = head(possibleJudgments).types;
   top.judgmentFound = length(possibleJudgments) == 1;
+  top.fullJudgment = head(possibleJudgments);
 
   rest.compareTo =
        case top.compareTo of

@@ -263,18 +263,9 @@ concrete productions top::Judgment_c
   { top.ast = relation(toQName(rel.lexeme, rel.location),
                        nilTermList(location=top.location),
                        location=top.location); }
-| t1::Term_c '=' t2::Term_c
-  { top.ast = eqJudgment(t1.ast, t2.ast, location=top.location); }
-| t1::Term_c '!=' t2::Term_c
-  { top.ast = neqJudgment(t1.ast, t2.ast, location=top.location); }
-| t1::Term_c '>' t2::Term_c
-  { top.ast = greaterJudgment(t1.ast, t2.ast, location=top.location); }
-| t1::Term_c '<' t2::Term_c
-  { top.ast = lessJudgment(t1.ast, t2.ast, location=top.location); }
-| t1::Term_c '>=' t2::Term_c
-  { top.ast = geqJudgment(t1.ast, t2.ast, location=top.location); }
-| t1::Term_c '<=' t2::Term_c
-  { top.ast = leqJudgment(t1.ast, t2.ast, location=top.location); }
+| t1::Term_c op::TopBinOp_c t2::Term_c
+  { top.ast = topBinOpJudgment(t1.ast, op.ast, t2.ast,
+                               location=top.location); }
 | '|{' ty::LowerId_t '}-' t1::Term_c x2::EmptyNewlines '~~>'
                                      x3::EmptyNewlines t2::Term_c
   { top.ast = transJudgment(nilTermList(location=top.location),
@@ -323,6 +314,24 @@ concrete productions top::BinOp_c
   { top.ast = modOp(location=top.location); }
 | '++'
   { top.ast = appendOp(location=top.location); }
+
+
+
+closed nonterminal TopBinOp_c with ast<TopBinOp>, location;
+
+concrete productions top::TopBinOp_c
+| '='
+  { top.ast = eqOp(location=top.location); }
+| '!='
+  { top.ast = neqOp(location=top.location); }
+| '<'
+  { top.ast = lessOp(location=top.location); }
+| '>'
+  { top.ast = greaterOp(location=top.location); }
+| '<='
+  { top.ast = leqOp(location=top.location); }
+| '>='
+  { top.ast = geqOp(location=top.location); }
 
 
 
