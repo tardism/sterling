@@ -4,8 +4,8 @@ grammar sos:core:files:abstractSyntax;
 nonterminal File with
    pp,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   buildsOnDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   ruleDecls, buildsOnDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    moduleName,
    errors,
    location;
@@ -28,12 +28,14 @@ top::File ::= moduleName::QName decls::Decls
   top.constructorDecls = decls.constructorDecls;
   top.judgmentDecls = decls.judgmentDecls;
   top.translationDecls = decls.translationDecls;
+  top.ruleDecls = decls.ruleDecls;
   top.buildsOnDecls = decls.buildsOnDecls;
 
   decls.tyEnv = top.tyEnv;
   decls.constructorEnv = top.constructorEnv;
   decls.judgmentEnv = top.judgmentEnv;
   decls.translationEnv = top.translationEnv;
+  decls.ruleEnv = top.ruleEnv;
 }
 
 
@@ -44,7 +46,8 @@ nonterminal Decls with
    pp,
    moduleName,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   ruleDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    errors,
    location,
    buildsOnDecls;
@@ -59,6 +62,7 @@ top::Decls ::=
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [];
   top.buildsOnDecls = [];
 }
 
@@ -72,6 +76,7 @@ top::Decls ::= importName::QName
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [];
   top.buildsOnDecls = [importName];
 }
 
@@ -87,12 +92,14 @@ top::Decls ::= r::Rule
   top.constructorDecls = r.constructorDecls;
   top.judgmentDecls = r.judgmentDecls;
   top.translationDecls = r.translationDecls;
+  top.ruleDecls = r.ruleDecls;
   top.buildsOnDecls = [];
 
   r.tyEnv = top.tyEnv;
   r.constructorEnv = top.constructorEnv;
   r.judgmentEnv = top.judgmentEnv;
   r.translationEnv = top.translationEnv;
+  r.ruleEnv = top.ruleEnv;
 }
 
 
@@ -107,6 +114,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.constructorDecls = a.constructorDecls;
   top.judgmentDecls = a.judgmentDecls;
   top.translationDecls = a.translationDecls;
+  top.ruleDecls = [];
   top.buildsOnDecls = [];
 
   a.tyEnv = top.tyEnv;
@@ -127,6 +135,7 @@ top::Decls ::= j::JudgmentDecl
   top.constructorDecls = j.constructorDecls;
   top.judgmentDecls = j.judgmentDecls;
   top.translationDecls = j.translationDecls;
+  top.ruleDecls = [];
   top.buildsOnDecls = [];
 
   j.tyEnv = top.tyEnv;
@@ -148,15 +157,18 @@ top::Decls ::= d1::Decls d2::Decls
   top.constructorDecls = d1.constructorDecls ++ d2.constructorDecls;
   top.judgmentDecls = d1.judgmentDecls ++ d2.judgmentDecls;
   top.translationDecls = d1.translationDecls ++ d2.translationDecls;
+  top.ruleDecls = d1.ruleDecls ++ d2.ruleDecls;
   top.buildsOnDecls = d1.buildsOnDecls ++ d2.buildsOnDecls;
 
   d1.tyEnv = top.tyEnv;
   d1.constructorEnv = top.constructorEnv;
   d1.judgmentEnv = top.judgmentEnv;
   d1.translationEnv = top.translationEnv;
+  d1.ruleEnv = top.ruleEnv;
   d2.tyEnv = top.tyEnv;
   d2.constructorEnv = top.constructorEnv;
   d2.judgmentEnv = top.judgmentEnv;
   d2.translationEnv = top.translationEnv;
+  d2.ruleEnv = top.ruleEnv;
 }
 

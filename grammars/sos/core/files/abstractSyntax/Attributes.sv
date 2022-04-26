@@ -20,12 +20,14 @@ inherited attribute tyEnv::Env<TypeEnvItem>;
 inherited attribute constructorEnv::Env<ConstructorEnvItem>;
 inherited attribute judgmentEnv::Env<JudgmentEnvItem>;
 inherited attribute translationEnv::Env<TranslationEnvItem>;
+inherited attribute ruleEnv::Env<RuleEnvItem>;
 
 --Pass things up to build the environments
 synthesized attribute tyDecls::[TypeEnvItem];
 synthesized attribute constructorDecls::[ConstructorEnvItem];
 synthesized attribute judgmentDecls::[JudgmentEnvItem];
 synthesized attribute translationDecls::[TranslationEnvItem];
+synthesized attribute ruleDecls::[RuleEnvItem];
 synthesized attribute buildsOnDecls::[QName];
 
 

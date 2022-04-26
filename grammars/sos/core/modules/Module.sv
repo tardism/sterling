@@ -12,6 +12,7 @@ synthesized attribute moduleTyDecls::[(String, [TypeEnvItem])];
 synthesized attribute moduleConstructorDecls::[(String, [ConstructorEnvItem])];
 synthesized attribute moduleJudgmentDecls::[(String, [JudgmentEnvItem])];
 synthesized attribute moduleTranslationDecls::[(String, [TranslationEnvItem])];
+synthesized attribute moduleRuleDecls::[(String, [RuleEnvItem])];
 
 synthesized attribute nameList::[String];
 synthesized attribute modName::String;
@@ -39,7 +40,7 @@ synthesized attribute errorString::String;
 nonterminal ModuleList with
    nameList,
    moduleTyDecls, moduleConstructorDecls, moduleJudgmentDecls,
-   moduleTranslationDecls,
+   moduleTranslationDecls, moduleRuleDecls,
    errorString;
 
 abstract production nilModuleList
@@ -51,6 +52,7 @@ top::ModuleList ::=
   top.moduleConstructorDecls = [];
   top.moduleJudgmentDecls = [];
   top.moduleTranslationDecls = [];
+  top.moduleRuleDecls = [];
 
   top.errorString = "";
 }
@@ -61,25 +63,34 @@ top::ModuleList ::= m::Module rest::ModuleList
 {
   top.nameList = m.modName::rest.nameList;
 
+  --Reduce imported items in case something is imported by two
+  --imported modules:  m imports A, B; A imports C; B imports C.
+  --In that case, m would see everything from C twice.
+  --We want to keep any multiple copies of m's defs, though, so we can
+  --detect multiple declarations of the same name.
   local tys::[TypeEnvItem] =
         nubBy(\ t1::TypeEnvItem t2::TypeEnvItem -> t1.name == t2.name,
-           lookupAllModules(m.buildsOnDecls, rest.moduleTyDecls) ++
-           m.tyDecls);
+           lookupAllModules(m.buildsOnDecls, rest.moduleTyDecls)) ++
+           m.tyDecls;
   local cons::[ConstructorEnvItem] =
         nubBy(\ c1::ConstructorEnvItem c2::ConstructorEnvItem ->
                 c1.name == c2.name,
            lookupAllModules(m.buildsOnDecls,
-              rest.moduleConstructorDecls) ++ m.constructorDecls);
+              rest.moduleConstructorDecls)) ++ m.constructorDecls;
   local jdgs::[JudgmentEnvItem] =
         nubBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                 j1.name == j2.name,
            lookupAllModules(m.buildsOnDecls,
-              rest.moduleJudgmentDecls) ++ m.judgmentDecls);
+              rest.moduleJudgmentDecls)) ++ m.judgmentDecls;
   local trns::[TranslationEnvItem] =
         nubBy(\ t1::TranslationEnvItem t2::TranslationEnvItem ->
                 t1.name == t2.name,
            lookupAllModules(m.buildsOnDecls,
-              rest.moduleTranslationDecls) ++ m.translationDecls);
+              rest.moduleTranslationDecls)) ++ m.translationDecls;
+  local rules::[RuleEnvItem] =
+        nubBy(\ r1::RuleEnvItem r2::RuleEnvItem -> r1.name == r2.name,
+           lookupAllModules(m.buildsOnDecls,
+              rest.moduleRuleDecls)) ++ m.ruleDecls;
   top.moduleTyDecls = (m.modName, tys)::rest.moduleTyDecls;
   top.moduleConstructorDecls =
       (m.modName, cons)::rest.moduleConstructorDecls;
@@ -87,11 +98,14 @@ top::ModuleList ::= m::Module rest::ModuleList
       (m.modName, jdgs)::rest.moduleJudgmentDecls;
   top.moduleTranslationDecls =
       (m.modName, trns)::rest.moduleTranslationDecls;
+  top.moduleRuleDecls =
+      (m.modName, rules)::rest.moduleRuleDecls;
 
-  m.tyEnv = buildTyEnv(tys);
-  m.constructorEnv = buildConstructorEnv(cons);
-  m.judgmentEnv = buildJudgmentEnv(jdgs);
-  m.translationEnv = buildTranslationEnv(trns);
+  m.tyEnv = buildEnv(tys);
+  m.constructorEnv = buildEnv(cons);
+  m.judgmentEnv = buildEnv(jdgs);
+  m.translationEnv = buildEnv(trns);
+  m.ruleEnv = buildEnv(rules);
 
   top.errorString =
       if rest.errorString == ""
@@ -117,7 +131,8 @@ function lookupAllModules
 
 nonterminal Module with
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   ruleDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    buildsOnDecls,
    modName,
    errorString;
@@ -133,12 +148,14 @@ top::Module ::= name::String files::Files
   top.constructorDecls = files.constructorDecls;
   top.judgmentDecls = files.judgmentDecls;
   top.translationDecls = files.translationDecls;
+  top.ruleDecls = files.ruleDecls;
   top.buildsOnDecls = files.buildsOnDecls;
 
   files.tyEnv = top.tyEnv;
   files.constructorEnv = top.constructorEnv;
   files.judgmentEnv = top.judgmentEnv;
   files.translationEnv = top.translationEnv;
+  files.ruleEnv = top.ruleEnv;
 
   top.errorString =
       if files.errorString == ""
@@ -162,8 +179,8 @@ instance Ord Module {
 nonterminal Files with
    moduleName,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   buildsOnDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   ruleDecls, buildsOnDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    errorString;
 
 abstract production nilFiles
@@ -173,6 +190,7 @@ top::Files ::=
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [];
   top.buildsOnDecls = [];
 
   top.errorString = "";
@@ -189,16 +207,19 @@ top::Files ::= filename::String f::File rest::Files
   top.constructorDecls = f.constructorDecls ++ rest.constructorDecls;
   top.judgmentDecls = f.judgmentDecls ++ rest.judgmentDecls;
   top.translationDecls = f.translationDecls ++ rest.translationDecls;
+  top.ruleDecls = f.ruleDecls ++ rest.ruleDecls;
   top.buildsOnDecls = f.buildsOnDecls ++ rest.buildsOnDecls;
 
   f.tyEnv = top.tyEnv;
   f.constructorEnv = top.constructorEnv;
   f.judgmentEnv = top.judgmentEnv;
   f.translationEnv = top.translationEnv;
+  f.ruleEnv = top.ruleEnv;
   rest.tyEnv = top.tyEnv;
   rest.constructorEnv = top.constructorEnv;
   rest.judgmentEnv = top.judgmentEnv;
   rest.translationEnv = top.translationEnv;
+  rest.ruleEnv = top.ruleEnv;
 
   top.errorString =
       if null(f.errors)

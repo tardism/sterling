@@ -37,12 +37,12 @@ top::Type ::= name::QName
       case top.unifyWith of
       | nameType(n) when n == name -> top.downSubst
       | nameType(n) ->
-        errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
-                 top.pp, top.unifyLoc)
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
       | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
-        errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
-                 top.pp, top.unifyLoc)
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
       end;
 
   top.freshen = nameType(name, location=top.location);
@@ -92,8 +92,8 @@ top::Type ::=
       | intType() -> top.downSubst
       | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
-        errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
-                 top.pp, top.unifyLoc)
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
       end;
 
   top.freshen = intType(location=top.location);
@@ -115,8 +115,8 @@ top::Type ::=
       | stringType() -> top.downSubst
       | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
-        errSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
-                 top.pp, top.unifyLoc)
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
       end;
 
   top.freshen = stringType(location=top.location);
@@ -265,10 +265,14 @@ Substitution ::= s1::Substitution s2::Substitution
 }
 
 
-function errSubst
-Substitution ::= err::String loc::Location
+function addErrSubst
+Substitution ::= err::String loc::Location base::Substitution
 {
-  return left([errorMessage(err, location=loc)]);
+  return
+     case base of
+     | left(errs) -> left(errorMessage(err, location=loc)::errs)
+     | right(_) -> left([errorMessage(err, location=loc)])
+     end;
 }
 
 

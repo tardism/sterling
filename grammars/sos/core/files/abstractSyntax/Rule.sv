@@ -5,7 +5,8 @@ nonterminal Rule with
    pp,
    moduleName,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   ruleDecls,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    errors,
    location;
 propagate errors on Rule;
@@ -20,10 +21,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.moduleName = top.moduleName;
   conclusion.moduleName = top.moduleName;
 
+  local fullName::QName = addQNameBase(top.moduleName, name);
+
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [extRuleEnvItem(fullName)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -62,6 +66,19 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                          " must have an extensible relation as " ++
                          "its conclusion",
                          location=conclusion.location)];
+
+  --Check there is only one declaration of this rule
+  local possibleRules::[RuleEnvItem] =
+        lookupEnv(fullName, top.ruleEnv);
+  top.errors <-
+      case possibleRules of
+      | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
+                    "exist; we declared it")
+      | [_] -> []
+      | l ->
+        [errorMessage("Found multiple declarations for rule " ++
+            fullName.pp, location=top.location)]
+      end;
 }
 
 abstract production transRule
@@ -74,10 +91,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.moduleName = top.moduleName;
   conclusion.moduleName = top.moduleName;
 
+  local fullName::QName = addQNameBase(top.moduleName, name);
+
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [extRuleEnvItem(fullName)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -109,6 +129,19 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                " must have an extensible relation judgment as its " ++
                "conclusion", location=conclusion.location)]
       else [];
+
+  --Check there is only one declaration of this rule
+  local possibleRules::[RuleEnvItem] =
+        lookupEnv(fullName, top.ruleEnv);
+  top.errors <-
+      case possibleRules of
+      | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
+                    "exist; we declared it")
+      | [_] -> []
+      | l ->
+        [errorMessage("Found multiple declarations for rule " ++
+            fullName.pp, location=top.location)]
+      end;
 }
 
 
@@ -122,10 +155,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.moduleName = top.moduleName;
   conclusion.moduleName = top.moduleName;
 
+  local fullName::QName = addQNameBase(top.moduleName, name);
+
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
+  top.ruleDecls = [fixedRuleEnvItem(fullName)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -157,6 +193,19 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                "fixed relation judgment as its conclusion",
                location=conclusion.location)]
       else [];
+
+  --Check there is only one declaration of this rule
+  local possibleRules::[RuleEnvItem] =
+        lookupEnv(fullName, top.ruleEnv);
+  top.errors <-
+      case possibleRules of
+      | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
+                    "exist; we declared it")
+      | [_] -> []
+      | l ->
+        [errorMessage("Found multiple declarations for rule " ++
+            fullName.pp, location=top.location)]
+      end;
 }
 
 

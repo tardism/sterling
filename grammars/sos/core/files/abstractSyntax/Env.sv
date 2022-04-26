@@ -1,35 +1,27 @@
 grammar sos:core:files:abstractSyntax;
 
 
-type Env<a> = [(QName, a)];
+type Env<a> = [a];
 
 
+--Get all the entries for the name from the environment
 function lookupEnv
-[a] ::= name::QName env::Env<a>
+attribute name {} occurs on a => [a] ::= name::QName env::Env<a>
 {
-  return lookupAll(name, env);
+  return
+     case env of
+     | [] -> []
+     | x::rest when x.name == name -> x::lookupEnv(name, rest)
+     | _::rest -> lookupEnv(name, rest)
+     end;
 }
 
 
-function buildTyEnv
-Env<TypeEnvItem> ::= l::[TypeEnvItem]
+--Why have this?  In case we change the definition of Env
+function buildEnv
+attribute name {} occurs on a => Env<a> ::= l::[a]
 {
-  return map(\ x::TypeEnvItem -> (x.name, x), l);
-}
-function buildConstructorEnv
-Env<ConstructorEnvItem> ::= l::[ConstructorEnvItem]
-{
-  return map(\ x::ConstructorEnvItem -> (x.name, x), l);
-}
-function buildJudgmentEnv
-Env<JudgmentEnvItem> ::= l::[JudgmentEnvItem]
-{
-  return map(\ x::JudgmentEnvItem -> (x.name, x), l);
-}
-function buildTranslationEnv
-Env<TranslationEnvItem> ::= l::[TranslationEnvItem]
-{
-  return map(\ x::TranslationEnvItem -> (x.name, x), l);
+  return l;
 }
 
 
@@ -129,6 +121,33 @@ top::TranslationEnvItem ::= name::QName args::TypeList
   top.name = name;
 
   top.types = args;
+
+  top.isError = false;
+}
+
+
+
+
+
+nonterminal RuleEnvItem with name, isExtensible, isError;
+
+abstract production extRuleEnvItem
+top::RuleEnvItem ::= name::QName
+{
+  top.name = name;
+
+  top.isExtensible = true;
+
+  top.isError = false;
+}
+
+
+abstract production fixedRuleEnvItem
+top::RuleEnvItem ::= name::QName
+{
+  top.name = name;
+
+  top.isExtensible = false;
 
   top.isError = false;
 }
