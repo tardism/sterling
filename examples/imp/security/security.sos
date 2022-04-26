@@ -157,7 +157,7 @@ sec_level_a SC A public
 is_secure public SC assign(X, A)
 
 
-is_secure SC B SB
+sec_level_b SC B SB
 smax SB PC S
 is_secure S SC C1
 is_secure S SC C2
@@ -165,7 +165,7 @@ is_secure S SC C2
 is_secure PC SC ifThenElse(B, C1, C2)
 
 
-is_secure SC B SB
+sec_level_b SC B SB
 smax SB PC S
 is_secure S SC C
 --------------------------- [S-While]

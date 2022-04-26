@@ -2,7 +2,7 @@ Module imp:host
 
 #Arithmetic Expressions#
 a ::= num(int)
-    | plus(int, int)
+    | plus(a, a)
     | name(string)
 Translation a :
 
