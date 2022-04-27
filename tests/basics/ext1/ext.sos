@@ -1,0 +1,19 @@
+Module basics:ext1
+
+Builds on basics:base
+
+#Some definitions to check things happen without errors#
+
+term ::= ...
+       | ignore2(term, term)
+
+
+---------------------------- [Trans-Term-Ignore2]
+|{term}- ignore2(A, B) ~~> B
+
+
+typeOf G A ATy
+typeOf G B BTy
+-------------------------- [T-Ignore2]
+typeOf G ignore2(A, B) BTy
+

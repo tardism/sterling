@@ -48,7 +48,7 @@ top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
                location=top.location)];
 
   local pcFound::Boolean = ty.len > pcIndex;
-  production pcType::Type = head(drop(pcIndex - 1, ty.types.toList));
+  production pcType::Type = head(drop(pcIndex, ty.types.toList));
 
   --PC must be within the types
   top.errors <-

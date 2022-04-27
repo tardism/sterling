@@ -4,8 +4,8 @@
 GRAMMAR_SOURCES=$(shell find . -name '*.sv' -print0 | xargs -0)
 
 sos.core.jar: $(GRAMMAR_SOURCES)
-	silver -I ../../ sos:core
+	silver -I ../../ sos:testing
 
 mwda:
-	silver --clean --mwda -I ../../ sos:core
+	silver --clean --mwda -I ../../ sos:testing
 

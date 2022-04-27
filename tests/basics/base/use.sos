@@ -1,0 +1,59 @@
+Module basics:base
+
+#Some defintions to use without any errors#
+
+type ::= baseTy
+       | arrowTy(type, type)
+Translation type :
+
+term ::= var(string)
+       | app(term, term)
+       | abs(string, type, term)
+Translation term :
+
+
+ctx ::= nil
+      | cons(string, type, ctx)
+Translation ctx :
+
+
+Judgment typeOf : ctx term* type
+Fixed Judgment lookup : ctx string type
+
+
+typeOf G T1 arrowTy(Ty1, Ty2)
+typeOf G T2 Ty1
+----------------------------- [T-App]
+typeOf G app(T1, T2) Ty2
+
+
+typeOf cons(X, Ty1, G) T Ty2
+----------------------------------------- [T-Abs]
+typeOf G abs(X, Ty1, T) arrowTy(Ty1, Ty2)
+
+
+lookup G X Ty
+------------------ [T-Var]
+typeOf G var(X) Ty
+
+
+
+============================= [L-Here]
+lookup cons(X, Ty, Rest) X Ty
+
+
+lookup Rest X Ty
+X != Y
+============================== [L-Later]
+lookup cons(Y, YTy, Rest) X Ty
+
+
+
+
+shortTy ::= shortTyConstructor
+Translation shortTy :
+
+
+Judgment judgment : term*
+
+

@@ -1,0 +1,71 @@
+Module basics:ext1
+
+
+#Translation rule for imported relation#
+Error Expected "this module" {
+  ------------- [T-Trans]*
+  typeOf G A Ty
+}
+
+
+#Adding to imported fixed rules#
+Error Expected "imported" {
+  ================= [L-Bad]
+  lookup G X baseTy
+}
+
+
+#Define translation of imported constructor#
+#Error Expected "z" {
+  -------------------------- [Trans-BaseTy]
+  |{type}- baseTy ~~> baseTy
+}#
+
+
+#Define a generic rule for imported relation#
+Error Expected "imported" {
+  ----------------- [T-Generic]
+  typeOf G X baseTy
+}
+
+
+#Define a rule for an imported constructor as PC#
+Error Expected "imported" {
+  ------------------------ [T-VarX]
+  typeOf G var("X") baseTy
+}
+
+
+
+#Add same short type name; error when using short name#
+Error Expected "Indeterminate" {
+  shortTy ::= shortTyConstructor2
+  Translation shortTy : ctx
+
+  Judgment shortTyJudgment : shortTy*
+}
+
+#Add same short judgment name; error when using short name#
+Error Expected "Indeterminate" {
+  Fixed Judgment judgment :
+
+  ======== [Judgment]
+  judgment
+}
+
+#Add same short constructor name; error when using short name#
+Error Expected "Indeterminate" {
+  doubleConstructorTyExt ::= shortTyConstructor
+  Translation doubleConstructorTyExt :
+
+  Judgment doubleConstructorJudgment : doubleConstructorTyExt*
+
+  -------------------------------------------- [DCTE-Rule]
+  doubleConstructorJudgment shortTyConstructor
+}
+
+
+#Redefine translation relation#
+Error Expected "unknown" {
+  Translation ctx :
+}

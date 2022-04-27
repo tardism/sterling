@@ -1,0 +1,171 @@
+Module basics:base
+
+#Type declared twice#
+Error Expected "Found multiple declarations" {
+  doubleTy ::= doubleTyA
+  doubleTy ::= doubleTyB
+  Translation doubleTy :
+}
+
+#Constructor declared twice#
+Error Expected "Found multiple declarations" {
+  doubleConstructorTy ::= doubleConstructor
+                        | doubleConstructor
+  Translation doubleConstructorTy :
+}
+
+
+#PC not extensible:  I can't try this based on the concrete syntax#
+
+
+#Translation type not declared#
+Error Expected "Must define translation relation type" {
+  noTransRelTy ::= noTransRelTyA
+}
+
+#Translation type twice#
+Error Expected "multiple translation relation type" {
+  twoTransRelTy ::= twoTransRelTyA
+  Translation twoTransRelTy : type
+  Translation twoTransRelTy : term
+}
+
+
+#Constructor with var args#
+Error Expected "cannot contain variable types" {
+  constructorVarTy ::= constructorVarTy(int, A)
+  Translation constructorVarTy :
+}
+
+
+#Multiple declarations for a judgment#
+Error Expected "multiple declarations" {
+  Judgment doubleJudgment : ctx term* type
+  Fixed Judgment doubleJudgment : term type
+}
+
+#Judgment with var args#
+Error Expected "contain variable" {
+  Judgment judgmentVarTy : A term*
+}
+Error Expected "contain variable" {
+  Fixed Judgment fixedJudgmentVarTy : A term
+}
+
+
+#Multiple translation rules#
+Error Expected "only define one" {
+  Judgment multipleTranslationRules : ctx term*
+
+  ------------------ [Trans-MultipleTranslationRules1]*
+  multipleTranslationRules G T
+
+  ------------------ [Trans-MultipleTranslationRules2]*
+  multipleTranslationRules G T
+}
+
+
+#Translation declared for unknown type#
+Error Expected "for unknown" {
+  Translation unknownType :
+}
+
+#Translation declared with variable args#
+Error Expected "contain variable" {
+  varTransType ::= varTransTypeA
+  Translation varTransType : A int string
+}
+
+
+#Extensible rule for fixed judgment#
+Error Expected "extensible" {
+  Fixed Judgment fixedAndExtJudgment : ctx term
+
+  ----------------------- [FixedAndExt]
+  fixedAndExtJudgment G T
+}
+
+#Fixed rule for extensible judgment#
+Error Expected "fixed" {
+  Judgment extAndFixedJudgment : ctx* term
+
+  ======================= [ExtAndFixed]
+  extAndFixedJudgment G T
+}
+
+
+#Translation rule for translation#
+Error Expected "relation" { #It causes two errors#
+  Error Expected "translation rule" {
+    --------------------- [Translate-Translation]*
+    |{type}- baseTy ~~> A
+   }
+}
+
+
+#Translation with unspecified form#
+Error Expected "constructor" {
+  ----------------- [Translate-Var]
+  |{type}- A ~~> A
+}
+
+
+#Invalid conclusion forms#
+Error Expected "relation" {
+  ----- [GreaterRule]
+  X > Y
+}
+Error Expected "relation" {
+  --------- [PlusRule]
+  X + Y = Z
+}
+
+
+#Not enough args to constructor#
+Error Expected "arguments" {
+  typeOf G X Ty
+  ------------------ [ConstructorShortArgsRule]
+  typeOf G app(X) Ty
+}
+
+#Not enough args to judgment#
+Error Expected "arguments" {
+  typeOf G X
+  --------------------- [JudgmentShortArgsRule]
+  typeOf G app(X, Y) Ty
+}
+
+#Too many args to constructor#
+Error Expected "arguments" {
+  typeOf G X Ty
+  ------------------------ [ConstructorExtraArgsRule]
+  typeOf G app(X, Y, Z) Ty
+}
+
+#Too many args to judgment#
+Error Expected "arguments" {
+  typeOf G X Ty V
+  --------------------- [JudgmentExtraArgsRule]
+  typeOf G app(X, Y) Ty
+}
+
+
+#Multiple declarations of same rule name#
+Error Expected "multiple declarations" {
+  ------------------------- [DoubleRule]
+  typeOf G app(X, Y) Ty
+
+  ------------------------- [DoubleRule]
+  typeOf G app(X, Y) Ty
+}
+
+#Multiple declarations of same rule name#
+Error Expected "multiple declarations" {
+  ------------------------- [DoubleRule2]
+  typeOf G app(X, Y) Ty
+
+  ========================== [DoubleRule2]
+  fixed
+
+  Fixed Judgment fixed :
+}

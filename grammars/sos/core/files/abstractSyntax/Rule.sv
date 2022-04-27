@@ -137,6 +137,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
 
+  --Check conclusion is extensible relation
   top.errors <-
       if !conclusion.isRelJudgment ||
          (!conclusion.headRel.isError &&
@@ -144,6 +145,16 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       then [errorMessage("Translation rule " ++ name ++
                " must have an extensible relation judgment as its " ++
                "conclusion", location=conclusion.location)]
+      else [];
+
+  --Check conclusion is a relation from this module
+  top.errors <-
+      if conclusion.isRelJudgment && !conclusion.headRel.isError
+      then if sameModule(top.moduleName, conclusion.headRel.name)
+           then []
+           else [errorMessage("Translation rule " ++ name ++
+                    " must have a relation from this module as " ++
+                    "its conclusion", location=conclusion.location)]
       else [];
 
   --Check there is only one declaration of this rule
