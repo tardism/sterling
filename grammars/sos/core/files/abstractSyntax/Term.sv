@@ -7,9 +7,17 @@ nonterminal Term with
    tyEnv, constructorEnv,
    type, upSubst, downSubst, finalSubst,
    downVarTypes, upVarTypes,
+   headIsConstructor, headConstructorCurrentModule, isVariable,
    errors,
    location;
 propagate errors on Term;
+
+--whether the term is headed by a constructor
+synthesized attribute headIsConstructor::Boolean;
+--whether the term's head is from the current module or is imported
+synthesized attribute headConstructorCurrentModule::Boolean;
+--whether the term is a variable
+synthesized attribute isVariable::Boolean;
 
 abstract production const
 top::Term ::= name::QName
@@ -26,6 +34,14 @@ top::Term ::= name::QName
   top.upSubst = top.downSubst;
 
   top.upVarTypes = top.downVarTypes;
+
+  top.headIsConstructor = true;
+  top.headConstructorCurrentModule =
+      if name.constrFound
+      then addQNameBase(top.moduleName, name.base) ==
+           name.fullConstrName
+      else true; --if not found, just assume it matches
+  top.isVariable = false;
 }
 
 
@@ -47,6 +63,10 @@ top::Term ::= name::String
       end;
 
   top.upSubst = top.downSubst;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = true;
 }
 
 
@@ -60,6 +80,10 @@ top::Term ::= int::Integer
   top.upSubst = top.downSubst;
 
   top.upVarTypes = top.downVarTypes;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = false;
 }
 
 
@@ -73,6 +97,10 @@ top::Term ::= s::String
   top.upSubst = top.downSubst;
 
   top.upVarTypes = top.downVarTypes;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = false;
 }
 
 
@@ -92,6 +120,11 @@ top::Term ::= constructor::QName args::TermList
              then freshenType(constructor.constrType)
              else errorType(location=top.location);
 
+  args.isConclusion = false;
+  args.isExtensibleRule = false;
+  args.isTranslationRule = false;
+  args.expectedPC = nothing();
+
   args.lastConstructor = constructor;
   args.expectedTypes =
        if constructor.constrFound
@@ -103,6 +136,14 @@ top::Term ::= constructor::QName args::TermList
 
   args.downVarTypes = top.downVarTypes;
   top.upVarTypes = args.upVarTypes;
+
+  top.headIsConstructor = true;
+  top.headConstructorCurrentModule =
+      if constructor.constrFound
+      then addQNameBase(top.moduleName, constructor.base) ==
+           constructor.fullConstrName
+      else true; --if not found, just assume it matches
+  top.isVariable = false;
 }
 
 
@@ -128,6 +169,10 @@ top::Term ::= tm::Term ty::Type
 
   tm.downVarTypes = top.downVarTypes;
   top.upVarTypes = tm.upVarTypes;
+
+  top.headIsConstructor = tm.headIsConstructor;
+  top.headConstructorCurrentModule = tm.headConstructorCurrentModule;
+  top.isVariable = tm.isVariable;
 }
 
 
@@ -142,9 +187,13 @@ nonterminal TermList with
    expectedTypes, lastConstructor,
    downVarTypes, upVarTypes,
    toList<Term>, len,
+   expectedPC, isConclusion, isExtensibleRule, isTranslationRule,
    errors,
    location;
 propagate errors on TermList;
+
+--When zero, that is the PC
+inherited attribute expectedPC::Maybe<Integer>;
 
 abstract production nilTermList
 top::TermList ::=
@@ -225,5 +274,41 @@ top::TermList ::= t::Term rest::TermList
   t.downVarTypes = top.downVarTypes;
   rest.downVarTypes = t.upVarTypes;
   top.upVarTypes = rest.upVarTypes;
+
+  rest.expectedPC = bind(top.expectedPC, \ x::Integer -> just(x - 1));
+  rest.isConclusion = top.isConclusion;
+  rest.isExtensibleRule = top.isExtensibleRule;
+  rest.isTranslationRule = top.isTranslationRule;
+  top.errors <-
+      if !top.isConclusion
+      then []
+      else if !top.isExtensibleRule
+      then []
+      else case top.expectedPC of
+           | just(0) ->
+             if top.isTranslationRule
+             then if t.isVariable then []
+                  else [errorMessage("Primary component of " ++
+                           "relation " ++ top.lastConstructor.pp ++
+                           " in translation rule must be variable;" ++
+                           " found " ++ t.pp, location=top.location)]
+             else if sameModule(top.moduleName, top.lastConstructor)
+                  then [] --initial definition can define anything
+                  else if !t.headIsConstructor
+                  then [errorMessage("Primary component of " ++
+                           "imported relation " ++
+                           top.lastConstructor.pp ++
+                           " in rule conclusion must be a constructor",
+                           location=top.location)]
+                  else if !t.headConstructorCurrentModule
+                  then [errorMessage("Primary component of " ++
+                           "imported relation " ++
+                           top.lastConstructor.pp ++
+                           " in rule conclusion must be a " ++
+                           "constructor introduced in this module",
+                           location=top.location)]
+                  else [] --PC built by a new constructor
+           | _ -> []
+           end;
 }
 

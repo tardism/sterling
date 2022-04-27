@@ -12,14 +12,19 @@ synthesized attribute freshenSubst::Substitution;
 synthesized attribute freshen<a>::a;
 inherited attribute freshenLoc::Location;
 
+--whether there are var types contained within
+synthesized attribute containsVars::Boolean;
+
 
 nonterminal Type with
    pp,
-   tyEnv, errors,
+   tyEnv, errors, isError,
    subst, substituted<Type>,
    unifyWith<Type>, unifyLoc, downSubst, upSubst,
    freshen<Type>, freshenSubst,
    isExtensible,
+   type, --full type (e.g. ty becomes mod:ule:ty)
+   containsVars,
    location;
 propagate errors on Type;
 
@@ -30,6 +35,7 @@ top::Type ::= name::QName
 
   name.tyEnv = top.tyEnv;
   top.errors <- name.tyErrors;
+  top.isError = !name.tyFound;
 
   top.substituted = nameType(name, location=top.location);
 
@@ -50,6 +56,13 @@ top::Type ::= name::QName
 
   --assume all name types are extensible
   top.isExtensible = true;
+
+  top.type =
+      if name.tyFound
+      then name.fullTy
+      else errorType(location=top.location);
+
+  top.containsVars = false;
 }
 
 
@@ -77,6 +90,12 @@ top::Type ::= name::String
 
   --assume variable types are not extensible, as undetermined
   top.isExtensible = false;
+
+  top.type = top;
+
+  top.isError = false;
+
+  top.containsVars = true;
 }
 
 
@@ -100,6 +119,12 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
+
+  top.type = top;
+
+  top.isError = false;
+
+  top.containsVars = false;
 }
 
 
@@ -123,6 +148,12 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
+
+  top.type = top;
+
+  top.isError = false;
+
+  top.containsVars = false;
 }
 
 
@@ -139,6 +170,12 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
+
+  top.type = top;
+
+  top.isError = true;
+
+  top.containsVars = false;
 }
 
 
@@ -151,6 +188,8 @@ nonterminal TypeList with
    toList<Type>, len,
    subst, substituted<TypeList>,
    freshen<TypeList>, freshenSubst,
+   types, --full types using Type.type
+   containsVars,
    location;
 propagate errors on TypeList;
 
@@ -171,6 +210,10 @@ top::TypeList ::=
 
   top.freshen = nilTypeList(location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.types = nilTypeList(location=top.location);
+
+  top.containsVars = false;
 }
 
 
@@ -212,6 +255,10 @@ top::TypeList ::= t::Type rest::TypeList
             location=top.location)]
       | _ -> []
       end;
+
+  top.types = consTypeList(t.type, rest.types, location=top.location);
+
+  top.containsVars = t.containsVars || rest.containsVars;
 }
 
 

@@ -5,7 +5,7 @@ nonterminal JudgmentDecl with
    pp,
    moduleName,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    errors,
    location;
 propagate errors on JudgmentDecl;
@@ -39,6 +39,70 @@ top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
         [errorMessage("Found multiple declarations for judgment " ++
             fullName.pp, location=top.location)]
       end;
+
+  --Cannot contain variable types in declared judgment args
+  top.errors <-
+      if !ty.containsVars then []
+      else [errorMessage("Declared type arguments to judgment " ++
+               fullName.pp ++ " cannot contain variable types",
+               location=top.location)];
+
+  local pcFound::Boolean = ty.len > pcIndex;
+  production pcType::Type = head(drop(pcIndex - 1, ty.types.toList));
+
+  --PC must be within the types
+  top.errors <-
+      if pcFound
+      then []
+      else [errorMessage("Invalid primary component for extensible " ++
+               "judgment " ++ fullName.pp, location=top.location)];
+
+  --PC must be extensible type
+  top.errors <-
+      if !pcFound then []
+      else case pcType of
+           | nameType(_) -> []
+           | errorType() -> []
+           | _ -> [errorMessage("Primary component for extensible " ++
+                      "judgment " ++ fullName.pp ++ " must be an " ++
+                      "extensible type; found " ++ pcType.pp,
+                      location=top.location)]
+           end;
+
+  --Check there is a translation rule if this is not the module
+  --introducing the PC type
+  top.errors <-
+      if !pcFound
+      then []
+      else
+         case pcType of
+         | nameType(name) when !sameModule(top.moduleName, name) ->
+           --must have translation rule when PC is from another module
+           case findAllEnv(
+                   \ r::RuleEnvItem ->
+                     !r.isError && r.isTransRule &&
+                     fullName == r.definedRel, top.ruleEnv) of
+           | [] -> [errorMessage("Must define translation rule " ++
+                       "for " ++ fullName.pp, location=top.location)]
+           | [_] -> []
+           | l -> [errorMessage("Can only define one translation " ++
+                      "rule for " ++ fullName.pp,
+                      location=top.location)]
+           end
+         | nameType(_) ->
+           --may have translation rule, but not required
+           case findAllEnv(
+                   \ r::RuleEnvItem ->
+                     !r.isError && r.isTransRule &&
+                     fullName == r.definedRel, top.ruleEnv) of
+           | [] -> []
+           | [_] -> []
+           | l -> [errorMessage("Can only define one translation " ++
+                      "rule for " ++ fullName.pp,
+                      location=top.location)]
+           end
+         | _ -> []
+         end;
 }
 
 

@@ -142,6 +142,7 @@ top::Decls ::= j::JudgmentDecl
   j.constructorEnv = top.constructorEnv;
   j.judgmentEnv = top.judgmentEnv;
   j.translationEnv = top.translationEnv;
+  j.ruleEnv = top.ruleEnv;
 }
 
 

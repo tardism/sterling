@@ -25,6 +25,14 @@ attribute name {} occurs on a => Env<a> ::= l::[a]
 }
 
 
+--Find all the items in the Env for which f is true
+function findAllEnv
+[a] ::= f::(Boolean ::= a) e::Env<a>
+{
+  return filter(f, e);
+}
+
+
 
 
 
@@ -129,26 +137,76 @@ top::TranslationEnvItem ::= name::QName args::TypeList
 
 
 
-nonterminal RuleEnvItem with name, isExtensible, isError;
+nonterminal RuleEnvItem with
+   name, isExtensible, definedRel, isTransRule, isError;
 
+--relation being defined
+synthesized attribute definedRel::QName;
+--translation rule for a relation
+synthesized attribute isTransRule::Boolean;
+
+--Rule for an extensible relation
 abstract production extRuleEnvItem
-top::RuleEnvItem ::= name::QName
+top::RuleEnvItem ::= name::QName definedRel::QName
+                     isTransRule::Boolean
 {
   top.name = name;
 
   top.isExtensible = true;
 
   top.isError = false;
+
+  top.definedRel = definedRel;
+
+  top.isTransRule = isTransRule;
 }
 
 
+--Rule defining a translation of a construct
+abstract production translationRuleEnvItem
+top::RuleEnvItem ::= name::QName ty::QName
+{
+  top.name = name;
+
+  top.isExtensible = true;
+
+  top.isError = false;
+
+  top.definedRel = baseName("", location=bogusLoc());
+
+  top.isTransRule = false;
+}
+
+
+--Rule for a fixed relation
 abstract production fixedRuleEnvItem
-top::RuleEnvItem ::= name::QName
+top::RuleEnvItem ::= name::QName definedRel::QName
 {
   top.name = name;
 
   top.isExtensible = false;
 
   top.isError = false;
+
+  top.definedRel = definedRel;
+
+  top.isTransRule = false;
+}
+
+
+--Rule which we can't determine the necessary information for a
+--more-specific RuleEnvItem production
+abstract production errorRuleEnvItem
+top::RuleEnvItem ::= name::QName isTransRule::Boolean
+{
+  top.name = name;
+
+  top.isExtensible = false;
+
+  top.isError = true;
+
+  top.definedRel = baseName("", location=bogusLoc());
+
+  top.isTransRule = isTransRule;
 }
 

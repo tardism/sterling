@@ -29,6 +29,7 @@ synthesized attribute constrErrors::[Message] occurs on QName;
 synthesized attribute constrType::Type occurs on QName;
 synthesized attribute constrTypeArgs::TypeList occurs on QName;
 synthesized attribute constrFound::Boolean occurs on QName;
+synthesized attribute fullConstrName::QName occurs on QName;
 --
 synthesized attribute judgmentErrors::[Message] occurs on QName;
 synthesized attribute judgmentType::TypeList occurs on QName;
@@ -84,6 +85,7 @@ top::QName ::= name::String
   top.constrType = head(possibleCons).type;
   top.constrTypeArgs = head(possibleCons).types;
   top.constrFound = length(possibleCons) == 1;
+  top.fullConstrName = head(possibleCons).name;
 
   production attribute possibleJudgments::[JudgmentEnvItem];
   possibleJudgments = lookupEnv(top, top.judgmentEnv);
@@ -158,6 +160,7 @@ top::QName ::= name::String rest::QName
   top.constrType = head(possibleCons).type;
   top.constrTypeArgs = head(possibleCons).types;
   top.constrFound = length(possibleCons) == 1;
+  top.fullConstrName = head(possibleCons).name;
 
   production attribute possibleJudgments::[JudgmentEnvItem];
   possibleJudgments = lookupEnv(top, top.judgmentEnv);
@@ -207,5 +210,16 @@ QName ::= module::QName name::String
 {
   module.addBase = name;
   return module.baseAdded;
+}
+
+
+--identifier must be fully-qualified
+function sameModule
+Boolean ::= moduleName::QName identifier::QName
+{
+  return if !identifier.isQualified
+         then error("Identifier must be qualified (" ++
+                    identifier.pp ++ ")")
+         else addQNameBase(moduleName, identifier.base) == identifier;
 }
 

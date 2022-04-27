@@ -162,5 +162,12 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
         [errorMessage("Found multiple declarations for " ++
             "constructor " ++ fullName.pp, location=top.location)]
       end;
+
+  --Cannot contain variable types in declared constructor args
+  top.errors <-
+      if !tyargs.containsVars then []
+      else [errorMessage("Declared type arguments to constructor " ++
+               fullName.pp ++ " cannot contain variable types",
+               location=top.location)];
 }
 

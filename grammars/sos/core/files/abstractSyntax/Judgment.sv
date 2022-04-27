@@ -7,7 +7,8 @@ nonterminal Judgment with
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
    upSubst, downSubst, finalSubst,
    downVarTypes, upVarTypes,
-   headRel, isRelJudgment, isTransJudgment,
+   headRel, isRelJudgment, isTransJudgment, transType,
+   isConclusion, isExtensibleRule, isTranslationRule,
    errors,
    location;
 propagate errors on Judgment;
@@ -15,7 +16,13 @@ propagate errors on Judgment;
 --relation being applied to form a judgment
 synthesized attribute headRel::JudgmentEnvItem;
 synthesized attribute isRelJudgment::Boolean;
+--whether this is a translation, and of what type
 synthesized attribute isTransJudgment::Boolean;
+synthesized attribute transType::QName;
+
+inherited attribute isConclusion::Boolean;
+inherited attribute isExtensibleRule::Boolean;
+inherited attribute isTranslationRule::Boolean;
 
 abstract production relation
 top::Judgment ::= rel::QName args::TermList
@@ -35,10 +42,22 @@ top::Judgment ::= rel::QName args::TermList
        if rel.judgmentFound
        then just(rel.judgmentType)
        else nothing();
-  args.lastConstructor = rel;
+  args.lastConstructor =
+       if rel.judgmentFound
+       then rel.fullJudgment.name
+       else rel;
   args.downSubst = top.downSubst;
   top.upSubst = args.upSubst;
   args.finalSubst = top.finalSubst;
+
+  args.expectedPC =
+       if top.isConclusion && top.isExtensibleRule &&
+          rel.judgmentFound && rel.fullJudgment.isExtensible
+       then just(rel.fullJudgment.pcIndex)
+       else nothing();
+  args.isConclusion = top.isConclusion;
+  args.isExtensibleRule = top.isExtensibleRule;
+  args.isTranslationRule = top.isTranslationRule;
 
   args.downVarTypes = top.downVarTypes;
   top.upVarTypes = args.upVarTypes;
@@ -46,6 +65,18 @@ top::Judgment ::= rel::QName args::TermList
   top.headRel = rel.fullJudgment;
   top.isRelJudgment = true;
   top.isTransJudgment = false;
+  top.transType = error("Should not access");
+
+  top.errors <-
+      if top.isConclusion && !top.isExtensibleRule
+        --fixed relations can't add new rules in other modules
+      then if rel.judgmentFound &&
+              !sameModule(top.moduleName, rel.fullJudgment.name)
+           then [errorMessage("Cannot add new rules to imported " ++
+                    "fixed judgment " ++ rel.fullJudgment.name.pp,
+                    location=top.location)]
+           else []
+      else [];
 }
 
 
@@ -98,6 +129,11 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
   t.finalSubst = top.finalSubst;
   translation.finalSubst = top.finalSubst;
 
+  args.expectedPC = nothing();
+  args.isConclusion = false;
+  args.isExtensibleRule = false;
+  args.isTranslationRule = false;
+
   args.downVarTypes = top.downVarTypes;
   t.downVarTypes = args.upVarTypes;
   translation.downVarTypes = t.upVarTypes;
@@ -107,6 +143,26 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
   top.isTransJudgment = true;
+  top.transType = if ty.tyFound
+                  then case ty.fullTy of
+                       | nameType(name) -> name
+                       | _ -> ty
+                       end
+                  else ty;
+
+  top.errors <-
+      if top.isConclusion && top.isTranslationRule
+      then [errorMessage("Cannot write a translation rule for " ++
+               "translation judgments", location=top.location)]
+      else [];
+
+  top.errors <-
+      if !top.isConclusion
+      then []
+      else if t.isVariable
+      then [errorMessage("Cannot write a rule for translation for " ++
+               "an unspecified constructor", location=t.location)]
+      else [];
 }
 
 
@@ -145,6 +201,15 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
   top.isTransJudgment = false;
+  top.transType =
+      error("Should not access transType on non-translation");
+
+  top.errors <-
+      if top.isConclusion
+      then [errorMessage("Conclusion of rule must be a relation or" ++
+               " translation; found binary operation",
+               location=top.location)]
+      else [];
 }
 
 
@@ -176,6 +241,15 @@ top::Judgment ::= t1::Term op::TopBinOp t2::Term
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
   top.isTransJudgment = false;
+  top.transType =
+      error("Should not access transType on non-translation");
+
+  top.errors <-
+      if top.isConclusion
+      then [errorMessage("Conclusion of rule must be a relation or" ++
+               " translation; found binary operation",
+               location=top.location)]
+      else [];
 }
 
 

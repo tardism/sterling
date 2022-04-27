@@ -27,7 +27,12 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
-  top.ruleDecls = [extRuleEnvItem(fullName)];
+  top.ruleDecls =
+      if conclusion.isRelJudgment
+      then [extRuleEnvItem(fullName, conclusion.headRel.name, false)]
+      else if conclusion.isTransJudgment
+      then [translationRuleEnvItem(fullName, conclusion.transType)]
+      else [errorRuleEnvItem(fullName, false)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -37,6 +42,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
   conclusion.translationEnv = top.translationEnv;
+
+  conclusion.isConclusion = true;
+  conclusion.isExtensibleRule = true;
+  conclusion.isTranslationRule = false;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -97,7 +106,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
-  top.ruleDecls = [extRuleEnvItem(fullName)];
+  top.ruleDecls =
+      if conclusion.isRelJudgment
+      then [extRuleEnvItem(fullName, conclusion.headRel.name, true)]
+      else [errorRuleEnvItem(fullName, true)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -107,6 +119,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
   conclusion.translationEnv = top.translationEnv;
+
+  conclusion.isConclusion = true;
+  conclusion.isExtensibleRule = true;
+  conclusion.isTranslationRule = true;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -161,7 +177,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls = [];
-  top.ruleDecls = [fixedRuleEnvItem(fullName)];
+  top.ruleDecls =
+      if conclusion.isRelJudgment
+      then [fixedRuleEnvItem(fullName, conclusion.headRel.name)]
+      else [errorRuleEnvItem(fullName, false)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -171,6 +190,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
   conclusion.translationEnv = top.translationEnv;
+
+  conclusion.isConclusion = true;
+  conclusion.isExtensibleRule = false;
+  conclusion.isTranslationRule = false;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -253,6 +276,10 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   rest.constructorEnv = top.constructorEnv;
   rest.judgmentEnv = top.judgmentEnv;
   rest.translationEnv = top.translationEnv;
+
+  j.isConclusion = false;
+  j.isExtensibleRule = false;
+  j.isTranslationRule = false;
 
   j.downSubst = top.downSubst;
   rest.downSubst = j.upSubst;
