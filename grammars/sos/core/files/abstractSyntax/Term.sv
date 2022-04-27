@@ -211,7 +211,7 @@ top::TermList ::=
       | nothing() -> []
       | just(nilTypeList()) -> []
       | just(consTypeList(x, l)) ->
-        [errorMessage("Too many arguments to " ++
+        [errorMessage("Too few arguments to " ++
             top.lastConstructor.pp, location=top.location)]
       end;
 
@@ -264,7 +264,7 @@ top::TermList ::= t::Term rest::TermList
   top.errors <-
       case top.expectedTypes of
       | just(nilTypeList()) ->
-        [errorMessage("Too few arguments to " ++
+        [errorMessage("Too many arguments to " ++
             top.lastConstructor.pp, location=top.location)]
       | _ -> []
       end;

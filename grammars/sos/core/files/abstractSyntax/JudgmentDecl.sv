@@ -137,6 +137,13 @@ top::JudgmentDecl ::= name::String ty::TypeList
         [errorMessage("Found multiple declarations for judgment " ++
             fullName.pp, location=top.location)]
       end;
+
+  --Cannot contain variable types in declared judgment args
+  top.errors <-
+      if !ty.containsVars then []
+      else [errorMessage("Declared type arguments to judgment " ++
+               fullName.pp ++ " cannot contain variable types",
+               location=top.location)];
 }
 
 
@@ -204,6 +211,13 @@ top::JudgmentDecl ::= tyname::String args::TypeList
       --that will be handled in the type declarations
       | _ -> []
       end;
+
+  --Cannot contain variable types in declared judgment args
+  top.errors <-
+      if !args.containsVars then []
+      else [errorMessage("Declared type arguments to translation " ++
+               " for " ++ tyname ++ " cannot contain variable types",
+               location=top.location)];
 }
 
 

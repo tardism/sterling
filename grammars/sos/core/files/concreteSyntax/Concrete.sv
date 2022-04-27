@@ -30,8 +30,6 @@ concrete productions top::DeclList_c
   { top.ast = nilDecls(location=top.location); }
 | d::TopDecl_c x::EmptyNewlines rest::DeclList_c
   { top.ast = branchDecls(d.ast, rest.ast, location=top.location); }
-{-| Newline_t rest::DeclList_c
-  { top.ast = rest.ast; }-}
 
 
 
