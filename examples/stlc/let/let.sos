@@ -3,19 +3,19 @@ Module stlc:let
 Builds on stlc:host
 
 
-#New syntax#
+/*New syntax*/
 term ::= ...
        | let(string, term, term)
 
 
-#Typing Rule#
+/*Typing Rule*/
 typeOf G T1 Ty1
 typeOf add(X, Ty1, G) T2 Ty2
 ---------------------------- [T-Let]
 typeOf G let(X, T1, T2) Ty2
 
 
-#Translation Rule#
+/*Translation Rule*/
 typeOf G T1 Ty1
 ------------------------------------------------------ [Trans-Let]
 G |{term}- let(X, T1, T2) ~~> app(abs(X, Ty1, T2), T1)

@@ -1,13 +1,13 @@
 Module imp:host
 
-#Arithmetic Expressions#
+/*Arithmetic Expressions*/
 a ::= num(int)
     | plus(a, a)
     | name(string)
 Translation a :
 
 
-#Boolean Expressions#
+/*Boolean Expressions*/
 b ::= greater(a, a)
     | eq(a, a)
     | and(b, b)
@@ -17,7 +17,7 @@ b ::= greater(a, a)
 Translation b :
 
 
-#Statement Commands#
+/*Statement Commands*/
 c ::= noop
     | seq(c, c)
     | assign(string, a)

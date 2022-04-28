@@ -4,23 +4,23 @@ Builds on stlc:let
 Builds on stlc:pair
 
 
-#New syntax#
+/*New syntax*/
 term ::= ...
        | letPair(string, string, term, term)
 
 
-#Typing Rule#
+/*Typing Rule*/
 typeOf G T1 pairTy(Ty1)
 typeOf add(X, Ty1, add(Y, Ty2, G)) T2 Ty2
 ----------------------------------------- [T-LetPair]
 typeOf G letPair(X, Y, T1, T2) Ty2
 
 
-#Translation Rule#
+/*Translation Rule*/
 typeOf G T1 pairTy(Ty)
 -------------------------- [Trans-LetPair]
-#G |- let x, y = T1 in T2  ~~>#
-#   let X = T1 in let Y = snd(X) in let X = fst(X) in T2#
+/*G |- let x, y = T1 in T2  ~~>
+       let X = T1 in let Y = snd(X) in let X = fst(X) in T2*/
 G |{term}- letPair(X, Y, T1, T2) ~~>
            let(X, T1, let(Y, snd(var(X)), let(X, fst(var(X)), T2)))
 

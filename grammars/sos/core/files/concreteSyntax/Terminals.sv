@@ -68,5 +68,5 @@ terminal RuleName_t     /[a-zA-Z][-a-z0-9A-Z_]*/;
 
 
 ignore terminal Spacing_t   /[\ \t\r]+/;
-ignore terminal Comment_t   /#[^#]*#/;
+ignore terminal Comment_t   /\/\*(\/\*([^\*]|\*+[^\/\*])*\*+\/|[^\*]|\*+[^\/\*])*\*+\//;
 

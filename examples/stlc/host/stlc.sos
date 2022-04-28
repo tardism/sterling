@@ -1,7 +1,7 @@
 Module stlc:host
 
 
-#Syntax Constructors#
+/*Syntax Constructors*/
 term ::= app(term, term)
        | abs(string, type, term)
        | var(string)
@@ -14,17 +14,17 @@ ctx ::= nil
 
 
 
-#Judgments#
+/*Judgments*/
 Judgment typeOf : ctx term* type
 Fixed Judgment lookup : string ctx type
 
-#Translation Types#
-Translation term : ctx #ctx |- term ~~> term#
-Translation type :     #|- type ~~> type#
-Translation ctx :      #|- ctx ~~> ctx#
+/*Translation Types*/
+Translation term : ctx /*ctx |- term ~~> term*/
+Translation type :     /*|- type ~~> type*/
+Translation ctx :      /*|- ctx ~~> ctx*/
 
 
-#Typing Rules#
+/*Typing Rules*/
 
 typeOf G T1 arrow(Ty1, Ty2)
 typeOf G T2 Ty1
@@ -43,7 +43,7 @@ typeOf G var(X) Ty
 
 
 
-#Lookup Rules#
+/*Lookup Rules*/
 
 lookup X G Ty
 X != Y

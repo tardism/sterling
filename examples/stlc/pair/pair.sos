@@ -3,7 +3,7 @@ Module stlc:pair
 Builds on stlc:host
 
 
-#New syntax#
+/*New syntax*/
 term ::= ...
        | pair(term, term)
        | fst(term)
@@ -13,7 +13,7 @@ type ::= ...
        | pairTy(type)
 
 
-#Typing Rules#
+/*Typing Rules*/
 typeOf G T1 Ty
 typeOf G T2 Ty
 ------------------------------------ [T-Pair]
@@ -30,14 +30,14 @@ typeOf G P pairTy(Ty)
 typeOf G snd(P) Ty
 
 
-#Translation Rules#
+/*Translation Rules*/
 ----------------------------------------------------------- [Trans-PairTy]
 |{type}- pairTy(Ty) ~~> arrow(arrow(Ty, arrow(Ty, Ty)), Ty)
 
 
 typeOf G pair(T1, T2) pairTy(Ty)
 ------------------------------------------------ [Trans-Pair]
-#G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2#
+/*G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2*/
 G |{term}- pair(T1, T2) ~~>
            app(app(abs("a", Ty, abs("b", Ty,
                       abs("s", arrow(Ty, arrow(Ty, Ty)),
