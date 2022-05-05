@@ -57,9 +57,9 @@ IOVal<Integer> ::= args::[String]
          ioval(printT(err ++ "\n", modules.io), 1)
        | right(mods) ->
          --run all actions in the order in which they occur
-         foldr(\ act::(IOVal<Integer> ::= ModuleList Decorated CmdArgs
-                                          IOToken)
-                 rest::IOVal<Integer> ->
+         foldl(\ rest::IOVal<Integer>
+                 act::(IOVal<Integer> ::= ModuleList Decorated CmdArgs
+                                          IOToken) ->
                  if rest.iovalue != 0 --error in a previous action
                  then rest
                  else act(mods, a, rest.io),

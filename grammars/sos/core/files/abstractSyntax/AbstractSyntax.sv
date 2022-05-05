@@ -140,7 +140,7 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
 {
   top.pp = name ++ "(" ++ tyargs.pp_comma ++ ")";
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.constructorDecls =
       [constructorEnvItem(fullName, top.builtType, tyargs)];
