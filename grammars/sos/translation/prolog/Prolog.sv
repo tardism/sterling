@@ -3,7 +3,8 @@ grammar sos:translation:prolog;
 
 nonterminal PrologTerm with
    pp,
-   replaceVar, replaceVal, replaced<PrologTerm>;
+   replaceVar, replaceVal, replaced<PrologTerm>,
+   countVarOccurrences;
 
 abstract production constPrologTerm
 top::PrologTerm ::= name::String
@@ -11,6 +12,8 @@ top::PrologTerm ::= name::String
   top.pp = name;
 
   top.replaced = top;
+
+  top.countVarOccurrences = [];
 }
 
 
@@ -23,6 +26,8 @@ top::PrologTerm ::= name::String
       if top.replaceVar == name
       then top.replaceVal
       else top;
+
+  top.countVarOccurrences = [(name, 1)];
 }
 
 
@@ -32,6 +37,8 @@ top::PrologTerm ::= i::Integer
   top.pp = toString(i);
 
   top.replaced = top;
+
+  top.countVarOccurrences = [];
 }
 
 
@@ -41,6 +48,8 @@ top::PrologTerm ::= text::String
   top.pp = "\"" ++ text ++ "\"";
 
   top.replaced = top;
+
+  top.countVarOccurrences = [];
 }
 
 
@@ -52,6 +61,8 @@ top::PrologTerm ::= name::String args::PrologTermList
   args.replaceVar = top.replaceVar;
   args.replaceVal = top.replaceVal;
   top.replaced = applicationTerm(name, args.replaced);
+
+  top.countVarOccurrences = args.countVarOccurrences;
 }
 
 
@@ -60,7 +71,8 @@ top::PrologTerm ::= name::String args::PrologTermList
 
 nonterminal PrologTermList with
    pp,
-   replaceVar, replaceVal, replaced<PrologTermList>;
+   replaceVar, replaceVal, replaced<PrologTermList>,
+   countVarOccurrences;
 
 abstract production nilPrologTermList
 top::PrologTermList ::=
@@ -68,6 +80,8 @@ top::PrologTermList ::=
   top.pp = "";
 
   top.replaced = top;
+
+  top.countVarOccurrences = [];
 }
 
 
@@ -81,6 +95,10 @@ top::PrologTermList ::= t::PrologTerm rest::PrologTermList
   rest.replaceVar = top.replaceVar;
   rest.replaceVal = top.replaceVal;
   top.replaced = consPrologTermList(t.replaced, rest.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(t.countVarOccurrences,
+                            rest.countVarOccurrences);
 }
 
 
@@ -89,7 +107,8 @@ top::PrologTermList ::= t::PrologTerm rest::PrologTermList
 
 nonterminal PrologFormula with
    pp,
-   replaceVar, replaceVal, replaced<PrologFormula>;
+   replaceVar, replaceVal, replaced<PrologFormula>,
+   countVarOccurrences;
 
 abstract production termPrologFormula
 top::PrologFormula ::= t::PrologTerm
@@ -99,6 +118,8 @@ top::PrologFormula ::= t::PrologTerm
   t.replaceVar = top.replaceVar;
   t.replaceVal = top.replaceVal;
   top.replaced = termPrologFormula(t.replaced);
+
+  top.countVarOccurrences = t.countVarOccurrences;
 }
 
 
@@ -112,6 +133,10 @@ top::PrologFormula ::= f1::PrologFormula f2::PrologFormula
   f2.replaceVar = top.replaceVar;
   f2.replaceVal = top.replaceVal;
   top.replaced = andPrologFormula(f1.replaced, f2.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(f1.countVarOccurrences,
+                            f2.countVarOccurrences);
 }
 
 
@@ -125,6 +150,10 @@ top::PrologFormula ::= t1::PrologTerm op::PrologBinOp t2::PrologTerm
   t2.replaceVar = top.replaceVar;
   t2.replaceVal = top.replaceVal;
   top.replaced = binOpPrologFormula(t1.replaced, op, t2.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(t1.countVarOccurrences,
+                            t2.countVarOccurrences);
 }
 
 
@@ -141,6 +170,11 @@ top::PrologFormula ::= t1::PrologTerm op::PrologIsBinOp t2::PrologTerm result::P
   result.replaceVal = top.replaceVal;
   top.replaced =
       isPrologFormula(t1.replaced, op, t2.replaced, result.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(t1.countVarOccurrences,
+      combineVarOccurrences(t2.countVarOccurrences,
+                            result.countVarOccurrences));
 }
 
 
@@ -250,12 +284,21 @@ top::PrologIsBinOp ::= --  mod
 
 --I know there facts and rules are different, but I need a name to
 --encompass both of them, and "rule" seems to fit best.
-nonterminal PrologRule with pp;
+nonterminal PrologRule with
+   pp,
+   replaceVar, replaceVal, replaced<PrologRule>,
+   countVarOccurrences;
 
 abstract production factPrologRule
 top::PrologRule ::= f::PrologTerm
 {
   top.pp = f.pp ++ ".";
+
+  f.replaceVar = top.replaceVar;
+  f.replaceVal = top.replaceVal;
+  top.replaced = factPrologRule(f.replaced);
+
+  top.countVarOccurrences = f.countVarOccurrences;
 }
 
 
@@ -263,6 +306,16 @@ abstract production rulePrologRule
 top::PrologRule ::= hd::PrologTerm body::PrologFormula
 {
   top.pp = hd.pp ++ " :- " ++ body.pp ++ ".";
+
+  hd.replaceVar = top.replaceVar;
+  hd.replaceVal = top.replaceVal;
+  body.replaceVar = top.replaceVar;
+  body.replaceVal = top.replaceVal;
+  top.replaced = rulePrologRule(hd.replaced, body.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(hd.countVarOccurrences,
+                            body.countVarOccurrences);
 }
 
 
@@ -311,9 +364,29 @@ PrologProgram ::= rules::[(QName, Maybe<PrologFormula>, PrologTerm)]
             | just(premises) -> rulePrologRule(p.3, premises)
             end,
           sorted);
+  --clean out the singleton variables
+  local noSingletons::[PrologRule] =
+        map(eliminateSingletonVars, builtRules);
   return
       foldr(\ r::PrologRule rest::PrologProgram ->
               branchPrologProgram(rulePrologProgram(r), rest),
-            emptyPrologProgram(), builtRules);
+            emptyPrologProgram(), noSingletons);
+}
+
+
+--Find all the singleton variables in a Prolog rule and replace them
+--with _ to avoid warnings
+function eliminateSingletonVars
+PrologRule ::= r::PrologRule
+{
+  local vars::[(String, Integer)] = r.countVarOccurrences;
+  local singletonVars::[String] =
+        map(fst, filter(\ p::(String, Integer) -> p.2 == 1, vars));
+  local underscore::PrologTerm = varPrologTerm("_");
+  return
+     foldr(\ v::String rest::PrologRule ->
+             decorate rest with
+                {replaceVar=v; replaceVal=underscore;}.replaced,
+           r, singletonVars);
 }
 

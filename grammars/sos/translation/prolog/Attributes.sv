@@ -38,3 +38,31 @@ inherited attribute replaceVar::String;
 inherited attribute replaceVal::PrologTerm;
 synthesized attribute replaced<a>::a;
 
+
+--Get a count of the number of occurrences of each variable
+synthesized attribute countVarOccurrences::[(String, Integer)];
+
+function combineVarOccurrences
+[(String, Integer)] ::= l1::[(String, Integer)] l2::[(String, Integer)]
+{
+  return
+     case l1 of
+     | [] -> l2
+     | (v, count)::rest ->
+       case lookup(v, l2) of
+       | nothing() -> (v, count)::combineVarOccurrences(rest, l2)
+       | just(count2) ->
+         --remove the count of v from the rest
+         let removed::[(String, Integer)] =
+             filter(\ p::(String, Integer) -> p.1 != v, l2)
+         in
+         --combine the rest
+         let combinedRest::[(String, Integer)] =
+             combineVarOccurrences(rest, removed)
+         in
+           (v, count + count2)::combinedRest
+         end end
+       end
+     end;
+}
+

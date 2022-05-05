@@ -1,0 +1,22 @@
+Module imp:less
+
+Builds on imp:host
+
+b ::= ...
+    | less(a, a)
+
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 < I2
+--------------------------- [E-LessTrue]
+eval_b E less(A1, A2) btrue
+
+
+eval_a E A1 I1
+eval_a E A2 I2
+I1 >= I2
+---------------------------- [E-LessFalse]
+eval_b E less(A1, A2) bfalse
+
