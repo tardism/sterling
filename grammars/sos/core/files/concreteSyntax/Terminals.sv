@@ -49,6 +49,8 @@ terminal Div_t     '/';
 terminal Mod_t     '%';
 terminal App_t     '++';
 
+terminal Negate_t   '!';
+
 terminal TransStart_t    '|{';
 terminal TransEnd_t      '}-';
 terminal Trans_t         '~~>';

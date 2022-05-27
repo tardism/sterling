@@ -1,0 +1,195 @@
+Module sec_SOS:host
+
+tyctx ::= emptyTy
+        | addTy(string, ty, tyctx)
+Translation tyctx :
+
+
+Judgment lookupTy : tyctx* string ty
+
+-------------------------------- [L-Here]
+lookupTy addTy(X, Ty, Rest) X Ty
+
+
+lookupTy Rest X XTy
+X != Y
+---------------------------------- [L-Later]
+lookupTy addTy(Y, YTy, Rest) X XTy
+
+
+Judgment noTy : tyctx* string
+
+-------------- [NT-Empty]
+noTy emptyTy X
+
+
+noTy Rest X
+X != Y
+-------------------------- [NT-Add]
+noTy addTy(Y, YTy, Rest) X
+
+
+
+
+Judgment typeOf : tyctx e* ty
+Judgment typeRecFields : tyctx recFieldExprs* tyctx
+Judgment typeOK : tyctx c* tyctx
+
+
+/*Expression Typing*/
+
+--------------------- [T-Num]
+typeOf G num(I) intTy
+
+
+typeOf G E1 intTy
+typeOf G E2 intTy
+--------------------------- [T-Plus]
+typeOf G plus(E1, E2) intTy
+
+
+lookupTy G X Ty
+------------------- [T-Name]
+typeOf G name(X) Ty
+
+
+typeOf G E1 intTy
+typeOf G E2 intTy
+------------------------------ [T-Greater]
+typeOf G greater(E1, E2) intTy
+
+
+typeOf G E1 Ty
+typeOf G E2 Ty
+---------------------- [T-Eq]
+typeOf G eq(E1, E2) Ty
+
+
+typeOf G E1 boolTy
+typeOf G E2 boolTy
+--------------------------- [T-And]
+typeOf G and(E1, E2) boolTy
+
+
+typeOf G E1 boolTy
+typeOf G E2 boolTy
+-------------------------- [T-Or]
+typeOf G or(E1, E2) boolTy
+
+
+-------------------- [T-True]
+typeOf G true boolTy
+
+
+--------------------- [T-False]
+typeOf G false boolTy
+
+
+typeRecFields G Fields FTys
+------------------------------------- [T-RecBuild]
+typeOf G recBuild(Fields) recTy(FTys)
+
+
+typeOf G Rec recTy(Fields)
+lookupTy Fields Field FTy
+------------------------------------------ [T-RecField]
+typeOf G recFieldAccess(Rec, Field) FTy
+
+
+
+/*Record Field Typing*/
+
+---------------------------------------- [TRF-End]
+typeRecFields G endRecFieldExprs emptyTy
+
+
+typeOf G E Ty
+typeRecFields G Rest FTys
+noTy FTys L /*each label only occurs once*/
+------------------------------------------------------------ [TRF-Add]
+typeRecFields G addRecFieldExprs(L, E, Rest) addTy(L, Ty, FTys)
+
+
+
+/*Statement Typing*/
+
+--------------- [T-Noop]
+typeOK G noop G
+
+
+typeOK G C1 G1
+typeOK G1 C2 G2
+----------------------- [T-Seq]
+typeOK G seq(C1, C2) G2
+
+
+noTy G X /*can't overwrite existing decls*/
+--------------------------------------- [T-Declare]
+typeOK G declare(X, Ty) addTy(X, Ty, G)
+
+
+typeOf G E Ty
+lookupTy G X Ty
+----------------------- [T-Assign]
+typeOK G assign(X, E) G
+
+
+typeOf G Cond boolTy
+typeOK G Then GT
+typeOK G Else GE
+--------------------------------------- [T-IfThenElse]
+typeOK G ifThenElse(Cond, Then, Else) G
+/*branches open new scopes*/
+
+
+typeOf G Cond boolTy
+typeOK G Body GB
+---------------------------- [T-While]
+typeOK G while(Cond, Body) G
+/*body opens a new scope*/
+
+
+lookupTy G Rec recTy(Fields)
+lookupTy Fields Field FTy
+typeOf G E FTy
+----------------------------------- [T-RecUpdate]
+typeOK G recUpdate(Rec, Field, E) G
+
+
+
+
+/*Typing for values to allow type soundness*/
+Judgment typeOfVal : value* ty
+
+------------------------- [TV-Int]
+typeOfVal intVal(I) intTy
+
+
+------------------------ [TV-True]
+typeOfVal trueVal boolTy
+
+
+------------------------- [TV-False]
+typeOfVal falseVal boolTy
+
+
+typeOfEvalctx Fields FTys
+------------------------------------ [TV-Rec]
+typeOfVal recVal(Fields) recTy(FTys)
+
+
+
+
+/*Typing for evaluation contexts to allow type soundness and recVal
+  typing*/
+Judgment typeOfEvalctx : evalctx* tyctx
+
+------------------------------- [TEC-Empty]
+typeOfEvalctx emptyEval emptyTy
+
+
+typeOfVal V Ty
+typeOfEvalctx Rest RestTys
+------------------------------------------------------ [TEC-Add]
+typeOfEvalctx addVal(X, V, Rest) addTy(X, Ty, RestTys)
+

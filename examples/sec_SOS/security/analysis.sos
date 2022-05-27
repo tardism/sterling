@@ -1,0 +1,190 @@
+Module sec_SOS:security
+
+secctx ::= emptySec
+         | addSec(string, seclevel, secctx)
+Translation secctx :
+
+
+Judgment lookupSec : secctx* string seclevel
+
+-------------------------------- [LS-Here]
+lookupSec addSec(X, S, Rest) X S
+
+
+lookupSec Rest X XS
+X != Y
+---------------------------------- [LS-Later]
+lookupSec addSec(Y, YS, Rest) X XV
+
+
+
+
+/*Take two security levels and the get the higher one*/
+Judgment join : seclevel* seclevel seclevel
+
+------------------------- [J-Publics]
+join public public public
+
+
+---------------------- [J-Private1]
+join private S private
+
+
+---------------------- [J-Private2]
+join S private private
+
+
+
+
+Judgment level : secctx e* seclevel
+Judgment rf_level : secctx recFieldExprs* seclevel
+Judgment secure : seclevel secctx c* secctx
+
+
+/*Expression Security Level*/
+
+--------------------- [S-Num]
+level G num(I) public
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+---------------------- [S-Plus]
+level G plus(E1, E2) S
+
+
+lookupSec G X S
+----------------- [S-Name]
+level G name(X) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+------------------------- [S-Greater]
+level G greater(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+-------------------- [S-Eq]
+level G eq(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+--------------------- [S-And]
+level G and(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+-------------------- [S-Or]
+level G or(E1, E2) S
+
+
+------------------- [S-True]
+level G true public
+
+
+-------------------- [S-False]
+level G false public
+
+
+rf_level G Fields S
+-------------------------- [S-RecBuild]
+level G recBuild(Fields) S
+
+
+level G Rec S
+------------------------------------ [S-RecField]
+level G recFieldAccess(Rec, Field) S
+
+
+|{e}- E ~~> ET
+level G ET S
+-------------- [S-TransExpr]*
+level G E S
+
+
+
+/*Record Field Security Level*/
+
+---------------------------------- [S-RFEnd]
+rf_level G endRecFieldExprs public
+
+
+level G E S1
+rf_level G Rest S2
+join S1 S2 S
+----------------------------------------- [S-RFAdd]
+rf_level G addRecFieldExprs(L, E, Rest) S
+
+
+|{recFieldExprs}- RF ~~> RFT
+rf_level G RFT S
+---------------------------- [S-RFTrans]*
+rf_level G RF S
+
+
+
+/*Statement Security*/
+
+------------------ [S-Noop]
+secure PC G noop G
+
+
+secure PC G C1 G1
+secure PC G1 C2 G2
+-------------------------- [S-Seq]
+secure PC G seq(C1, C2) G2
+
+
+----------------------------------------------- [S-Declare]
+secure PC G declare(X, Ty) addSec(X, public, G)
+
+
+------------------------------------------------ [S-DeclareSec]
+secure PC G declareSec(X, S, Ty) addSec(X, S, G)
+
+
+/*To assign to public var, need both PC and expr to be public*/
+level G E public
+lookupSec G X public
+------------------------------ [S-AssignPublic]
+secure public G assign(X, E) G
+
+
+/*Can assign anything to a private var, anytime*/
+level G E S
+lookupSec G X private
+-------------------------- [S-AssignPrivate]
+secure PC G assign(X, E) G
+
+
+level G Cond S
+join PC S NewPC
+secure NewPC G Then GTh
+secure NewPC G Else GEl
+------------------------------------------ [S-IfThenElse]
+secure PC G ifThenElse(Cond, Then, Else) G
+/*branches are new scopes, so we throw their security updates away*/
+
+
+level G Cond S
+join PC S NewPC
+secure NewPC G Body G1
+------------------------------- [S-While]
+secure PC G while(Cond, Body) G
+/*body is a new scope*/
+
+
+|{c}- C ~~> CT
+secure PC G CT G1
+----------------- [S-Trans]*
+secure PC G C G1
+

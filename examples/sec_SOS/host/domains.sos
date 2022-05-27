@@ -1,0 +1,57 @@
+Module sec_SOS:host
+
+domain ::= emptyDomain
+         | addDomain(string, domain)
+Translation domain :
+
+
+Judgment joinDomains : domain* domain domain
+
+--------------------------- [JD-Empty]
+joinDomains emptyDomain D D
+
+
+joinDomains D1 D2 D3
+------------------------------------------------ [JD-Add]
+joinDomains addDomain(X, D1) D2 addDomain(X, D3)
+
+
+
+/*Domain for Type Contexts*/
+Judgment domainTyctx : tyctx* domain
+
+------------------------------- [DT-Empty]
+domainTyctx emptyTy emptyDomain
+
+
+domainTyctx Rest RestDomain
+------------------------------------------------------- [DT-Add]
+domainTyctx addTy(S, Ty, Rest) addDomain(S, RestDomain)
+
+
+
+/*Domain for Evaluation Contexts*/
+Judgment domainEvalctx : evalctx* domain
+
+----------------------------------- [DE-Empty]
+domainEvalctx emptyEval emptyDomain
+
+
+domainEvalctx Rest RestDomain
+--------------------------------------------------------- [DE-Add]
+domainEvalctx addVal(S, V, Rest) addDomain(S, RestDomain)
+
+
+
+/*Equality for Type Contexts*/
+Judgment tyctx_eq : tyctx* tyctx
+
+
+
+/*Equality for Evaluation Contexts*/
+Judgment evalctx_eq : evalctx* evalctx
+
+/*TODO write rules for these
+  Probably take the domains and make sure they have the same names,
+  then check they both have the same values for each name.*/
+

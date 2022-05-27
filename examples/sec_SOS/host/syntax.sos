@@ -1,0 +1,46 @@
+Module sec_SOS:host
+
+/*Expressions*/
+e ::= num(int)
+    | plus(e, e)
+    | name(string)
+    | greater(e, e)
+    | eq(e, e)
+    | and(e, e)
+    | or(e, e)
+    | true
+    | false
+    | recBuild(recFieldExprs)
+    | recFieldAccess(e, string)
+Translation e :
+
+recFieldExprs ::= endRecFieldExprs
+                | addRecFieldExprs(string, e, recFieldExprs)
+Translation recFieldExprs :
+
+
+/*Statement Commands*/
+c ::= noop
+    | seq(c, c)
+    | declare(string, ty)
+    | assign(string, e)
+    | ifThenElse(e, c, c)
+    | while(e, c)
+    | recUpdate(string, string, e) /*rec.field = e*/
+Translation c :
+
+
+/*Types*/
+ty ::= intTy
+     | boolTy
+     | recTy(tyctx)
+Translation ty :
+
+
+/*Evaluation Values*/
+value ::= intVal(int)
+        | trueVal
+        | falseVal
+        | recVal(evalctx)
+Translation value :
+

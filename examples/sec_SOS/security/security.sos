@@ -1,0 +1,29 @@
+Module sec_SOS:security
+
+Builds on sec_SOS:host
+
+/*New Statement and Translation*/
+c ::= ...
+    | declareSec(string, seclevel, ty)
+
+
+--------------------------------------------- [Trans-DeclareSec]
+|{c}- declareSec(X, S, Ty) ~~> declare(X, Ty)
+
+
+seclevel ::= public | private
+Translation seclevel :
+
+
+
+
+/*Typing and Evaluation for New Statement*/
+
+noTy G X /*still can't overwrite existing decls*/
+--------------------------------------------- [T-DeclareSec]
+typeOK G declareSec(X, S, Ty) addTy(X, Ty, G)
+
+
+------------------------------- [E-DeclareSec]
+eval_c G declareSec(X, S, Ty) G
+

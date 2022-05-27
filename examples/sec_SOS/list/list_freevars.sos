@@ -1,0 +1,41 @@
+Module sec_SOS:list
+
+/*Expression Freevars*/
+
+------------------------ [FV-Nil]
+freevars nil emptyDomain
+
+
+freevars E1 D1
+freevars E2 D2
+joinDomains D1 D2 D
+----------------------- [FV-Cons]
+freevars cons(E1, E2) D
+
+
+freevars E D
+------------------ [FV-Null]
+freevars null(E) D
+
+
+freevars E D
+------------------ [FV-Head]
+freevars head(E) D
+
+
+freevars E D
+------------------ [FV-Tail]
+freevars tail(E) D
+
+
+freevars E1 D1
+freevars E2 D2
+joinDomains D1 D2 D
+------------------------ [FV-Index]
+freevars index(E1, E2) D
+
+
+freevars E D
+-------------------- [FV-Length]
+freevars length(E) D
+

@@ -247,6 +247,8 @@ concrete productions top::Rule_c
 closed nonterminal Judgment_c with ast<Judgment>, location;
 
 concrete productions top::Judgment_c
+| '!' j::Judgment_c
+  { top.ast = j.ast; } ------------------------------------TODO fix this
 | rel::LowerId_t args::TermList_c
   { top.ast = relation(toQName(rel.lexeme, rel.location),
                        args.ast, location=top.location); }

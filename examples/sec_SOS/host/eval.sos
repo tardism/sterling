@@ -1,0 +1,214 @@
+Module sec_SOS:host
+
+evalctx ::= emptyEval
+          | addVal(string, value, evalctx)
+Translation evalctx :
+
+
+Judgment lookupVal : evalctx* string value
+
+-------------------------------- [LV-Here]
+lookupVal addVal(X, V, Rest) X V
+
+
+lookupVal Rest X XV
+X != Y
+---------------------------------- [LV-Later]
+lookupVal addVal(Y, YV, Rest) X XV
+
+
+
+
+Judgment eval_e : evalctx e* value
+Judgment eval_rf : evalctx recFieldExprs* evalctx
+Judgment eval_c : evalctx c* evalctx
+
+
+/*Expression Evaluation*/
+
+------------------------- [E-Num]
+eval_e G num(I) intVal(I)
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 + I2 = I
+------------------------------- [E-Plus]
+eval_e G plus(E1, E2) intVal(I)
+
+
+lookupVal G X V
+------------------ [E-Name]
+eval_e G name(X) V
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 > I2
+-------------------------------- [E-GreaterTrue]
+eval_e G greater(E1, E2) trueVal
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 <= I2
+--------------------------------- [E-GreaterFalse]
+eval_e G greater(E1, E2) falseVal
+
+
+eval_e G E1 V1
+eval_e G E2 V2
+val_eq V1 V2
+--------------------------- [E-EqTrue]
+eval_e G eq(E1, E2) trueVal
+
+
+eval_e G E1 V1
+eval_e G E2 V2
+! val_eq V1 V2
+---------------------------- [E-EqFalse]
+eval_e G eq(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+eval_e G E2 trueVal
+---------------------------- [E-AndTrue]
+eval_e G and(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+----------------------------- [E-AndFalse1]
+eval_e G and(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+eval_e G E2 falseVal
+----------------------------- [E-AndFalse2]
+eval_e G and(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+--------------------------- [E-OrTrue1]
+eval_e G or(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+eval_e G E2 trueVal
+--------------------------- [E-OrTrue2]
+eval_e G or(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+eval_e G E2 falseVal
+---------------------------- [E-OrFalse]
+eval_e G or(E1, E2) falseVal
+
+
+--------------------- [E-True]
+eval_e G true trueVal
+
+
+----------------------- [E-False]
+eval_e G false falseVal
+
+
+eval_rf G Fields FieldVals
+------------------------------------------- [E-RecBuild]
+eval_e G recBuild(Fields) recVal(FieldVals)
+
+
+eval_e G Rec recVal(Fields)
+lookupVal Fields Field V
+------------------------------------- [E-RecField]
+eval_e G recFieldAccess(Rec, Field) V
+
+
+
+/*Record Field Evaluation*/
+
+------------------------------------ [ERF-End]
+eval_rf G endRecFieldExprs emptyEval
+
+
+eval_e G E V
+eval_rf G Rest FVs
+-------------------------------------------------------- [ERF-Add]
+eval_rf G addRecFieldExprs(L, E, Rest) addVal(L, V, FVs)
+
+
+
+/*Command Evaluation*/
+
+--------------- [E-Noop]
+eval_c G noop G
+
+
+eval_c G C1 G1
+eval_c G1 C2 G2
+----------------------- [E-Seq]
+eval_c G seq(C1, C2) G2
+
+
+------------------------- [E-Declare]
+eval_c G declare(X, Ty) G
+
+
+eval_e G E V
+------------------------------------- [E-Assign]
+eval_c G assign(X, E) addVal(X, V, G)
+
+
+eval_e G Cond trueVal
+eval_c G Then G1
+---------------------------------------- [E-IfThenElseTrue]
+eval_c G ifThenElse(Cond, Then, Else) G1
+
+
+eval_e G Cond falseVal
+eval_c G Else G1
+---------------------------------------- [E-IfThenElseFalse]
+eval_c G ifThenElse(Cond, Then, Else) G1
+
+
+eval_e G Cond falseVal
+---------------------------- [E-WhileFalse]
+eval_c G while(Cond, Body) G
+
+
+eval_e G Cond trueVal
+eval_c G Body G1
+eval_c G1 while(Cond, Body) G2
+------------------------------ [E-WhileTrue]
+eval_c G while(Cond, Body) G2
+
+
+lookupVal G Rec recVal(Fields)
+eval_e G E V
+--------------------------------------------------------- [E-RecUpdate]
+eval_c G recUpdate(Rec, Field, E
+       ) addVal(Rec, recVal(addVal(Field, V, Fields)), G)
+/*Update the associations by adding a new binding at the top for the
+  names which have been updated.  Alternatively, we could write a
+  replace relation.*/
+
+
+
+/*Check equality in a way appropriate to each value type*/
+Judgment val_eq : value* value
+
+-------------------------- [VE-Int]
+val_eq intVal(I) intVal(I)
+
+
+---------------------- [VE-True]
+val_eq trueVal trueVal
+
+
+------------------------ [VE-False]
+val_eq falseVal falseVal
+
+
+evalctx_eq Fields1 Fields2
+-------------------------------------- [VE-Rec]
+val_eq recVal(Fields1) recVal(Fields2)
+
