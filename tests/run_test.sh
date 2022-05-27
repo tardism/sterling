@@ -1,5 +1,10 @@
 #!/bin/bash
 
-java -jar ../grammars/sos/testing/sos.testing.jar basics:base
-java -jar ../grammars/sos/testing/sos.testing.jar basics:ext1
+if ! silver --clean -o testing.jar -I ../grammars sos:testing; then
+    echo "Unable to build testing jar"
+    exit 4
+fi
+
+java -jar testing.jar basics:base
+java -jar testing.jar basics:ext1
 

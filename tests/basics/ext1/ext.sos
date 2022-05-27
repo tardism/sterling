@@ -2,7 +2,7 @@ Module basics:ext1
 
 Builds on basics:base
 
-#Some definitions to check things happen without errors#
+/*Some definitions to check things happen without errors*/
 
 term ::= ...
        | ignore2(term, term)

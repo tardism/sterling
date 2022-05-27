@@ -1,35 +1,35 @@
 Module basics:ext1
 
 
-#Translation rule for imported relation#
+/*Translation rule for imported relation*/
 Error Expected "this module" {
   ------------- [T-Trans]*
   typeOf G A Ty
 }
 
 
-#Adding to imported fixed rules#
+/*Adding to imported fixed rules*/
 Error Expected "imported" {
   ================= [L-Bad]
   lookup G X baseTy
 }
 
 
-#Define translation of imported constructor#
-#Error Expected "z" {
+/*Define translation of imported constructor*/
+/*Error Expected "z" {
   -------------------------- [Trans-BaseTy]
   |{type}- baseTy ~~> baseTy
-}#
+}*/
 
 
-#Define a generic rule for imported relation#
+/*Define a generic rule for imported relation*/
 Error Expected "imported" {
   ----------------- [T-Generic]
   typeOf G X baseTy
 }
 
 
-#Define a rule for an imported constructor as PC#
+/*Define a rule for an imported constructor as PC*/
 Error Expected "imported" {
   ------------------------ [T-VarX]
   typeOf G var("X") baseTy
@@ -37,7 +37,7 @@ Error Expected "imported" {
 
 
 
-#Add same short type name; error when using short name#
+/*Add same short type name; error when using short name*/
 Error Expected "Indeterminate" {
   shortTy ::= shortTyConstructor2
   Translation shortTy : ctx
@@ -45,7 +45,7 @@ Error Expected "Indeterminate" {
   Judgment shortTyJudgment : shortTy*
 }
 
-#Add same short judgment name; error when using short name#
+/*Add same short judgment name; error when using short name*/
 Error Expected "Indeterminate" {
   Fixed Judgment judgment :
 
@@ -53,7 +53,7 @@ Error Expected "Indeterminate" {
   judgment
 }
 
-#Add same short constructor name; error when using short name#
+/*Add same short constructor name; error when using short name*/
 Error Expected "Indeterminate" {
   doubleConstructorTyExt ::= shortTyConstructor
   Translation doubleConstructorTyExt :
@@ -65,7 +65,7 @@ Error Expected "Indeterminate" {
 }
 
 
-#Redefine translation relation#
+/*Redefine translation relation*/
 Error Expected "unknown" {
   Translation ctx :
 }

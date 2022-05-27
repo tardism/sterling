@@ -1,6 +1,6 @@
 Module basics:base
 
-#Some defintions to use without any errors#
+/*Some defintions to use without any errors*/
 
 type ::= baseTy
        | arrowTy(type, type)

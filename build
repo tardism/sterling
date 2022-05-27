@@ -1,7 +1,6 @@
-#/bin/bash
+#!/bin/bash
 
 GRAMMAR=sos:composed
 
 SVJVM_FLAGS="-Xmx8000M -Xss40M" silver $@ -o sos-ext.jar -I grammars/ $GRAMMAR
-
 

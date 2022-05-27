@@ -1,7 +1,6 @@
 grammar sos:testing;
 
 imports sos:core;
-imports sos:core:files:concreteSyntax;
 
 imports sos:testing:concreteSyntax;
 imports sos:testing:abstractSyntax;

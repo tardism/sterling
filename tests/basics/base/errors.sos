@@ -1,13 +1,13 @@
 Module basics:base
 
-#Type declared twice#
+/*Type declared twice*/
 Error Expected "Found multiple declarations" {
   doubleTy ::= doubleTyA
   doubleTy ::= doubleTyB
   Translation doubleTy :
 }
 
-#Constructor declared twice#
+/*Constructor declared twice*/
 Error Expected "Found multiple declarations" {
   doubleConstructorTy ::= doubleConstructor
                         | doubleConstructor
@@ -15,15 +15,15 @@ Error Expected "Found multiple declarations" {
 }
 
 
-#PC not extensible:  I can't try this based on the concrete syntax#
+/*PC not extensible:  I can't try this based on the concrete syntax*/
 
 
-#Translation type not declared#
+/*Translation type not declared*/
 Error Expected "Must define translation relation type" {
   noTransRelTy ::= noTransRelTyA
 }
 
-#Translation type twice#
+/*Translation type twice*/
 Error Expected "multiple translation relation type" {
   twoTransRelTy ::= twoTransRelTyA
   Translation twoTransRelTy : type
@@ -31,20 +31,20 @@ Error Expected "multiple translation relation type" {
 }
 
 
-#Constructor with var args#
+/*Constructor with var args*/
 Error Expected "cannot contain variable types" {
   constructorVarTy ::= constructorVarTy(int, A)
   Translation constructorVarTy :
 }
 
 
-#Multiple declarations for a judgment#
+/*Multiple declarations for a judgment*/
 Error Expected "multiple declarations" {
   Judgment doubleJudgment : ctx term* type
   Fixed Judgment doubleJudgment : term type
 }
 
-#Judgment with var args#
+/*Judgment with var args*/
 Error Expected "contain variable" {
   Judgment judgmentVarTy : A term*
 }
@@ -53,7 +53,7 @@ Error Expected "contain variable" {
 }
 
 
-#Multiple translation rules#
+/*Multiple translation rules*/
 Error Expected "only define one" {
   Judgment multipleTranslationRules : ctx term*
 
@@ -65,19 +65,19 @@ Error Expected "only define one" {
 }
 
 
-#Translation declared for unknown type#
+/*Translation declared for unknown type*/
 Error Expected "for unknown" {
   Translation unknownType :
 }
 
-#Translation declared with variable args#
+/*Translation declared with variable args*/
 Error Expected "contain variable" {
   varTransType ::= varTransTypeA
   Translation varTransType : A int string
 }
 
 
-#Extensible rule for fixed judgment#
+/*Extensible rule for fixed judgment*/
 Error Expected "extensible" {
   Fixed Judgment fixedAndExtJudgment : ctx term
 
@@ -85,7 +85,7 @@ Error Expected "extensible" {
   fixedAndExtJudgment G T
 }
 
-#Fixed rule for extensible judgment#
+/*Fixed rule for extensible judgment*/
 Error Expected "fixed" {
   Judgment extAndFixedJudgment : ctx* term
 
@@ -94,8 +94,8 @@ Error Expected "fixed" {
 }
 
 
-#Translation rule for translation#
-Error Expected "relation" { #It causes two errors#
+/*Translation rule for translation*/
+Error Expected "relation" { /*It causes two errors*/
   Error Expected "translation rule" {
     --------------------- [Translate-Translation]*
     |{type}- baseTy ~~> A
@@ -103,14 +103,14 @@ Error Expected "relation" { #It causes two errors#
 }
 
 
-#Translation with unspecified form#
+/*Translation with unspecified form*/
 Error Expected "constructor" {
   ----------------- [Translate-Var]
   |{type}- A ~~> A
 }
 
 
-#Invalid conclusion forms#
+/*Invalid conclusion forms*/
 Error Expected "relation" {
   ----- [GreaterRule]
   X > Y
@@ -121,28 +121,28 @@ Error Expected "relation" {
 }
 
 
-#Not enough args to constructor#
+/*Not enough args to constructor*/
 Error Expected "arguments" {
   typeOf G X Ty
   ------------------ [ConstructorShortArgsRule]
   typeOf G app(X) Ty
 }
 
-#Not enough args to judgment#
+/*Not enough args to judgment*/
 Error Expected "arguments" {
   typeOf G X
   --------------------- [JudgmentShortArgsRule]
   typeOf G app(X, Y) Ty
 }
 
-#Too many args to constructor#
+/*Too many args to constructor*/
 Error Expected "arguments" {
   typeOf G X Ty
   ------------------------ [ConstructorExtraArgsRule]
   typeOf G app(X, Y, Z) Ty
 }
 
-#Too many args to judgment#
+/*Too many args to judgment*/
 Error Expected "arguments" {
   typeOf G X Ty V
   --------------------- [JudgmentExtraArgsRule]
@@ -150,7 +150,7 @@ Error Expected "arguments" {
 }
 
 
-#Multiple declarations of same rule name#
+/*Multiple declarations of same rule name*/
 Error Expected "multiple declarations" {
   ------------------------- [DoubleRule]
   typeOf G app(X, Y) Ty
@@ -159,7 +159,7 @@ Error Expected "multiple declarations" {
   typeOf G app(X, Y) Ty
 }
 
-#Multiple declarations of same rule name#
+/*Multiple declarations of same rule name*/
 Error Expected "multiple declarations" {
   ------------------------- [DoubleRule2]
   typeOf G app(X, Y) Ty
