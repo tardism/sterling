@@ -2,7 +2,6 @@ grammar sos:translation:prolog;
 
 
 import silver:util:cmdargs;
-import sos:core:files:concreteSyntax;
 import sos:core:modules;
 import sos:core;
 

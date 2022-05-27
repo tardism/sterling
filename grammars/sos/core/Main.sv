@@ -1,7 +1,7 @@
 grammar sos:core;
 
 
-imports sos:core:files:concreteSyntax;
+exports sos:core:files:concreteSyntax;
 imports sos:core:files:abstractSyntax;
 
 imports sos:core:modules;

@@ -13,6 +13,19 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
+aspect production negationRelation
+top::Judgment ::= rel::QName args::TermList
+{
+  top.prolog =
+      negatePrologFormula(
+         termPrologFormula(
+            applicationTerm(rel.fullJudgment.name.prolog,
+                            args.prolog)));
+  top.prologTerm = error("No Prolog term for negationRelation");
+  top.pcVar = args.pcVar;
+}
+
+
 aspect production transJudgment
 top::Judgment ::= args::TermList ty::QName t::Term translation::Term
 {

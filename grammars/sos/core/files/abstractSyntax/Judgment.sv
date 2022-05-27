@@ -80,6 +80,57 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
+abstract production negationRelation
+top::Judgment ::= rel::QName args::TermList
+{
+  top.pp = "! " ++ rel.pp ++ " " ++ args.pp_space;
+
+  args.moduleName = top.moduleName;
+
+  args.tyEnv = top.tyEnv;
+  args.constructorEnv = top.constructorEnv;
+
+  rel.judgmentEnv = top.judgmentEnv;
+  top.errors <- rel.judgmentErrors;
+
+  local freshened::TypeList = freshenTypeList(rel.judgmentType);
+  args.expectedTypes =
+       if rel.judgmentFound
+       then just(rel.judgmentType)
+       else nothing();
+  args.lastConstructor =
+       if rel.judgmentFound
+       then rel.fullJudgment.name
+       else rel;
+  args.downSubst = top.downSubst;
+  top.upSubst = args.upSubst;
+  args.finalSubst = top.finalSubst;
+
+  args.expectedPC =
+       if top.isConclusion && top.isExtensibleRule &&
+          rel.judgmentFound && rel.fullJudgment.isExtensible
+       then just(rel.fullJudgment.pcIndex)
+       else nothing();
+  args.isConclusion = top.isConclusion;
+  args.isExtensibleRule = top.isExtensibleRule;
+  args.isTranslationRule = top.isTranslationRule;
+
+  args.downVarTypes = top.downVarTypes;
+  top.upVarTypes = args.upVarTypes;
+
+  top.headRel = rel.fullJudgment;
+  top.isRelJudgment = true;
+  top.isTransJudgment = false;
+  top.transType = error("Should not access");
+
+  top.errors <-
+      if top.isConclusion
+      then [errorMessage("Cannot have a negation as a conclusion",
+                         location=top.location)]
+      else [];
+}
+
+
 abstract production transJudgment
 top::Judgment ::= args::TermList ty::QName t::Term translation::Term
 {

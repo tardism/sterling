@@ -1,1 +1,5 @@
-sos-ext -I .. sec_SOS:composed
+#!/bin/bash
+
+MODULE="sec_SOS:composed"
+
+sos-ext $@ -I .. $MODULE

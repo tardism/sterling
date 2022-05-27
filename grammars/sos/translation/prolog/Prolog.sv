@@ -123,6 +123,19 @@ top::PrologFormula ::= t::PrologTerm
 }
 
 
+abstract production negatePrologFormula
+top::PrologFormula ::= f::PrologFormula
+{
+  top.pp = "\\+ " ++ f.pp;
+
+  f.replaceVar = top.replaceVar;
+  f.replaceVal = top.replaceVal;
+  top.replaced = negatePrologFormula(f.replaced);
+
+  top.countVarOccurrences = f.countVarOccurrences;
+}
+
+
 abstract production andPrologFormula
 top::PrologFormula ::= f1::PrologFormula f2::PrologFormula
 {
