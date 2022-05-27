@@ -149,8 +149,9 @@ eval_c G1 C2 G2
 eval_c G seq(C1, C2) G2
 
 
-------------------------- [E-Declare]
-eval_c G declare(X, Ty) G
+eval_e G E V
+------------------------------------------ [E-Declare]
+eval_c G declare(X, Ty, E) addVal(X, V, G)
 
 
 eval_e G E V

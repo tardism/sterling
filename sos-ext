@@ -1,0 +1,16 @@
+#!/bin/bash
+
+THIS_SCRIPT=$(readlink -f "${BASH_SOURCE[0]}")
+
+SOS_HOME=${THIS_SCRIPT/\/sos-ext}
+
+JAR="$SOS_HOME/sos-ext.jar"
+
+
+if [ ! -f "$JAR" ]; then
+    echo "Couldn't find the jar to execute; aborting"
+    exit 2
+fi
+
+java -jar "$JAR" "$@"
+

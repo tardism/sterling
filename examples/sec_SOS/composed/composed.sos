@@ -1,0 +1,6 @@
+Module sec_SOS:composed
+
+Builds on sec_SOS:host
+Builds on sec_SOS:list
+Builds on sec_SOS:security
+

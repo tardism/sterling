@@ -27,3 +27,6 @@ hs_err_pid*
 
 # Silver generated
 build.xml
+
+# Prolog files
+*.pl

@@ -22,7 +22,7 @@ Translation recFieldExprs :
 /*Statement Commands*/
 c ::= noop
     | seq(c, c)
-    | declare(string, ty)
+    | declare(string, ty, e)
     | assign(string, e)
     | ifThenElse(e, c, c)
     | while(e, c)

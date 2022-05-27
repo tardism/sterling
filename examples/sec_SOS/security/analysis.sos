@@ -144,12 +144,21 @@ secure PC G1 C2 G2
 secure PC G seq(C1, C2) G2
 
 
------------------------------------------------ [S-Declare]
-secure PC G declare(X, Ty) addSec(X, public, G)
+level G E public
+-------------------------------------------------- [S-Declare]
+secure PC G declare(X, Ty, E) addSec(X, public, G)
 
 
------------------------------------------------- [S-DeclareSec]
-secure PC G declareSec(X, S, Ty) addSec(X, S, G)
+level G E S
+---------------------------------------- [S-DeclareSecPrivate]
+secure PC G declareSec(X, private, Ty, E
+          ) addSec(X, private, G)
+
+
+level G E public
+------------------------------------------- [S-DeclareSecPublic]
+secure public G declareSec(X, public, Ty, E
+                ) addSec(X, public, G)
 
 
 /*To assign to public var, need both PC and expr to be public*/

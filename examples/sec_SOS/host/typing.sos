@@ -124,8 +124,9 @@ typeOK G seq(C1, C2) G2
 
 
 noTy G X /*can't overwrite existing decls*/
---------------------------------------- [T-Declare]
-typeOK G declare(X, Ty) addTy(X, Ty, G)
+typeOf G E Ty
+------------------------------------------ [T-Declare]
+typeOK G declare(X, Ty, E) addTy(X, Ty, G)
 
 
 typeOf G E Ty
