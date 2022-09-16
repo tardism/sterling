@@ -11,7 +11,8 @@ imports sos:translation:prolog;
 
 
 parser p::File_c {
-  sos:core:files:concreteSyntax;
+  sos:core:common:concreteSyntax;
+  sos:core:semanticDefs:concreteSyntax;
 }
 
 

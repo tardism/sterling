@@ -1,17 +1,20 @@
 grammar sos:core;
 
 
-exports sos:core:files:concreteSyntax;
-imports sos:core:files:abstractSyntax;
+exports sos:core:semanticDefs:concreteSyntax;
+exports sos:core:semanticDefs:abstractSyntax;
 
 imports sos:core:modules;
+
+--imports sos:core:concreteDefs:concreteSyntax;
 
 
 import silver:util:cmdargs;
 
 
 parser p::File_c {
-  sos:core:files:concreteSyntax;
+  sos:core:common:concreteSyntax;
+  sos:core:semanticDefs:concreteSyntax;
 }
 
 

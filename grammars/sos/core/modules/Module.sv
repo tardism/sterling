@@ -1,8 +1,8 @@
 grammar sos:core:modules;
 
+imports sos:core:semanticDefs:concreteSyntax;
 
-imports sos:core:files:concreteSyntax;
-imports sos:core:files:abstractSyntax;
+imports sos:core:semanticDefs:abstractSyntax;
 
 
 --Sets of declarations known to modules

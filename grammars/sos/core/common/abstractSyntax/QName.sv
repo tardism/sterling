@@ -1,9 +1,9 @@
-grammar sos:core:files:abstractSyntax;
+grammar sos:core:common:abstractSyntax;
 
 
 nonterminal QName with
    pp,
-   tyEnv, constructorEnv, judgmentEnv,
+   tyEnv, constructorEnv,
    location;
 
 
@@ -30,11 +30,6 @@ synthesized attribute constrType::Type occurs on QName;
 synthesized attribute constrTypeArgs::TypeList occurs on QName;
 synthesized attribute constrFound::Boolean occurs on QName;
 synthesized attribute fullConstrName::QName occurs on QName;
---
-synthesized attribute judgmentErrors::[Message] occurs on QName;
-synthesized attribute judgmentType::TypeList occurs on QName;
-synthesized attribute judgmentFound::Boolean occurs on QName;
-synthesized attribute fullJudgment::JudgmentEnvItem occurs on QName;
 
 abstract production baseName
 top::QName ::= name::String
@@ -86,27 +81,6 @@ top::QName ::= name::String
   top.constrTypeArgs = head(possibleCons).types;
   top.constrFound = length(possibleCons) == 1;
   top.fullConstrName = head(possibleCons).name;
-
-  production attribute possibleJudgments::[JudgmentEnvItem];
-  possibleJudgments = lookupEnv(top, top.judgmentEnv);
-  top.judgmentErrors =
-      case possibleJudgments of
-      | [] -> [errorMessage("Unknown judgment " ++ top.pp,
-                            location=top.location)]
-      | [_] -> []
-      | l ->
-        [errorMessage("Indeterminate judgment " ++
-            top.pp ++ "; possibilities are " ++
-            implode(", ", map((.pp), map((.name), l))),
-            location=top.location)]
-      end;
-  top.judgmentType = head(possibleJudgments).types;
-  top.judgmentFound = length(possibleJudgments) == 1;
-  top.fullJudgment =
-      if top.judgmentFound
-      then head(possibleJudgments)
-      else errorJudgmentEnvItem(top,
-              nilTypeList(location=top.location));
 
   top.isEqual = top.compareTo.base == name;
 }
@@ -161,23 +135,6 @@ top::QName ::= name::String rest::QName
   top.constrTypeArgs = head(possibleCons).types;
   top.constrFound = length(possibleCons) == 1;
   top.fullConstrName = head(possibleCons).name;
-
-  production attribute possibleJudgments::[JudgmentEnvItem];
-  possibleJudgments = lookupEnv(top, top.judgmentEnv);
-  top.judgmentErrors =
-      case possibleJudgments of
-      | [] -> [errorMessage("Unknown judgment " ++ top.pp,
-                            location=top.location)]
-      | [_] -> []
-      | l ->
-        [errorMessage("Indeterminate judgment " ++
-            top.pp ++ "; possibilities are " ++
-            implode(", ", map((.pp), map((.name), l))),
-            location=top.location)]
-      end;
-  top.judgmentType = head(possibleJudgments).types;
-  top.judgmentFound = length(possibleJudgments) == 1;
-  top.fullJudgment = head(possibleJudgments);
 
   rest.compareTo =
        case top.compareTo of

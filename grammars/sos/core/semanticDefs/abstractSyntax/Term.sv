@@ -1,4 +1,4 @@
-grammar sos:core:files:abstractSyntax;
+grammar sos:core:semanticDefs:abstractSyntax;
 
 
 nonterminal Term with

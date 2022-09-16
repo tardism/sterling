@@ -1,7 +1,7 @@
 grammar sos:translation:prolog;
 
 
-imports sos:core:files:abstractSyntax;
+imports sos:core:semanticDefs:abstractSyntax;
 
 
 --Prolog translation of a construct

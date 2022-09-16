@@ -1,4 +1,4 @@
-grammar sos:core:files:abstractSyntax;
+grammar sos:core:semanticDefs:abstractSyntax;
 
 
 inherited attribute subst::Substitution;
@@ -15,28 +15,22 @@ inherited attribute freshenLoc::Location;
 --whether there are var types contained within
 synthesized attribute containsVars::Boolean;
 
+synthesized attribute isPC::Boolean;
+synthesized attribute foundPC::Boolean;
 
-nonterminal Type with
-   pp,
-   tyEnv, errors, isError,
+
+attribute
    subst, substituted<Type>,
    unifyWith<Type>, unifyLoc, downSubst, upSubst,
    freshen<Type>, freshenSubst,
    isExtensible,
-   type, --full type (e.g. ty becomes mod:ule:ty)
-   containsVars,
-   location;
-propagate errors on Type;
+   isPC,
+   containsVars
+occurs on Type;
 
-abstract production nameType
+aspect production nameType
 top::Type ::= name::QName
 {
-  top.pp = name.pp;
-
-  name.tyEnv = top.tyEnv;
-  top.errors <- name.tyErrors;
-  top.isError = !name.tyFound;
-
   top.substituted = nameType(name, location=top.location);
 
   top.upSubst =
@@ -56,11 +50,7 @@ top::Type ::= name::QName
 
   --assume all name types are extensible
   top.isExtensible = true;
-
-  top.type =
-      if name.tyFound
-      then name.fullTy
-      else errorType(location=top.location);
+  top.isPC = false;
 
   top.containsVars = false;
 }
@@ -90,6 +80,7 @@ top::Type ::= name::String
 
   --assume variable types are not extensible, as undetermined
   top.isExtensible = false;
+  top.isPC = false;
 
   top.type = top;
 
@@ -99,11 +90,9 @@ top::Type ::= name::String
 }
 
 
-abstract production intType
+aspect production intType
 top::Type ::=
 {
-  top.pp = "int";
-
   top.substituted = intType(location=top.location);
 
   top.upSubst =
@@ -119,20 +108,15 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
-
-  top.type = top;
-
-  top.isError = false;
+  top.isPC = false;
 
   top.containsVars = false;
 }
 
 
-abstract production stringType
+aspect production stringType
 top::Type ::=
 {
-  top.pp = "string";
-
   top.substituted = stringType(location=top.location);
 
   top.upSubst =
@@ -148,20 +132,15 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
-
-  top.type = top;
-
-  top.isError = false;
+  top.isPC = false;
 
   top.containsVars = false;
 }
 
 
-abstract production errorType
+aspect production errorType
 top::Type ::=
 {
-  top.pp = "<error>";
-
   top.substituted = errorType(location=top.location);
 
   top.upSubst = top.downSubst;
@@ -170,67 +149,56 @@ top::Type ::=
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
-
-  top.type = top;
-
-  top.isError = true;
+  top.isPC = false;
 
   top.containsVars = false;
+}
+
+
+abstract production pcType
+top::Type ::= t::Type
+{
+  top.errors <-
+      if t.isExtensible
+      then []
+      else [errorMessage("Type " ++ t.pp ++ " declared as primary " ++
+                         "component is not extensible",
+                         location=top.location)];
+
+  top.isPC = true;
+
+  forwards to t;
 }
 
 
 
 
 
-nonterminal TypeList with
-   pp_comma, pp_space,
-   tyEnv, errors,
-   toList<Type>, len,
+attribute
    subst, substituted<TypeList>,
    freshen<TypeList>, freshenSubst,
-   types, --full types using Type.type
-   containsVars,
-   location;
-propagate errors on TypeList;
+   pcIndex, foundPC,
+   containsVars
+occurs on TypeList;
 
---To check whether the PC is an extensible type, the index of it
---When 0, it should be an extensible type
-inherited attribute expectedPCIndex::Maybe<Integer> occurs on TypeList;
-
-abstract production nilTypeList
+aspect production nilTypeList
 top::TypeList ::=
 {
-  top.pp_comma = "";
-  top.pp_space = "";
-
-  top.toList = [];
-  top.len = 0;
-
   top.substituted = nilTypeList(location=top.location);
 
   top.freshen = nilTypeList(location=top.location);
   top.freshenSubst = emptySubst();
 
-  top.types = nilTypeList(location=top.location);
+  top.pcIndex = error("pcIndex on nilTypeList");
+  top.foundPC = false;
 
   top.containsVars = false;
 }
 
 
-abstract production consTypeList
+aspect production consTypeList
 top::TypeList ::= t::Type rest::TypeList
 {
-  top.pp_comma = if rest.pp_comma == ""
-                 then t.pp else t.pp ++ ", " ++ rest.pp_comma;
-  top.pp_space = if rest.pp_space == ""
-                 then t.pp else t.pp ++ " " ++ rest.pp_space;
-
-  t.tyEnv = top.tyEnv;
-  rest.tyEnv = top.tyEnv;
-
-  top.toList = t::rest.toList;
-  top.len = 1 + rest.len;
-
   t.subst = top.subst;
   rest.subst = top.subst;
   top.substituted =
@@ -245,18 +213,19 @@ top::TypeList ::= t::Type rest::TypeList
   top.freshenSubst =
       joinSubst(t.freshenSubst, freshenSubstituted.freshenSubst);
 
-  rest.expectedPCIndex =
-       bind(top.expectedPCIndex, \ x::Integer -> just(x - 1));
+  top.pcIndex =
+      if t.isPC
+      then 0
+      else rest.pcIndex + 1;
+  top.foundPC = t.isPC || rest.foundPC;
   top.errors <-
-      case top.expectedPCIndex of
-      | just(0) when !t.isExtensible ->
-        [errorMessage("Primary component must be an extensible " ++
-            "type; found non-extensible type " ++ t.pp,
-            location=top.location)]
-      | _ -> []
-      end;
-
-  top.types = consTypeList(t.type, rest.types, location=top.location);
+      if t.isPC
+      then if rest.foundPC
+           then 
+             [errorMessage("Two primary components declared for " ++
+                           "same relation", location=top.location)]
+           else []
+      else [];
 
   top.containsVars = t.containsVars || rest.containsVars;
 }

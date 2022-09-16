@@ -1,12 +1,6 @@
-grammar sos:core:files:concreteSyntax;
+grammar sos:core:semanticDefs:concreteSyntax;
 
 
-synthesized attribute ast<a>::a;
-
---To find the PC location for a judgment declaration
---Zero-based:  Judgment name : a b* c  has pcIndex = [1]
---Use a list to detect multiple declarations (error condition)
-synthesized attribute pcIndex::[Integer];
 --How far we are into a list
 inherited attribute index::Integer;
 
@@ -14,12 +8,8 @@ inherited attribute index::Integer;
 closed nonterminal File_c with ast<File>, location;
 
 concrete productions top::File_c
-| 'Module' name::LowerQName_t x::EmptyNewlines d::DeclList_c
-  { top.ast = file(toQName(name.lexeme, name.location),
-                   d.ast, location=top.location); }
-| 'Module' name::LowerId_t x::EmptyNewlines d::DeclList_c
-  { top.ast = file(toQName(name.lexeme, name.location),
-                   d.ast, location=top.location); }
+| name::ModuleDecl_c x::EmptyNewlines d::DeclList_c
+  { top.ast = file(name.ast, d.ast, location=top.location); }
 
 
 
@@ -55,103 +45,34 @@ closed nonterminal JudgmentDecl_c with ast<JudgmentDecl>, location;
 
 concrete productions top::JudgmentDecl_c
 | 'Judgment' name::LowerId_t ':' type::TypeList_c Newline_t
-  { type.index = 0;
-    top.ast =
-        case type.pcIndex of
-        | [] ->
-          errorJudgmentDecl(
-             [errorMessage("Extensible judgment " ++ name.lexeme ++
-                 " must have a primary component declared",
-                 location=top.location)],
-             name.lexeme, type.ast, location=top.location)
-        | [i] -> extJudgmentDecl(name.lexeme, type.ast, i,
-                                 location=top.location)
-        | l ->
-          errorJudgmentDecl(
-             [errorMessage("Extensible judgment " ++ name.lexeme ++
-                 " must have only one primary component declared; " ++
-                 "found " ++ toString(length(l)) ++ " declared",
-                  location=top.location)],
-             name.lexeme, type.ast, location=top.location)
-        end;
+  { top.ast = extJudgmentDecl(name.lexeme, type.ast,
+                              location=top.location);
   }
 | 'Fixed' 'Judgment' name::LowerId_t ':' type::TypeList_c Newline_t
-  { type.index = 0;
-    top.ast =
-        case type.pcIndex of
-        | [] -> fixedJudgmentDecl(name.lexeme, type.ast,
-                                  location=top.location)
-        | l ->
-          errorJudgmentDecl(
-             [errorMessage("Fixed judgment " ++ name.lexeme ++
-                 " cannot have a primary component declared; " ++
-                 "found " ++ toString(length(l)) ++ " declared",
-                 location=top.location)],
-             name.lexeme, type.ast, location=top.location)
-        end;
+  { top.ast = fixedJudgmentDecl(name.lexeme, type.ast,
+                                location=top.location);
   }
 | 'Translation' tyname::LowerId_t ':' type::TypeList_c Newline_t
-  { type.index = 0;
-    top.ast =
-        case type.pcIndex of
-        | [] -> translationTypeDecl(tyname.lexeme, type.ast,
-                                    location=top.location)
-        | l ->
-          errorTranslationDecl(
-             [errorMessage("Translation declaration for " ++
-                 tyname.lexeme ++ " cannot have a primary " ++
-                 "component declared; found " ++
-                 toString(length(l)) ++ " declared",
-                 location=top.location)],
-             tyname.lexeme, type.ast, location=top.location)
-        end;
+  { top.ast = translationTypeDecl(tyname.lexeme, type.ast,
+                                  location=top.location);
   }
 
 
 
-closed nonterminal TypeList_c with
-   ast<TypeList>, location, pcIndex, index;
+closed nonterminal TypeList_c with ast<TypeList>, location;
 
 concrete productions top::TypeList_c
 |
-  { top.ast = nilTypeList(location=top.location);
-    top.pcIndex = []; }
+  { top.ast = nilTypeList(location=top.location); }
 | ty::Type_c rest::TypeList_c
-  { top.ast = consTypeList(ty.ast, rest.ast, location=top.location);
-    ty.index = top.index;
-    rest.index = top.index + 1;
-    top.pcIndex = ty.pcIndex ++ rest.pcIndex;
-  }
+  { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
 
-
-closed nonterminal Type_c with ast<Type>, location, pcIndex, index;
 
 concrete productions top::Type_c
-| 'int'
-  { top.ast = intType(location=top.location);
-    top.pcIndex = []; }
-| 'string'
-  { top.ast = stringType(location=top.location);
-    top.pcIndex = []; }
-| ty::LowerId_t
-  { top.ast = nameType(toQName(ty.lexeme, ty.location),
-                       location=top.location);
-    top.pcIndex = []; }
-| ty::LowerQName_t
-  { top.ast = nameType(toQName(ty.lexeme, ty.location),
-                       location=top.location);
-    top.pcIndex = []; }
 | var::UpperId_t
-  { top.ast = varType(var.lexeme, location=top.location);
-    top.pcIndex = []; }
-| ty::LowerId_t '*'
-  { top.ast = nameType(toQName(ty.lexeme, ty.location),
-                       location=top.location);
-    top.pcIndex = [top.index]; }
-| ty::LowerQName_t '*'
-  { top.ast = nameType(toQName(ty.lexeme, ty.location),
-                       location=top.location);
-    top.pcIndex = [top.index]; }
+  { top.ast = varType(var.lexeme, location=top.location); }
+| ty::Type_c '*'
+  { top.ast = pcType(ty.ast, location=ty.location); }
 
 
 
@@ -430,21 +351,4 @@ concrete productions top::CommaTermList_c
 --the grammar ambiguous
 | t::Term_c ',' x::EmptyNewlines rest::CommaTermList_c
   { top.ast = consTermList(t.ast, rest.ast, location=top.location); }
-
-
-
-{-
-  Because newlines are not a part of our ignore terminals and are used
-  as part of the actual syntax, we need to explicitly add them in the
-  places where we want to allow them but not require them.  We use
-  this nonterminal to allow the extra, unneeded newlines, but also not
-  require them.
--}
-closed nonterminal EmptyNewlines;
-
-concrete productions top::EmptyNewlines
-|
-  { }
-| Newline_t rest::EmptyNewlines
-  { }
 

@@ -1,4 +1,4 @@
-grammar sos:core:files:abstractSyntax;
+grammar sos:core:semanticDefs:abstractSyntax;
 
 
 nonterminal JudgmentDecl with
@@ -13,7 +13,7 @@ propagate errors on JudgmentDecl;
 --New rules can be added, but only for new PC constructors
 --pcIndex is zero-based into list of arguments
 abstract production extJudgmentDecl
-top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
+top::JudgmentDecl ::= name::String ty::TypeList
 {
   top.pp = "Judgment " ++ name ++ " : " ++ ty.pp_space ++ "\n";
 
@@ -21,11 +21,13 @@ top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
 
   top.tyDecls = [];
   top.constructorDecls = [];
-  top.judgmentDecls = [extJudgmentEnvItem(fullName, ty, pcIndex)];
+  top.judgmentDecls =
+      if ty.foundPC
+      then [extJudgmentEnvItem(fullName, ty, ty.pcIndex)]
+      else [errorJudgmentEnvItem(fullName, ty)];
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
-  ty.expectedPCIndex = just(pcIndex);
 
   --Check there is only one declaration of this judgment
   local possibleJudgments::[JudgmentEnvItem] =
@@ -47,8 +49,11 @@ top::JudgmentDecl ::= name::String ty::TypeList pcIndex::Integer
                fullName.pp ++ " cannot contain variable types",
                location=top.location)];
 
-  local pcFound::Boolean = ty.len > pcIndex;
-  production pcType::Type = head(drop(pcIndex, ty.types.toList));
+  local pcFound::Boolean = ty.foundPC;
+  production pcType::Type =
+      if ty.foundPC
+      then head(drop(ty.pcIndex, ty.types.toList))
+      else errorType(location=top.location);
 
   --PC must be within the types
   top.errors <-
@@ -123,7 +128,13 @@ top::JudgmentDecl ::= name::String ty::TypeList
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
-  ty.expectedPCIndex = nothing();
+
+  top.errors <-
+      if ty.foundPC
+      then [errorMessage("Fixed judgment " ++ fullName.pp ++
+                         " has a primary component but cannot",
+                         location=top.location)]
+      else [];
 
   --Check there is only one declaration of this judgment
   local possibleJudgments::[JudgmentEnvItem] =
@@ -162,7 +173,6 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
-  ty.expectedPCIndex = nothing();
 
   top.errors <- errs;
 
@@ -197,7 +207,6 @@ top::JudgmentDecl ::= tyname::String args::TypeList
       [translationEnvItem(addQNameBase(top.moduleName, tyname), args)];
 
   args.tyEnv = top.tyEnv;
-  args.expectedPCIndex = nothing();
 
   --Check if type is declared as part of this module
   local possibleTys::[TypeEnvItem] =
@@ -234,7 +243,6 @@ top::JudgmentDecl ::= errs::[Message] tyname::String args::TypeList
       [translationEnvItem(addQNameBase(top.moduleName, tyname), args)];
 
   args.tyEnv = top.tyEnv;
-  args.expectedPCIndex = nothing();
 
   top.errors <- errs;
 }
