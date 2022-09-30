@@ -148,7 +148,6 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
   top.judgmentDecls = [];
 
   tyargs.tyEnv = top.tyEnv;
-  tyargs.expectedPCIndex = nothing();
 
   --Check this constructor is only declared once
   local possibleCons::[ConstructorEnvItem] =

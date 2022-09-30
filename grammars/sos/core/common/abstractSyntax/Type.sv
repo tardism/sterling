@@ -8,6 +8,11 @@ nonterminal Type with
    location;
 propagate errors on Type;
 
+--"Equality" also accepts error type with anything
+--Since this is intended for error checking, we assume the error for
+--   the error type has already been produced
+attribute compareTo, isEqual occurs on Type;
+
 abstract production nameType
 top::Type ::= name::QName
 {
@@ -21,6 +26,13 @@ top::Type ::= name::QName
       if name.tyFound
       then name.fullTy
       else errorType(location=top.location);
+
+  top.isEqual =
+      case top.compareTo of
+      | nameType(x) -> x == name
+      | errorType() -> true
+      | _ -> false
+      end;
 }
 
 
@@ -32,6 +44,13 @@ top::Type ::=
   top.type = top;
 
   top.isError = false;
+
+  top.isEqual =
+      case top.compareTo of
+      | intType() -> true
+      | errorType() -> true
+      | _ -> false
+      end;
 }
 
 
@@ -43,6 +62,13 @@ top::Type ::=
   top.type = top;
 
   top.isError = false;
+
+  top.isEqual =
+      case top.compareTo of
+      | stringType() -> true
+      | errorType() -> true
+      | _ -> false
+      end;
 }
 
 
@@ -54,6 +80,8 @@ top::Type ::=
   top.type = top;
 
   top.isError = true;
+
+  top.isEqual = true;
 }
 
 
@@ -68,9 +96,7 @@ nonterminal TypeList with
    location;
 propagate errors on TypeList;
 
---To check whether the PC is an extensible type, the index of it
---When 0, it should be an extensible type
-inherited attribute expectedPCIndex::Maybe<Integer> occurs on TypeList;
+attribute compareTo, isEqual occurs on TypeList;
 
 abstract production nilTypeList
 top::TypeList ::=
@@ -82,6 +108,12 @@ top::TypeList ::=
   top.len = 0;
 
   top.types = nilTypeList(location=top.location);
+
+  top.isEqual =
+      case top.compareTo of
+      | nilTypeList() -> true
+      | _ -> false
+      end;
 }
 
 
@@ -100,5 +132,21 @@ top::TypeList ::= t::Type rest::TypeList
   top.len = 1 + rest.len;
 
   top.types = consTypeList(t.type, rest.types, location=top.location);
+
+  t.compareTo =
+    case top.compareTo of
+    | consTypeList(x, _) -> x
+    | _ -> error("No type")
+    end;
+  rest.compareTo =
+       case top.compareTo of
+       | consTypeList(_, x) -> x
+       | _ -> error("No type")
+       end;
+  top.isEqual =
+      case top.compareTo of
+      | consTypeList(x, _) -> t.isEqual && rest.isEqual
+      | _ -> false
+      end;
 }
 

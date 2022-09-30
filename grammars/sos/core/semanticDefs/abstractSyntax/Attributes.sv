@@ -1,6 +1,6 @@
 grammar sos:core:semanticDefs:abstractSyntax;
 
-exports sos:core:common:abstractSyntax;
+imports sos:core:common:abstractSyntax;
 
 
 --Environments to pass things down

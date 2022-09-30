@@ -9,14 +9,12 @@ import sos:core;
 function main
 IOVal<Integer> ::= args::[String] ioin::IOToken
 {
-  return run(args, p, ioin);
+  return run(args, abstractSyntaxParser, concreteSyntaxParser, ioin);
 }
 
 
 aspect function run
-IOVal<Integer> ::= args::[String]
-                   fileParse::(ParseResult<File_c> ::= String String)
-                   ioin::IOToken
+IOVal<Integer> ::= _ _ _ _
 {
   actions <- [runProlog];
 }

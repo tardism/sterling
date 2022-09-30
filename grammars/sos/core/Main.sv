@@ -1,33 +1,41 @@
 grammar sos:core;
 
 
-exports sos:core:semanticDefs:concreteSyntax;
+imports sos:core:semanticDefs:concreteSyntax;
 exports sos:core:semanticDefs:abstractSyntax;
 
 imports sos:core:modules;
 
---imports sos:core:concreteDefs:concreteSyntax;
+imports sos:core:concreteDefs:concreteSyntax;
 
 
 import silver:util:cmdargs;
 
 
-parser p::File_c {
+parser abstractSyntaxParser::File_c {
   sos:core:common:concreteSyntax;
   sos:core:semanticDefs:concreteSyntax;
+}
+
+parser concreteSyntaxParser::ConcreteFile_c {
+  sos:core:common:concreteSyntax;
+  sos:core:concreteDefs:concreteSyntax;
 }
 
 
 function main
 IOVal<Integer> ::= args::[String] ioin::IOToken
 {
-  return run(args, p, ioin);
+  return run(args, abstractSyntaxParser, concreteSyntaxParser, ioin);
 }
 
 
 function run
 IOVal<Integer> ::= args::[String]
-                   fileParse::(ParseResult<File_c> ::= String String)
+                   abstractFileParse::(ParseResult<File_c> ::=
+                                          String String)
+                   concreteFileParse::(ParseResult<ConcreteFile_c> ::=
+                                          String String)
                    ioin::IOToken
 {
   production attribute actions::[(IOVal<Integer> ::= ModuleList
@@ -46,8 +54,8 @@ IOVal<Integer> ::= args::[String]
         if null(a.rootLoc) then "" else head(a.rootLoc);
 
   local modules::IOVal<Either<String ModuleList>> =
-        buildModuleList(a.generateModuleName, rootLoc, fileParse,
-                        ioin);
+        buildModuleList(a.generateModuleName, rootLoc,
+                        abstractFileParse, concreteFileParse, ioin);
 
   return
      case e of

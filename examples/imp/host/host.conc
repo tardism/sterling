@@ -1,0 +1,47 @@
+Module imp:host
+
+ignore   /\n\r\t /
+
+name_t   /[a-z][a-zA-Z0-9_]*/
+int_t    /[0-9]+/
+
+eq_t      /=/
+deq_t     /==/
+plus_t    /\+/
+or_t      /\|\|/
+and_t     /&&/
+gt_t      />/
+
+true_t    /true/
+false_t   /false/
+
+noop_t    /noop/
+while_t   /while/
+do_t      /do/
+if_t      /if/
+then_t    /then/
+else_t    /else/
+end_t     /end/
+seq_t     /;/
+
+
+a_conc<a> ::= a_conc plus_t a_conc ~~> plus($1, $3)
+            | a2_conc ~~> $1
+a2_conc<a> ::= int_t ~~> num($to_int($1))
+             | name_t ~~> name($1)
+
+b_conc<b> ::= b_conc or_t b_conc ~~> or($1, $3)
+            | b2_conc ~~> $1
+b2_conc<b> ::= b_conc and_t b_conc ~~> and($1, $3)
+             | b3_conc ~~> $1
+b3_conc<b> ::= a_conc gt_t a_conc ~~> greater($1, $3)
+             | a_conc deq_t a_conc ~~> eq($1, $3)
+             | true_t ~~> true
+             | false_t ~~> false
+
+c_conc<c> ::= noop_t ~~> noop
+            | name_t eq_t a_conc seq_t ~~> assign($1, $3)
+            | if_t b_conc then_t c_conc else_t c_conc end_t ~~>
+              ifThenElse($2, $4, $6)
+            | while_t b_conc do_t c_conc end_t ~~> while($2, $4)
+            | c_conc c_conc ~~> seq($1, $2)

@@ -87,6 +87,9 @@ top::Type ::= name::String
   top.isError = false;
 
   top.containsVars = true;
+
+  --This doesn't really fit for forwarding to anything actual
+  forwards to errorType(location=top.location);
 }
 
 

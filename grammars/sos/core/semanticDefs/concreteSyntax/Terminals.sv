@@ -1,6 +1,7 @@
 grammar sos:core:semanticDefs:concreteSyntax;
 
-exports sos:core:common:concreteSyntax;
+imports sos:core:common:concreteSyntax;
+imports sos:core:common:abstractSyntax;
 
 imports sos:core:semanticDefs:abstractSyntax;
 

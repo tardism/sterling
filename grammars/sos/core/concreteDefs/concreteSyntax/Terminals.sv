@@ -1,9 +1,12 @@
 grammar sos:core:concreteDefs:concreteSyntax;
 
 imports sos:core:common:concreteSyntax;
+imports sos:core:common:abstractSyntax;
+
+imports sos:core:concreteDefs:abstractSyntax;
 
 
-terminal Ignore_t   'ignore';
+terminal Ignore_t   'ignore' lexer classes {KEYWORD};
 
 terminal Integer_t   /-?[0-9]+/;
 terminal String_t    /"([^"]|(\\"))*"/;
@@ -11,23 +14,25 @@ terminal String_t    /"([^"]|(\\"))*"/;
 terminal ProdPart_t   /$[0-9]+/;
 terminal ToInt_t      '$to_int';
 
-terminal LParen_t   '(';
-terminal RParen_t   ')';
+terminal LParen_t   '(' lexer classes {REGEX_SYMBOL};
+terminal RParen_t   ')' lexer classes {REGEX_SYMBOL};
 terminal LAngle_t   '<';
 terminal RAngle_t   '>';
 terminal Comma_t    ',';
 terminal Semi_t     ';';
 terminal Colon_t    ':';
 terminal Period_t   '.';
+terminal Slash_t    '/';
 
 --Regex
-terminal LBracket_t   '[';
-terminal RBracket_t   ']';
-terminal Star_t       '*';
-terminal Plus_t       '+';
-terminal Or_t         '|';
-terminal Char_t       /./;
-terminal Range_t      '-';
+lexer class REGEX_SYMBOL dominates {Char_t};
+terminal LBracket_t   '[' lexer classes {REGEX_SYMBOL};
+terminal RBracket_t   ']' lexer classes {REGEX_SYMBOL};
+terminal Star_t       '*' lexer classes {REGEX_SYMBOL};
+terminal Plus_t       '+' lexer classes {REGEX_SYMBOL};
+terminal Or_t         '|' lexer classes {REGEX_SYMBOL};
+terminal Char_t       /.|(\\[ntr\/\\abf+*|()\[\]])|(\\[0-9][0-9][0-9])/ submits to {KEYWORD, Slash_t, Spacing_t}; --, dominates {LowerId_t};
+terminal Range_t      '-' lexer classes {REGEX_SYMBOL};
 
 terminal ColonsEq_t   '::=';
 terminal Produces_t   '~~>';

@@ -1,6 +1,7 @@
 grammar sos:translation:prolog;
 
 
+imports sos:core:common:abstractSyntax;
 imports sos:core:semanticDefs:abstractSyntax;
 
 

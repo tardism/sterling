@@ -5,7 +5,8 @@ grammar sos:core:semanticDefs:concreteSyntax;
 inherited attribute index::Integer;
 
 
-closed nonterminal File_c with ast<File>, location;
+closed nonterminal File_c layout {Spacing_t, Comment_t}
+   with ast<File>, location;
 
 concrete productions top::File_c
 | name::ModuleDecl_c x::EmptyNewlines d::DeclList_c
@@ -13,7 +14,8 @@ concrete productions top::File_c
 
 
 
-closed nonterminal DeclList_c with ast<Decls>, location;
+closed nonterminal DeclList_c layout {Spacing_t, Comment_t}
+   with ast<Decls>, location;
 
 concrete productions top::DeclList_c
 |
@@ -23,7 +25,8 @@ concrete productions top::DeclList_c
 
 
 
-closed nonterminal TopDecl_c with ast<Decls>, location;
+closed nonterminal TopDecl_c layout {Spacing_t, Comment_t}
+   with ast<Decls>, location;
 
 concrete productions top::TopDecl_c
 | 'Builds' 'on' i::LowerId_t Newline_t
@@ -41,7 +44,8 @@ concrete productions top::TopDecl_c
 
 
 
-closed nonterminal JudgmentDecl_c with ast<JudgmentDecl>, location;
+closed nonterminal JudgmentDecl_c layout {Spacing_t, Comment_t}
+   with ast<JudgmentDecl>, location;
 
 concrete productions top::JudgmentDecl_c
 | 'Judgment' name::LowerId_t ':' type::TypeList_c Newline_t
@@ -59,7 +63,8 @@ concrete productions top::JudgmentDecl_c
 
 
 
-closed nonterminal TypeList_c with ast<TypeList>, location;
+closed nonterminal TypeList_c layout {Spacing_t, Comment_t}
+   with ast<TypeList>, location;
 
 concrete productions top::TypeList_c
 |
@@ -76,7 +81,8 @@ concrete productions top::Type_c
 
 
 
-closed nonterminal AbsSyntaxDecl_c with ast<AbsSyntaxDecl>, location;
+closed nonterminal AbsSyntaxDecl_c layout {Spacing_t, Comment_t}
+   with ast<AbsSyntaxDecl>, location;
 
 concrete productions top::AbsSyntaxDecl_c
 | tyName::LowerId_t '::=' decls::AbsConstructorDecls_c
@@ -98,8 +104,8 @@ concrete productions top::AbsSyntaxDecl_c
 
 
 
-closed nonterminal AbsConstructorDecls_c with
-   ast<AbsConstructorDecls>, location;
+closed nonterminal AbsConstructorDecls_c layout {Spacing_t, Comment_t}
+   with ast<AbsConstructorDecls>, location;
 
 concrete productions top::AbsConstructorDecls_c
 | d::AbsConstructorDecl_c Newline_t
@@ -115,8 +121,8 @@ concrete productions top::AbsConstructorDecls_c
 
 
 
-closed nonterminal AbsConstructorDecl_c with
-   ast<AbsConstructorDecls>, location;
+closed nonterminal AbsConstructorDecl_c layout {Spacing_t, Comment_t}
+   with ast<AbsConstructorDecls>, location;
 
 concrete productions top::AbsConstructorDecl_c
 | name::LowerId_t
@@ -132,7 +138,8 @@ concrete productions top::AbsConstructorDecl_c
 
 
 
-closed nonterminal CommaTypeList_c with ast<TypeList>, location;
+closed nonterminal CommaTypeList_c layout {Spacing_t, Comment_t}
+   with ast<TypeList>, location;
 
 concrete productions top::CommaTypeList_c
 | ty::Type_c
@@ -144,7 +151,8 @@ concrete productions top::CommaTypeList_c
 
 
 
-closed nonterminal Rule_c with ast<Rule>, location;
+closed nonterminal Rule_c layout {Spacing_t, Comment_t}
+   with ast<Rule>, location;
 
 concrete productions top::Rule_c
 | premises::JudgmentList_c
@@ -165,7 +173,8 @@ concrete productions top::Rule_c
 
 
 
-closed nonterminal Judgment_c with ast<Judgment>, location;
+closed nonterminal Judgment_c layout {Spacing_t, Comment_t}
+   with ast<Judgment>, location;
 
 concrete productions top::Judgment_c
 | '!' rel::LowerId_t args::TermList_c
@@ -232,7 +241,8 @@ concrete productions top::Judgment_c
 
 
 
-closed nonterminal BinOp_c with ast<BinOp>, location;
+closed nonterminal BinOp_c layout {Spacing_t, Comment_t}
+   with ast<BinOp>, location;
 
 concrete productions top::BinOp_c
 | '+'
@@ -250,7 +260,8 @@ concrete productions top::BinOp_c
 
 
 
-closed nonterminal TopBinOp_c with ast<TopBinOp>, location;
+closed nonterminal TopBinOp_c layout {Spacing_t, Comment_t}
+   with ast<TopBinOp>, location;
 
 concrete productions top::TopBinOp_c
 | '='
@@ -268,7 +279,8 @@ concrete productions top::TopBinOp_c
 
 
 
-closed nonterminal JudgmentList_c with ast<JudgmentList>, location;
+closed nonterminal JudgmentList_c layout {Spacing_t, Comment_t}
+   with ast<JudgmentList>, location;
 
 concrete productions top::JudgmentList_c
 |
@@ -280,7 +292,8 @@ concrete productions top::JudgmentList_c
 
 
 
-closed nonterminal Term_c with ast<Term>, location;
+closed nonterminal Term_c layout {Spacing_t, Comment_t}
+   with ast<Term>, location;
 
 concrete productions top::Term_c
 | constant::LowerId_t
@@ -329,7 +342,8 @@ concrete productions top::Term_c
 
 
 
-closed nonterminal TermList_c with ast<TermList>, location;
+closed nonterminal TermList_c layout {Spacing_t, Comment_t}
+   with ast<TermList>, location;
 
 concrete productions top::TermList_c
 | t::Term_c
@@ -340,7 +354,8 @@ concrete productions top::TermList_c
 
 
 
-closed nonterminal CommaTermList_c with ast<TermList>, location;
+closed nonterminal CommaTermList_c layout {Spacing_t, Comment_t}
+   with ast<TermList>, location;
 
 concrete productions top::CommaTermList_c
 | t::Term_c

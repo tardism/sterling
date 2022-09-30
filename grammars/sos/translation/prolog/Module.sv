@@ -2,6 +2,7 @@ grammar sos:translation:prolog;
 
 
 import sos:core:modules;
+import sos:core:concreteDefs:abstractSyntax;
 
 
 attribute
@@ -54,7 +55,7 @@ top::Files ::=
 }
 
 
-aspect production consFiles
+aspect production consAbstractFiles
 top::Files ::= filename::String f::File rest::Files
 {
   f.prologTranslationRules_down = top.prologTranslationRules_down;
@@ -63,5 +64,15 @@ top::Files ::= filename::String f::File rest::Files
       f.prologTranslationRules ++ rest.prologTranslationRules;
 
   top.prologRules = f.prologRules ++ rest.prologRules;
+}
+
+
+aspect production consConcreteFiles
+top::Files ::= filename::String f::ConcreteFile rest::Files
+{
+  top.prologTranslationRules = rest.prologTranslationRules;
+  rest.prologTranslationRules_down = top.prologTranslationRules_down;
+
+  top.prologRules = rest.prologRules;
 }
 
