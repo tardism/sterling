@@ -1,0 +1,80 @@
+Module sec_SOS:host
+
+ignore /\n\r\t /
+
+name_t     /[a-z][A-Za-z0-9_]*/
+int_t      /[0-9]+/
+string_t   /"[a-zA-Z0-9.!@#$%^&\*\+\(\)\-]*"/
+
+plus_t   /\+/
+gt_t     />/
+eq_t     /=/
+and_t    /&&/
+or_t     /\|\|/
+dot_t    /./
+
+true_t    /true/
+false_t   /false/
+
+lparen_t   /\(/
+rparen_t   /\)/
+lcurly_t   /{/
+rcurly_t   /}/
+
+semi_t    /;/
+if_t      /if/
+then_t    /then/
+else_t    /else/
+while_t   /while/
+do_t      /do/
+end_t     /end/
+
+intTy_t    /int/
+boolTy_t   /bool/
+colon_t    /:/
+
+
+clist_c<c> ::= ~~> noop
+             | c_c clist_c ~~> seq($1, $2)
+
+c_c<c> ::= type_c name_t eq_t expr_c semi_t ~~> declare($2, $1, $4)
+         | name_t eq_t expr_c semi_t ~~> assign($1, $3)
+         | name_t dot_t name_t eq_t expr_c semi_t ~~>
+              recUpdate($1, $3, $5)
+         | if_t expr_c then_t clist_c else_t clist_c end_t ~~>
+              ifThenElse($2, $4, $6)
+         | if_t expr_c then_t clist_c end_t ~~>
+              ifThenElse($2, $4, noop)
+         | while_t expr_c do_t clist_c end_t ~~> while($2, $4)
+
+
+expr_c<e> ::= expr_c or_t and_c ~~> or($1, $3)
+            | and_c ~~> $1
+and_c<e> ::= and_c and_t comp_c ~~> and($1, $3)
+           | comp_c ~~> $1
+comp_c<e> ::= plus_c gt_t plus_c ~~> greater($1, $3)
+            | plus_c eq_t plus_c ~~> eq($1, $3)
+            | plus_c ~~> $1
+plus_c<e> ::= plus_c plus_t base_c ~~> plus($1, $3)
+            | base_c ~~> $1
+base_c<e> ::= int_t ~~> num($to_int($1))
+            | name_t ~~> name($1)
+            | true_t ~~> true
+            | false_t ~~> false
+            | lcurly_t rcurly_t ~~> recBuild(endRecFieldExprs)
+            | lcurly_t recFieldExprs_c rcurly_t ~~> recBuild($2)
+            | base_c dot_t name_t ~~> recFieldAccess($1, $3)
+
+recFieldExprs_c<recFieldExprs> ::=
+   | name_t eq_t expr_c ~~> addRecFieldExprs($1, $3, endRecFieldExprs)
+   | name_t eq_t expr_c semi_t recFieldExprs_c ~~>
+     addRecFieldExprs($1, $3, $5)
+
+
+type_c<ty> ::= intTy_t ~~> intTy
+             | boolTy_t ~~> boolTy
+             | lcurly_t rcurly_t ~~> recTy(emptyTy)
+             | lcurly_t recTyFields_c rcurly_t ~~> recTy($2)
+recTyFields_c<tyctx> ::=
+   | name_t colon_t type_c ~~> addTy($1, $3, emptyTy)
+   | name_t colon_t type_c semi_t recTyFields_c ~~> addTy($1, $3, $5)

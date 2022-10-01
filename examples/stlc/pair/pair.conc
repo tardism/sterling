@@ -1,0 +1,16 @@
+Module stlc:pair
+
+comma_t   /,/
+fst_t     /.1/
+snd_t     /.2/
+
+pair_t   /pair/
+
+
+term3_c ::= ...
+          | lparen_t term_c comma_t term_c rparen_t ~~> pair($2, $4)
+          | term3_c fst_t ~~> fst($1)
+          | term3_c snd_t ~~> snd($1)
+
+type2_c ::= ...
+          | pair_t type2_c ~~> pairTy($2)

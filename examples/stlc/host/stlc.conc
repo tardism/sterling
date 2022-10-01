@@ -1,0 +1,30 @@
+Module stlc:host
+
+ignore /\n\r\t /
+
+name_t   /[a-z][a-zA-Z0-9_]*/
+
+lparen_t   /\(/
+rparen_t   /\)/
+
+arrow_t   /->/
+base_t    /base/
+
+lambda_t   /\\/
+colon_t    /:/
+dot_t      /./
+
+
+term_c<term> ::= lambda_t name_t colon_t type_c dot_t term_c ~~>
+                    abs($2, $4, $6)
+               | term2_c ~~> $1
+term2_c<term> ::= term3_c term2_c ~~> app($1, $2)
+                | term3_c ~~> $1
+term3_c<term> ::= name_t ~~> var($1)
+                | lparen_t term_c rparen_t ~~> $2
+
+
+type_c<type> ::= type2_c arrow_t type_c ~~> arrow($1, $3)
+               | type2_c ~~> $1
+type2_c<type> ::= base_t ~~> base
+                | lparen_t type_c rparen_t ~~> $2

@@ -31,7 +31,7 @@
   (list
    ;;Keywords
    (cons
-    "\\(Module\\)\\|\\(Builds\\)\\|\\(on\\)\\|\\(Judgment\\)\\|\\(Fixed\\)\\|\\(Translation\\)"
+    "\\(Module\\)\\|\\(Builds\\)\\|\\(on\\)\\|\\(Judgment\\)\\|\\(Fixed\\)\\|\\(Translation\\)\\|\\(\\.\\.\\.\\)"
     font-lock-keyword-face)
    ;;Known types
    (cons

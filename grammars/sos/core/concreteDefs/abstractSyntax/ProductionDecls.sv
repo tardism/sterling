@@ -155,7 +155,10 @@ top::ProductionElement ::= n::QName
       then [n.concreteType]
       else [errorType(location=top.location)];
 
-  top.gatherProdElems = [(n, n.concreteType)];
+  top.gatherProdElems =
+      if n.concreteFound
+      then [(n, n.concreteType)]
+      else [(n, errorType(location=top.location))];
 }
 
 

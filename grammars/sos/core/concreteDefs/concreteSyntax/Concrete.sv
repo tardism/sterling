@@ -56,7 +56,8 @@ concrete productions top::ConcreteSyntaxDecl_c
 | ntmnl::LowerId_t '<' ty::Type_c '>' '::=' d::ConcreteProdDecls_c
   { top.ast = newConcreteNonterminal(ntmnl.lexeme, ty.ast, d.ast,
                  location=top.location); }
-| ntmnl::LowerId_t '<' ty::Type_c '>' '::=' '|' d::ConcreteProdDecls_c
+| ntmnl::LowerId_t '<' ty::Type_c '>' '::=' x::EmptyNewlines
+  '|' d::ConcreteProdDecls_c
   { top.ast = newConcreteNonterminal(ntmnl.lexeme, ty.ast, d.ast,
                  location=top.location); }
 | ntmnl::LowerId_t '::=' '.' '.' '.' x::EmptyNewlines
@@ -145,6 +146,8 @@ concrete productions top::SingleRegex_c
   { top.ast = r.ast; }
 | c::Char_t
   { top.ast = charRegex(c.lexeme, location=top.location); }
+| '-' --to deal with the precedence between Char_t and '-'
+  { top.ast = charRegex("-", location=top.location); }
 | '[' g::RegexGroup_c ']'
   { top.ast = groupRegex(g.ast, location=top.location); }
 

@@ -31,7 +31,7 @@ terminal RBracket_t   ']' lexer classes {REGEX_SYMBOL};
 terminal Star_t       '*' lexer classes {REGEX_SYMBOL};
 terminal Plus_t       '+' lexer classes {REGEX_SYMBOL};
 terminal Or_t         '|' lexer classes {REGEX_SYMBOL};
-terminal Char_t       /.|(\\[ntr\/\\abf+*|()\[\]])|(\\[0-9][0-9][0-9])/ submits to {KEYWORD, Slash_t, Spacing_t}; --, dominates {LowerId_t};
+terminal Char_t       /.|(\\[ntr\-\/\\abf+*|()\[\]])|(\\[0-9][0-9][0-9])/ submits to {KEYWORD, Slash_t, Spacing_t};
 terminal Range_t      '-' lexer classes {REGEX_SYMBOL};
 
 terminal ColonsEq_t   '::=';

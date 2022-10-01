@@ -1,0 +1,9 @@
+Module stlc:let
+
+let_t   /let/
+eq_t    /=/
+in_t    /in/
+
+
+term_c ::= ...
+         | let_t name_t eq_t term_c in_t term_c ~~> let($2, $4, $6)

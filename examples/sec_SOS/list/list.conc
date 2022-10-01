@@ -1,0 +1,31 @@
+Module sec_SOS:list
+
+nil_t     /nil/
+cons_t    /::/
+null_t    /null/
+head_t    /head/
+tail_t    /tail/
+len_t     /len/
+lsq_t     /\[/
+rsq_t     /\]/
+comma_t   /,/
+
+
+plus_c ::= ...
+   | base_c cons_t plus_c ~~> cons($1, $3)
+base_c ::= ...
+   | lsq_t listContents_c rsq_t ~~> $1
+   | lsq_t rsq_t ~~> nil
+   | nil_t ~~> nil
+   | head_t base_c ~~> head($2)
+   | tail_t base_c ~~> tail($2)
+   | null_t base_c ~~> null($2)
+   | len_t base_c ~~> length($2)
+   | base_c lsq_t expr_c rsq_t ~~> index($1, $3)
+
+listContents_c<e> ::= expr_c ~~> cons($1, nil)
+                    | expr_c comma_t listContents_c ~~> cons($1, $3)
+
+
+type_c ::= ...
+   | lsq_t type_c rsq_t ~~> listTy($2)
