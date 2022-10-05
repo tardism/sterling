@@ -11,7 +11,7 @@ terminal Ignore_t   'ignore' lexer classes {KEYWORD};
 terminal Integer_t   /-?[0-9]+/;
 terminal String_t    /"([^"]|(\\"))*"/;
 
-terminal ProdPart_t   /$[0-9]+/;
+terminal ProdPart_t   /[A-Z][a-z0-9A-Z_]*/;
 terminal ToInt_t      '$to_int';
 
 terminal LParen_t   '(' lexer classes {REGEX_SYMBOL};
@@ -23,6 +23,8 @@ terminal Semi_t     ';';
 terminal Colon_t    ':';
 terminal Period_t   '.';
 terminal Slash_t    '/';
+
+terminal DoubleColon_t   '::';
 
 --Regex
 lexer class REGEX_SYMBOL dominates {Char_t};

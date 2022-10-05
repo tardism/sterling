@@ -25,23 +25,24 @@ end_t     /end/
 seq_t     /;/
 
 
-a_conc<a> ::= a_conc plus_t a_conc ~~> plus($1, $3)
-            | a2_conc ~~> $1
-a2_conc<a> ::= int_t ~~> num($to_int($1))
-             | name_t ~~> name($1)
+a_conc<a> ::= L::a_conc plus_t R::a_conc ~~> plus(L, R)
+            | T::a2_conc ~~> T
+a2_conc<a> ::= I::int_t ~~> num($to_int(I))
+             | Name::name_t ~~> name(Name)
 
-b_conc<b> ::= b_conc or_t b_conc ~~> or($1, $3)
-            | b2_conc ~~> $1
-b2_conc<b> ::= b_conc and_t b_conc ~~> and($1, $3)
-             | b3_conc ~~> $1
-b3_conc<b> ::= a_conc gt_t a_conc ~~> greater($1, $3)
-             | a_conc deq_t a_conc ~~> eq($1, $3)
+b_conc<b> ::= L::b_conc or_t R::b_conc ~~> or(L, R)
+            | T::b2_conc ~~> T
+b2_conc<b> ::= L::b_conc and_t R::b_conc ~~> and(L, R)
+             | T::b3_conc ~~> T
+b3_conc<b> ::= L::a_conc gt_t R::a_conc ~~> greater(L, R)
+             | L::a_conc deq_t R::a_conc ~~> eq(L, R)
              | true_t ~~> true
              | false_t ~~> false
 
 c_conc<c> ::= noop_t ~~> noop
-            | name_t eq_t a_conc seq_t ~~> assign($1, $3)
-            | if_t b_conc then_t c_conc else_t c_conc end_t ~~>
-              ifThenElse($2, $4, $6)
-            | while_t b_conc do_t c_conc end_t ~~> while($2, $4)
-            | c_conc c_conc ~~> seq($1, $2)
+            | Name::name_t eq_t A::a_conc seq_t ~~> assign(Name, A)
+            | if_t Cond::b_conc then_t Th::c_conc else_t El::c_conc end_t ~~>
+                 ifThenElse(Cond, Th, El)
+            | while_t Cond::b_conc do_t Body::c_conc end_t ~~>
+                 while(Cond, Body)
+            | L::c_conc R::c_conc ~~> seq(L, R)

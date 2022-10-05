@@ -25,6 +25,6 @@ synthesized attribute nextArgumentIndex::Integer;
 inherited attribute lastConstructor::QName;
 
 
-inherited attribute productionElements::[(QName, Type)];
+inherited attribute productionElements::[(String, QName, Type, Location)];
 
-synthesized attribute gatherProdElems::[(QName, Type)];
+synthesized attribute gatherProdElems::[(String, QName, Type, Location)];

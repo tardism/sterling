@@ -1,5 +1,10 @@
 grammar sos:core:concreteDefs:abstractSyntax;
 
+
+--For one location display
+import silver:langutil only unparse;
+
+
 nonterminal ConcreteSyntaxDecl with
    pp,
    moduleName,
@@ -107,6 +112,33 @@ top::ConcreteProdDecls ::= p::ProductionElement t::Term
   p.concreteEnv = top.concreteEnv;
 
   t.productionElements = p.gatherProdElems;
+
+  --We want to catch if there are multiple definitions of a var
+  --Sort it by var name to get all the same var together
+  local sorted::[(String, QName, Type, Location)] =
+     sortBy(\ p1::(String, QName, Type, Location)
+              p2::(String, QName, Type, Location) ->
+              p1.1 < p2.1,
+            t.productionElements);
+  --Group it by name to get all the same var together
+  local grouped::[[(String, QName, Type, Location)]] =
+     groupBy(\ p1::(String, QName, Type, Location)
+               p2::(String, QName, Type, Location) ->
+               p1.1 == p2.1,
+             sorted);
+  top.errors <-
+      foldr(\ l::[(String, QName, Type, Location)] rest::[Message] ->
+              if length(l) <= 1
+              then rest
+              else errorMessage("Multiple definitions of variable " ++
+                      head(l).1 ++ " in concrete production; " ++
+                      "types given are " ++
+                      implode(", ",
+                         map(\ p::(String, QName, Type, Location) ->
+                               p.2.pp ++ " at " ++ p.4.unparse,
+                             l)),
+                      location=top.location)::rest,
+            [], grouped);
 }
 
 
@@ -118,7 +150,6 @@ nonterminal ProductionElement with
    moduleName,
    concreteEnv,
    gatherProdElems,
-   typeList,
    errors,
    location;
 propagate errors on ProductionElement;
@@ -134,14 +165,29 @@ top::ProductionElement ::= d1::ProductionElement d2::ProductionElement
   d1.concreteEnv = top.concreteEnv;
   d2.concreteEnv = top.concreteEnv;
 
-  top.typeList = d1.typeList ++ d2.typeList;
-
   top.gatherProdElems = d1.gatherProdElems ++ d2.gatherProdElems;
 }
 
 
 --Name should refer to either a nonterminal or a terminal
 abstract production nameProductionElement
+top::ProductionElement ::= var::String n::QName
+{
+  top.pp = var ++ "::" ++ n.pp;
+
+  n.concreteEnv = top.concreteEnv;
+
+  top.errors <- n.concreteErrors;
+
+  top.gatherProdElems =
+      if n.concreteFound
+      then [(var, n, n.concreteType, top.location)]
+      else [(var, n, errorType(location=top.location), top.location)];
+}
+
+
+--Name should refer to either a nonterminal or a terminal
+abstract production unnamedProductionElement
 top::ProductionElement ::= n::QName
 {
   top.pp = n.pp;
@@ -150,15 +196,7 @@ top::ProductionElement ::= n::QName
 
   top.errors <- n.concreteErrors;
 
-  top.typeList =
-      if n.concreteFound
-      then [n.concreteType]
-      else [errorType(location=top.location)];
-
-  top.gatherProdElems =
-      if n.concreteFound
-      then [(n, n.concreteType)]
-      else [(n, errorType(location=top.location))];
+  top.gatherProdElems = [];
 }
 
 
@@ -166,8 +204,6 @@ abstract production emptyProductionElement
 top::ProductionElement ::=
 {
   top.pp = "";
-
-  top.typeList = [];
 
   top.gatherProdElems = [];
 }

@@ -103,24 +103,25 @@ top::Term ::= t::Term
 
 
 abstract production prodIndex
-top::Term ::= i::Integer
+top::Term ::= var::String
 {
-  top.pp = "$" ++ toString(i);
+  top.pp = var;
 
-  local prodElemExists::Boolean = length(top.productionElements) >= i;
-  local prodElem::(QName, Type) =
-        head(drop(i - 1, top.productionElements));
+  local prodElem::[(QName, Type, Location)] =
+        lookupAll(var, top.productionElements);
   top.errors <-
-      if !prodElemExists
-      then [errorMessage("Production index " ++ top.pp ++ " does " ++
-               "not exist (maximum " ++
-               toString(length(top.productionElements)) ++ ")",
-               location=top.location)]
-      else [];
+      case prodElem of
+      | [] ->
+        [errorMessage("Production variable " ++ var ++ " does " ++
+                      "not exist", location=top.location)]
+      --anything with multiple is an error on the production, not here
+      | l -> []
+      end;
   top.type =
-      if prodElemExists
-      then prodElem.2
-      else errorType(location=top.location);
+      case prodElem of
+      | (_, ty, _)::_ -> ty
+      | _ -> errorType(location=top.location)
+      end;
 }
 
 

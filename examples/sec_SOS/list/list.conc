@@ -12,20 +12,20 @@ comma_t   /,/
 
 
 plus_c ::= ...
-   | base_c cons_t plus_c ~~> cons($1, $3)
+   | Hd::base_c cons_t Tl::plus_c ~~> cons(Hd, Tl)
 base_c ::= ...
-   | lsq_t listContents_c rsq_t ~~> $1
+   | lsq_t Contents::listContents_c rsq_t ~~> Contents
    | lsq_t rsq_t ~~> nil
    | nil_t ~~> nil
-   | head_t base_c ~~> head($2)
-   | tail_t base_c ~~> tail($2)
-   | null_t base_c ~~> null($2)
-   | len_t base_c ~~> length($2)
-   | base_c lsq_t expr_c rsq_t ~~> index($1, $3)
+   | head_t Lst::base_c ~~> head(Lst)
+   | tail_t Lst::base_c ~~> tail(Lst)
+   | null_t Lst::base_c ~~> null(Lst)
+   | len_t Lst::base_c ~~> length(Lst)
+   | Lst::base_c lsq_t Index::expr_c rsq_t ~~> index(Lst, Index)
 
-listContents_c<e> ::= expr_c ~~> cons($1, nil)
-                    | expr_c comma_t listContents_c ~~> cons($1, $3)
+listContents_c<e> ::= Hd::expr_c ~~> cons(Hd, nil)
+                    | Hd::expr_c comma_t Rest::listContents_c ~~> cons(Hd, Rest)
 
 
 type_c ::= ...
-   | lsq_t type_c rsq_t ~~> listTy($2)
+   | lsq_t Ty::type_c rsq_t ~~> listTy(Ty)

@@ -5,8 +5,8 @@ public_t    /public/
 
 
 c_c ::= ...
-      | seclevel_c type_c name_t eq_t expr_c semi_t ~~>
-           declareSec($3, $1, $2, $5)
+      | Level::seclevel_c Ty::type_c Name::name_t eq_t E::expr_c semi_t ~~>
+           declareSec(Name, Level, Ty, E)
 
 seclevel_c<seclevel> ::= private_t ~~> private
                        | public_t ~~> public

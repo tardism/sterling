@@ -3,4 +3,4 @@ Module imp:less
 ls_t   /</
 
 b_conc ::= ...
-         | a_conc ls_t a_conc ~~> less($1, $3)
+         | L::a_conc ls_t R::a_conc ~~> less(L, R)

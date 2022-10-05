@@ -35,46 +35,53 @@ colon_t    /:/
 
 
 clist_c<c> ::= ~~> noop
-             | c_c clist_c ~~> seq($1, $2)
+             | Here::c_c Rest::clist_c ~~> seq(Here, Rest)
 
-c_c<c> ::= type_c name_t eq_t expr_c semi_t ~~> declare($2, $1, $4)
-         | name_t eq_t expr_c semi_t ~~> assign($1, $3)
-         | name_t dot_t name_t eq_t expr_c semi_t ~~>
-              recUpdate($1, $3, $5)
-         | if_t expr_c then_t clist_c else_t clist_c end_t ~~>
-              ifThenElse($2, $4, $6)
-         | if_t expr_c then_t clist_c end_t ~~>
-              ifThenElse($2, $4, noop)
-         | while_t expr_c do_t clist_c end_t ~~> while($2, $4)
+c_c<c> ::= Ty::type_c Name::name_t eq_t E::expr_c semi_t ~~>
+              declare(Name, Ty, E)
+         | Name::name_t eq_t E::expr_c semi_t ~~> assign(Name, E)
+         | Name::name_t dot_t Field::name_t eq_t E::expr_c semi_t ~~>
+              recUpdate(Name, Field, E)
+         | if_t Cond::expr_c then_t Th::clist_c else_t El::clist_c end_t ~~>
+              ifThenElse(Cond, Th, El)
+         | if_t Cond::expr_c then_t Th::clist_c end_t ~~>
+              ifThenElse(Cond, Th, noop)
+         | while_t Cond::expr_c do_t Body::clist_c end_t ~~>
+              while(Cond, Body)
 
 
-expr_c<e> ::= expr_c or_t and_c ~~> or($1, $3)
-            | and_c ~~> $1
-and_c<e> ::= and_c and_t comp_c ~~> and($1, $3)
-           | comp_c ~~> $1
-comp_c<e> ::= plus_c gt_t plus_c ~~> greater($1, $3)
-            | plus_c eq_t plus_c ~~> eq($1, $3)
-            | plus_c ~~> $1
-plus_c<e> ::= plus_c plus_t base_c ~~> plus($1, $3)
-            | base_c ~~> $1
-base_c<e> ::= int_t ~~> num($to_int($1))
-            | name_t ~~> name($1)
+expr_c<e> ::= L::expr_c or_t R::and_c ~~> or(L, R)
+            | E::and_c ~~> E
+and_c<e> ::= L::and_c and_t R::comp_c ~~> and(L, R)
+           | E::comp_c ~~> E
+comp_c<e> ::= L::plus_c gt_t R::plus_c ~~> greater(L, R)
+            | L::plus_c eq_t R::plus_c ~~> eq(L, R)
+            | E::plus_c ~~> E
+plus_c<e> ::= L::plus_c plus_t R::base_c ~~> plus(L, R)
+            | E::base_c ~~> E
+base_c<e> ::= I::int_t ~~> num($to_int(I))
+            | Name::name_t ~~> name(Name)
             | true_t ~~> true
             | false_t ~~> false
             | lcurly_t rcurly_t ~~> recBuild(endRecFieldExprs)
-            | lcurly_t recFieldExprs_c rcurly_t ~~> recBuild($2)
-            | base_c dot_t name_t ~~> recFieldAccess($1, $3)
+            | lcurly_t Fields::recFieldExprs_c rcurly_t ~~>
+                 recBuild(Fields)
+            | E::base_c dot_t Field::name_t ~~>
+                 recFieldAccess(E, Field)
 
 recFieldExprs_c<recFieldExprs> ::=
-   | name_t eq_t expr_c ~~> addRecFieldExprs($1, $3, endRecFieldExprs)
-   | name_t eq_t expr_c semi_t recFieldExprs_c ~~>
-     addRecFieldExprs($1, $3, $5)
+   | Field::name_t eq_t E::expr_c ~~>
+        addRecFieldExprs(Field, E, endRecFieldExprs)
+   | Field::name_t eq_t E::expr_c semi_t Rest::recFieldExprs_c ~~>
+        addRecFieldExprs(Field, E, Rest)
 
 
 type_c<ty> ::= intTy_t ~~> intTy
              | boolTy_t ~~> boolTy
              | lcurly_t rcurly_t ~~> recTy(emptyTy)
-             | lcurly_t recTyFields_c rcurly_t ~~> recTy($2)
+             | lcurly_t Fields::recTyFields_c rcurly_t ~~>
+                  recTy(Fields)
 recTyFields_c<tyctx> ::=
-   | name_t colon_t type_c ~~> addTy($1, $3, emptyTy)
-   | name_t colon_t type_c semi_t recTyFields_c ~~> addTy($1, $3, $5)
+   | Field::name_t colon_t Ty::type_c ~~> addTy(Field, Ty, emptyTy)
+   | Field::name_t colon_t Ty::type_c semi_t Rest::recTyFields_c ~~>
+        addTy(Field, Ty, Rest)

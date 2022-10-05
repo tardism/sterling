@@ -97,12 +97,20 @@ closed nonterminal ProductionElements_c layout {Spacing_t, Comment_t}
    with ast<ProductionElement>, location;
 
 concrete productions top::ProductionElement_c
+| var::ProdPart_t '::' name::LowerId_t
+  { top.ast = nameProductionElement(var.lexeme,
+                 toQName(name.lexeme, name.location),
+                 location=top.location); }
+| var::ProdPart_t '::' name::LowerQName_t
+  { top.ast = nameProductionElement(var.lexeme,
+                 toQName(name.lexeme, name.location),
+                 location=top.location); }
 | name::LowerId_t
-  { top.ast = nameProductionElement(
+  { top.ast = unnamedProductionElement(
                  toQName(name.lexeme, name.location),
                  location=top.location); }
 | name::LowerQName_t
-  { top.ast = nameProductionElement(
+  { top.ast = unnamedProductionElement(
                  toQName(name.lexeme, name.location),
                  location=top.location); }
 
@@ -193,11 +201,8 @@ concrete productions top::Term_c
   x2::EmptyNewlines ')'
   { top.ast = applicationTerm(toQName(prod.lexeme, prod.location),
                               args.ast, location=top.location); }
-| index::ProdPart_t --index into the nonterminals in the production
-  { top.ast = prodIndex(
-                 toInteger(substring(1, length(index.lexeme),
-                                     index.lexeme)),
-                 location=top.location); }
+| index::ProdPart_t
+  { top.ast = prodIndex(index.lexeme, location=top.location); }
 | '$to_int' '(' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ')'
   { top.ast = toIntTerm(t.ast, location=top.location); }
 | t::Term_c '[' x1::EmptyNewlines i::Integer_t x2::EmptyNewlines ':'

@@ -6,4 +6,5 @@ in_t    /in/
 
 
 term_c ::= ...
-         | let_t name_t eq_t term_c in_t term_c ~~> let($2, $4, $6)
+         | let_t Name::name_t eq_t E1::term_c in_t E2::term_c ~~>
+              let(Name, E1, E2)

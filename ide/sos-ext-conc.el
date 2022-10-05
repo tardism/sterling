@@ -50,6 +50,10 @@
     font-lock-string-face)
    )
   )
+;;Regex
+(font-lock-add-keywords 'sos-ext-conc-mode
+  '(("\\(/\\(\\([^/\n]\\|\\(\\\\/\\)\\)*[^\n\\\\]\\)?/\\)"
+     1 font-lock-string-face t)))
 ;;Type for concrete nonterminal
 (font-lock-add-keywords 'sos-ext-conc-mode
   '(("<\\([a-zA-Z0-9_-]+\\)>" 1 font-lock-type-face t)))
@@ -63,9 +67,12 @@
   '(("\\(ignore\\) */.*/" 1 font-lock-keyword-face t)))
 (font-lock-add-keywords 'sos-ext-conc-mode
   '(("\\([a-zA-Z0-9_-]+\\) */.*/" 1 font-lock-variable-name-face t)))
-;;Production-member references
+;;Type for a production member
 (font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\\(\$[0-9]+\\)" 1 font-lock-variable-name-face t)))
+  '(("\[A-Z][a-zA-Z0-9_]*[ \n\t\r]*::[ \n\t\r]*\\([a-z][a-zA-Z0-9_]*\\)" 1 font-lock-type-face t)))
+;;Production-member references---try to make it take only names with separators
+(font-lock-add-keywords 'sos-ext-conc-mode
+  '(("[ \n\r\t(]\\(\[A-Z][a-zA-Z0-9_]*\\)" 1 font-lock-variable-name-face t)))
 
 
 (defvar sos-ext-conc-syntax-table

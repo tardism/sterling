@@ -1,10 +1,18 @@
 
 * We cannot currently run any examples.  We need:
-  + A way to write a parser for concrete syntax.  This can probably
-    turn into a Silver specification for concrete syntax.
+  + A translation for concrete syntax.
   + A way to specify how we want to do things---that is, write a
     `main` function, essentially.  Being able to specify all this
     isn't that useful if we can't then use it for programs.
+  + A well-defined interface for interactions between translations of
+    concrete syntax (parsers) and translations of abstract syntax
+    (proof engines) so we can mix and match different choices for the
+    two and still get results.
+    * Probably a particular string format for the parser to return
+      with the parsed program, like the standard
+      ```
+      constructor(constr(), constructor())
+      ```
 
 * We might add more translations:
   + Coq
