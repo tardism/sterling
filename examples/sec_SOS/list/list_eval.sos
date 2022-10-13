@@ -29,7 +29,7 @@ eval_e G head(E) V1
 
 eval_e G E consVal(V1, V2)
 -------------------------- [E-Tail]
-eval_e G head(E) V2
+eval_e G tail(E) V2
 
 
 eval_e G E1 ListVal

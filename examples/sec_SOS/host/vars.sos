@@ -1,0 +1,83 @@
+Module sec_SOS:host
+
+
+Judgment vars : e* domain
+Judgment vars_rf : recFieldExprs* domain
+
+
+/*Vars in Expressions*/
+
+----------------------- [V-Num]
+vars num(I) emptyDomain
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+------------------- [V-Plus]
+vars plus(E1, E2) D
+
+
+-------------------------------------- [V-Name]
+vars name(X) addDomain(X, emptyDomain)
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+---------------------- [V-Greater]
+vars greater(E1, E2) D
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+------------------- [V-Eq]
+vars eq(E1, E2) D
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+------------------- [V-And]
+vars and(E1, E2) D
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+------------------- [V-Or]
+vars or(E1, E2) D
+
+
+--------------------- [V-True]
+vars true emptyDomain
+
+
+---------------------- [V-False]
+vars false emptyDomain
+
+
+vars_rf Fields D
+----------------------- [V-RecBuild]
+vars recBuild(Fields) D
+
+
+vars Rec D
+--------------------------------- [V-RecAccess]
+vars recFieldAccess(Rec, Field) D
+
+
+
+/*Vars in Record Fields*/
+
+------------------------------------ [VRF-Empty]
+vars_rf endRecFieldExprs emptyDomain
+
+
+vars_rf Rest DRest
+vars E DE
+joinDomains DE DRest D
+-------------------------------------- [VRF-Add]
+vars_rf addRecFieldExprs(X, E, Rest) D
+

@@ -155,7 +155,7 @@ eval_c G declare(X, Ty, E) addVal(X, V, G)
 
 
 eval_e G E V
-------------------------------------- [E-Assign]
+-------------------------------------- [E-Assign]
 eval_c G assign(X, E) addVal(X, V, G)
 
 
@@ -183,14 +183,27 @@ eval_c G1 while(Cond, Body) G2
 eval_c G while(Cond, Body) G2
 
 
-lookupVal G Rec recVal(Fields)
 eval_e G E V
---------------------------------------------------------- [E-RecUpdate]
-eval_c G recUpdate(Rec, Field, E
-       ) addVal(Rec, recVal(addVal(Field, V, Fields)), G)
-/*Update the associations by adding a new binding at the top for the
-  names which have been updated.  Alternatively, we could write a
-  replace relation.*/
+lookupVal G Rec recVal(Fields)
+update_rec_fields RecFields Fields V Result
+-------------------------------------------- [E-RecUpdate]
+eval_c G recUpdate(Rec, RecFields, E) Result
+
+
+/*Update the associations in the first tyCtx for the fields,
+  descending through it to place the value in the final one, producing
+  the ending tyCtx*/
+Judgment update_rec_fields : recFields* evalctx value evalctx
+
+------------------------------------------------------- [URF-One]
+update_rec_fields oneField(F) Init V addVal(F, V, Init)
+
+
+lookupVal Init F recVal(FFields)
+update_rec_fields Rest FFields V UpdatedFFields
+--------------------------------------------------- [URF-Step]
+update_rec_fields addField(F, Rest) Init V addVal(
+                   F, recVal(UpdatedFFields), Init)
 
 
 

@@ -40,14 +40,21 @@ clist_c<c> ::= ~~> noop
 c_c<c> ::= Ty::type_c Name::name_t eq_t E::expr_c semi_t ~~>
               declare(Name, Ty, E)
          | Name::name_t eq_t E::expr_c semi_t ~~> assign(Name, E)
-         | Name::name_t dot_t Field::name_t eq_t E::expr_c semi_t ~~>
-              recUpdate(Name, Field, E)
-         | if_t Cond::expr_c then_t Th::clist_c else_t El::clist_c end_t ~~>
+         | Name::name_t dot_t Fields::rec_fields_c eq_t
+           E::expr_c semi_t ~~>
+              recUpdate(Name, Fields, E)
+         | if_t Cond::expr_c then_t Th::clist_c
+           else_t El::clist_c end_t ~~>
               ifThenElse(Cond, Th, El)
          | if_t Cond::expr_c then_t Th::clist_c end_t ~~>
               ifThenElse(Cond, Th, noop)
          | while_t Cond::expr_c do_t Body::clist_c end_t ~~>
               while(Cond, Body)
+
+rec_fields_c<recFields> ::=
+   | Field::name_t ~~> oneField(Field)
+   | Field::name_t dot_t Rest::rec_fields_c ~~>
+        addField(Field, Rest)
 
 
 expr_c<e> ::= L::expr_c or_t R::and_c ~~> or(L, R)

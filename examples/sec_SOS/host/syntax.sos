@@ -26,8 +26,12 @@ c ::= noop
     | assign(string, e)
     | ifThenElse(e, c, c)
     | while(e, c)
-    | recUpdate(string, string, e) /*rec.field = e*/
+    | recUpdate(string, recFields, e) /*rec.field = e*/
 Translation c :
+
+recFields ::= oneField(string)
+            | addField(string, recFields)
+Translation recFields :
 
 
 /*Types*/

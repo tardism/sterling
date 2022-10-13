@@ -117,7 +117,7 @@ concrete productions top::ProductionElement_c
 concrete productions top::ProductionElements_c
 |
   { top.ast = emptyProductionElement(location=top.location); }
-| e::ProductionElement_c rest::ProductionElements_c
+| e::ProductionElement_c x::EmptyNewlines rest::ProductionElements_c
   { top.ast = branchProductionElement(e.ast, rest.ast,
                                       location=top.location); }
 

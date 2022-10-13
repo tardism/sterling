@@ -18,13 +18,13 @@ typeOf G null(E) boolTy
 
 
 typeOf G E listTy(Ty)
------------------------ [T-Head]
-typeOf G head(E) boolTy
+--------------------- [T-Head]
+typeOf G head(E) Ty
 
 
 typeOf G E listTy(Ty)
------------------------ [T-Tail]
-typeOf G tail(E) boolTy
+--------------------------- [T-Tail]
+typeOf G tail(E) listTy(Ty)
 
 
 typeOf G Lst listTy(Ty)

@@ -150,11 +150,27 @@ typeOK G while(Cond, Body) G
 /*body opens a new scope*/
 
 
-lookupTy G Rec recTy(Fields)
-lookupTy Fields Field FTy
-typeOf G E FTy
------------------------------------ [T-RecUpdate]
-typeOK G recUpdate(Rec, Field, E) G
+lookupTy G Rec recTy(FFields)
+checkRecUpdate Fields FFields Ty
+typeOf G E Ty
+------------------------------------ [T-RecUpdate]
+typeOK G recUpdate(Rec, Fields, E) G
+
+
+
+/*Check whether the update to the nested fields is valid
+  The tyctx is the fields of the record*/
+Judgment checkRecUpdate : recFields* tyctx ty
+
+lookupTy RecFieldTys F Ty
+----------------------------------------- [CRU-OneField]
+checkRecUpdate oneField(F) RecFieldTys Ty
+
+
+lookupTy RecFieldTys F recTy(FFieldTys)
+checkRecUpdate Rest FFieldTys Ty
+----------------------------------------------- [CRU-AddField]
+checkRecUpdate addField(F, Rest) RecFieldTys Ty
 
 
 
