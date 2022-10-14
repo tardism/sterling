@@ -109,19 +109,19 @@ top::MainDecls ::= d::DeriveRelation
 
 
 
-nonterminal ParseDecl with
+nonterminal Parse with
    pp,
    judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
    moduleName,
    type,
    errors,
    location;
-propagate errors on ParseDecl;
+propagate errors on Parse;
 
 --nt is concrete nonterminal name
 --varName is name to which we assign the parse result
 --parseString is an object-level string to parse
-abstract production parseDecl
+abstract production parse
 top::ParseDecl ::= nt::QName varName::String parseString::MainExpr
 {
   top.pp = "Parse " ++ nt.pp ++ " as " ++ varName ++ " from " ++
@@ -134,7 +134,7 @@ top::ParseDecl ::= nt::QName varName::String parseString::MainExpr
             location=nt.location)]
       else if !nt.isConcreteNt
       then [errorMessage(nt.pp ++ " is not a concrete nonterminal " ++
-               "but must be to be parsed", location=nt.location)]
+               "but must be one to be parsed", location=nt.location)]
       else [];
   top.type = nt.concreteType;
 }
@@ -152,7 +152,7 @@ nonterminal DeriveRelation with
 propagate errors on DeriveRelation;
 
 abstract production deriveRelation
-top::DeriveRelation ::= j::Judgment
+top::DeriveRelation ::= resultVar::String j::Judgment
 {
-  top.pp = j.pp;
+  top.pp = resultVar ++ " := " ++ j.pp;
 }
