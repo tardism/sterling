@@ -1,4 +1,4 @@
-grammar sos:translation:prolog;
+grammar sos:translation:semantic:prolog;
 
 
 attribute prologTranslationRules_down, prologRules occurs on AbsSyntaxDecl, AbsConstructorDecls;

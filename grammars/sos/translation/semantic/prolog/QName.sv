@@ -1,4 +1,4 @@
-grammar sos:translation:prolog;
+grammar sos:translation:semantic:prolog;
 
 
 attribute prolog<String> occurs on QName;
