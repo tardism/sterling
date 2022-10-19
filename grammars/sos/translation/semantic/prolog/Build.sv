@@ -74,7 +74,7 @@ Either<String  Decorated CmdArgs> ::= args::[String]
 
   errors <-
      if length(a.prologLocation) > 1
-     then ["Can only give one location for Prolog output; fonud " ++
+     then ["Can only give one location for Prolog output; found " ++
            toString(length(a.prologLocation))]
      else [];
 }

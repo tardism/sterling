@@ -6,6 +6,7 @@ imports sos:core:semanticDefs:concreteSyntax;
 imports sos:core:concreteDefs:concreteSyntax;
 
 imports sos:translation:semantic:prolog;
+imports sos:translation:semantic:latex;
 
 --Don't include sos:testing because that isn't meant for use anywhere
 --but in testing things work; it should not be used in an actual
