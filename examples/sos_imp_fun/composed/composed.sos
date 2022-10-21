@@ -1,0 +1,6 @@
+Module sos_imp_fun:composed
+
+Builds on sos_imp_fun:host
+Builds on sos_imp_fun:list
+Builds on sos_imp_fun:security
+

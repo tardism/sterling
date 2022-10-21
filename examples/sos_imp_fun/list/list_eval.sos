@@ -1,0 +1,97 @@
+Module sos_imp_fun:list
+
+/*Expression Evaluation*/
+
+------------------- [E-Nil]
+eval_e G nil nilVal
+
+
+eval_e G E1 V1
+eval_e G E2 V2
+------------------------------------- [E-Cons]
+eval_e G cons(E1, E2) consVal(V1, V2)
+
+
+eval_e G E nilVal
+---------------------- [E-NullTrue]
+eval_e G null(E) trueVal
+
+
+eval_e G E consVal(V1, V2)
+-------------------------- [E-NullFalse]
+eval_e G null(E) falseVal
+
+
+eval_e G E consVal(V1, V2)
+-------------------------- [E-Head]
+eval_e G head(E) V1
+
+
+eval_e G E consVal(V1, V2)
+-------------------------- [E-Tail]
+eval_e G tail(E) V2
+
+
+eval_e G E1 ListVal
+eval_e G E2 intVal(I)
+index ListVal I V
+------------------------ [E-Index]
+eval_e G index(E1, E2) V
+
+
+eval_e G E ListVal
+length ListVal Length
+--------------------------------- [E-Length]
+eval_e G length(E) intVal(Length)
+
+
+/*Support for list expression evaluation*/
+Judgment index : value* int value
+
+-------------------------- [Index-0]
+index consVal(Hd, Tl) 0 Hd
+
+
+Index - 1 = SubIndex
+index Tl SubIndex V
+----------------------------- [Index-Step]
+index consVal(Hd, Tl) Index V
+
+
+|{value}- V ~~> VT
+index VT I Result
+------------------ [Index-Trans]*
+index V I Result
+
+
+Judgment length : value* int
+
+--------------- [Len-Nil]
+length nilVal 0
+
+
+length Tl SubLen
+SubLen + 1 = Len
+-------------------------- [Len-Cons]
+length consVal(Hd, Tl) Len
+
+
+|{value}- V ~~> VT
+length VT Len
+------------------ [Len-Trans]*
+length V Len
+
+
+
+
+/*Value Equality*/
+
+-------------------- [VE-NilVal]
+val_eq nilVal nilVal
+
+
+val_eq V11 V21
+val_eq V12 V22
+------------------------------------------ [VE-ConsVal]
+val_eq consVal(V11, V12) consVal(V21, V22)
+

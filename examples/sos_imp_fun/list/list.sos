@@ -1,0 +1,105 @@
+Module sos_imp_fun:list
+
+Builds on sos_imp_fun:host
+
+/*New Expressions and Translations*/
+e ::= ...
+    | nil
+    | cons(e, e)
+    | null(e)
+    | head(e)
+    | tail(e)
+    | index(e, e) /*lst[i]*/
+    | length(e)
+
+
+--------------------------------------------- [Trans-Nil]
+|{e}- nil ~~>
+      recBuild(addRecFieldExprs("null", true,
+               endRecFieldExprs))
+
+
+---------------------------------------------------------- [Trans-Cons]
+|{e}- cons(E1, E2) ~~>
+      recBuild(
+         addRecFieldExprs("null", false,
+         addRecFieldExprs("head", E1,
+         addRecFieldExprs("tail", E2, endRecFieldExprs))))
+
+
+------------------------------------------- [Trans-Null]
+|{e}- null(E) ~~> recFieldAccess(E, "null")
+
+
+------------------------------------------- [Trans-Head]
+|{e}- head(E) ~~> recFieldAccess(E, "head")
+
+
+------------------------------------------- [Trans-Tail]
+|{e}- tail(E) ~~> recFieldAccess(E, "tail")
+
+
+/*To actually compute the length or index from records would require
+  conditionals, so we'll take advantage of the lax translation
+  constraints and translate to something unrelated to the actual
+  value.*/
+-------------------------------------------- [Trans-Index]
+|{e}- index(Lst, Index) ~~> plus(Lst, Index)
+
+
+--------------------- [Trans-Length]
+|{e}- length(E) ~~> E
+
+
+
+/*New Statement and Translation*/
+/*c ::= ...
+    | listUpdate(string, int, e)*/ /*lst[i] = e*/
+/*
+  Adding this listUpdate would break our translation constraint for
+  statements that the evaluation contexts coming out of the original
+  and translation must have the same values for all the variables.
+  This is because the result of the listUpdate would have the updated
+  var be a list value, while the translation would have the updated
+  var be a record value.
+
+  You can do this more verbosely with a loop.  Maybe we could do this?
+  Translation would probably need to depend on the typing context to
+  be sure you were adding a fresh variable for the loop counter.
+*/
+
+
+
+/*New Type and Translation*/
+ty ::= ...
+     | listTy(ty)
+
+
+/*Strictly speaking, an empty list doesn't have the head or tail
+  fields.  However, we don't have any translation constraints, so we
+  can do whatever we want, and this is close.*/
+------------------------------------------------------ [Trans-ListTy]
+|{ty}- listTy(T) ~~>
+       recTy(addTy("head", T, addTy("tail", listTy(T),
+             addTy("null", boolTy, emptyTy))))
+
+
+
+/*New Value and Translation*/
+value ::= ...
+        | nilVal
+        | consVal(value, value)
+
+
+---------------------------------------------------- [Trans-NilVal]
+|{value}- nilVal ~~>
+          recVal(addVal("null", trueVal, emptyEval))
+
+
+----------------------------------------- [Trans-ConsVal]
+|{value}- consVal(Hd, Tl) ~~>
+          recVal(addVal("head", Hd,
+                 addVal("tail", Tl,
+                 addVal("null", falseVal,
+                 emptyEval))))
+

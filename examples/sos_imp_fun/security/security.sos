@@ -1,0 +1,59 @@
+Module sos_imp_fun:security
+
+Builds on sos_imp_fun:host
+
+/*New Statement and Translation*/
+c ::= ...
+    | declareSec(string, seclevel, ty, e)
+
+
+--------------------------------------------------- [Trans-DeclareSec]
+|{c}- declareSec(X, S, Ty, E) ~~> declare(X, Ty, E)
+
+
+/*New way to declare function parameters*/
+params ::= ...
+         | addSecParams(string, seclevel, ty, params)
+
+
+------------------------------------------- [Trans-AddSecParams]
+|{params}- addSecParams(X, S, Ty, Rest) ~~>
+           addParams(X, Ty, Rest)
+
+
+seclevel ::= public | private
+Translation seclevel :
+
+
+
+
+/*Typing and Evaluation for New Statement*/
+
+noTy G X /*still can't overwrite existing decls*/
+typeOf G E Ty
+--------------------------------------------------- [T-DeclareSec]
+typeOK FG G declareSec(X, S, Ty, E) addTy(X, Ty, G)
+
+
+eval_e G E V
+------------------------------------------------------- [E-DeclareSec]
+eval_c O FG G declareSec(X, S, Ty, E) addVal(X, V, G) O
+
+
+
+/*Host Relations for New Parameter*/
+
+paramsToTyList Rest TRest
+-------------------------------------------------------- [PtTL-AddSec]
+paramsToTyList addSecParams(X, S, Ty, Rest) addTyList(Ty, TRest)
+
+
+paramsToTyCtx Rest TRest
+-------------------------------------------------------- [PtTC-AddSec]
+paramsToTyCtx addSecParams(X, S, Ty, Rest) addTy(X, Ty, TRest)
+
+
+paramsToNameList Rest NRest
+-------------------------------------------------------- [PtNL-AddSec]
+paramsToNameList addSecParams(X, S, Ty, Rest) addNames(X, NRest)
+

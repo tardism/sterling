@@ -1,0 +1,53 @@
+Module sos_imp_fun:list
+
+/*Expression Typing*/
+
+----------------------- [T-Nil]
+typeOf G nil listTy(Ty)
+
+
+typeOf G E1 Ty
+typeOf G E2 listTy(Ty)
+-------------------------------- [T-Cons]
+typeOf G cons(E1, E2) listTy(Ty)
+
+
+typeOf G E listTy(Ty)
+----------------------- [T-Null]
+typeOf G null(E) boolTy
+
+
+typeOf G E listTy(Ty)
+--------------------- [T-Head]
+typeOf G head(E) Ty
+
+
+typeOf G E listTy(Ty)
+--------------------------- [T-Tail]
+typeOf G tail(E) listTy(Ty)
+
+
+typeOf G Lst listTy(Ty)
+typeOf G Index intTy
+------------------------------ [T-Index]
+typeOf G index(List, Index) Ty
+
+
+typeOf G Lst listTy(Ty)
+-------------------------- [T-Length]
+typeOf G length(Lst) intTy
+
+
+
+
+/*Value Typing*/
+
+--------------------------- [TV-Nil]
+typeOfVal nilVal listTy(Ty)
+
+
+typeOfVal V1 Ty
+typeOfVal V2 listTy(Ty)
+------------------------------------ [TV-Cons]
+typeOfVal consVal(V1, V2) listTy(Ty)
+

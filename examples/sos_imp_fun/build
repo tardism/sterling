@@ -1,0 +1,5 @@
+#!/bin/bash
+
+MODULE="sos_imp_fun:composed"
+
+sos-ext $@ -I .. $MODULE
