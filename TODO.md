@@ -18,7 +18,6 @@
   + Coq
   + Abella
   + Lambda Prolog
-  + LaTeX
 
 * We can add some built-in types:
   + Polymorphic contexts where we can choose the key and value types,
