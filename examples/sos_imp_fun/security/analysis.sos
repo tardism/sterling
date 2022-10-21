@@ -19,20 +19,21 @@ lookupSec addSec(Y, YS, Rest) X XS
 
 
 funsecctx ::= emptyFunSec
-            | addFunSec(string, seclevelList, funsecctx)
+            | addFunSec(string, seclevel, seclevelList, funsecctx)
+              /*name, starting PC, param sec levels, rest*/
 Translation funsecctx :
 
 
-Judgment lookupFunSec : funsecctx* string seclevelList
+Judgment lookupFunSec : funsecctx* string seclevel seclevelList
 
--------------------------------------- [LFS-Here]
-lookupFunSec addFunSec(X, S, Rest) X S
+--------------------------------------------- [LFS-Here]
+lookupFunSec addFunSec(X, S, SL, Rest) X S SL
 
 
-lookupFunSec Rest X XS
+lookupFunSec Rest X XS XSL
 X != Y
----------------------------------------- [LFS-Later]
-lookupFunSec addFunSec(Y, YS, Rest) X XS
+------------------------------------------------- [LFS-Later]
+lookupFunSec addFunSec(Y, YS, YSL, Rest) X XS XSL
 
 
 seclevelList ::= endSeclevelList
@@ -94,7 +95,8 @@ Judgment paramsToSecCtx : params* secctx
 /*Program*/
 Judgment secure_program : funsecctx program*
 Judgment buildFunSecCtx : program* funsecctx
-Judgment getFunSec : fun* string seclevelList /*name, arg sec levels*/
+Judgment getFunSec : fun* string seclevel seclevelList
+                        /*name, starting level, arg sec levels*/
 /*The actual check for the program*/
 Fixed Judgment programSecCheck : program
 
@@ -257,10 +259,19 @@ secure public FG G printVal(E) G
   private variables to get here*/
 
 
-lookupFunSec FG Fun Levels
+lookupFunSec FG Fun private Levels
 level_args G Args Levels
--------------------------------- [S-Call]
+---------------------------------- [S-CallPrivate]
 secure PC FG G call(Fun, Args) G
+/*can always call a function starting in a private state*/
+
+
+lookupFunSec FG Fun public Levels
+level_args G Args Levels
+------------------------------------ [S-CallPublic]
+secure public FG G call(Fun, Args) G
+/*can only call a function starting in a public state if we are also
+  in a public state (didn't branch on private vars)*/
 
 
 |{c}- C ~~> CT
@@ -293,6 +304,12 @@ paramsToSecCtx Params G
 secure public FG G Body G2
 ------------------------------------- [SF-Fun]
 secure_fun FG fun(Name, Params, Body)
+
+
+paramsToSecCtx Params G
+secure PC FG G Body G2
+-------------------------------------------- [SF-Secfun]
+secure_fun GF secfun(Name, PC, Params, Body)
 
 
 |{fun}- F ~~> FT
@@ -348,9 +365,10 @@ buildFunSecCtx endProgram emptyFunSec
 
 
 buildFunSecCtx Rest SRest
-getFunSec Fun Name Secs
------------------------------------------------------------ [BFSC-Add]
-buildFunSecCtx addProgram(Fun, Rest) addFunSec(Name, Secs, SRest)
+getFunSec Fun Name Lev Secs
+----------------------------------------------------- [BFSC-Add]
+buildFunSecCtx addProgram(Fun, Rest
+                  ) addFunSec(Name, Lev, Secs, SRest)
 
 
 |{program}- P ~~> PT
@@ -361,14 +379,19 @@ buildFunSecCtx P GS
 
 
 paramsToSecList Params SL
------------------------------------------ [GFS-Fun]
-getFunSec fun(Name, Params, Body) Name SL
+------------------------------------------------ [GFS-Fun]
+getFunSec fun(Name, Params, Body) Name public SL
+
+
+paramsToSecList Params SL
+------------------------------------------------- [GFS-Secfun]
+getFunSec secfun(Name, S, Params, Body) Name S SL
 
 
 |{fun}- F ~~> FT
-getFunSec FT Name SL
--------------------- [GFS-Trans]*
-getFunSec F Name SL
+getFunSec FT Name S SL
+---------------------- [GFS-Trans]*
+getFunSec F Name S SL
 
 
 

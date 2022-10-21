@@ -65,10 +65,13 @@ Judgment eval_rf : evalctx recFieldExprs* evalctx
 Judgment eval_c : output functx evalctx c* evalctx output
 /*given arguments and names, produce an eval ctx for the function*/
 Judgment eval_args : evalctx args* nameList evalctx
+/*get the evaluation information from a function
+  (name, parameter names, body)*/
+Judgment eval_fun : fun* string nameList c
 /*evaluate a program to find its output under a fun ctx*/
 Judgment eval_program : functx program* output
 /*Evaluate a full program to get its output*/
-Judgment full_eval : program* output
+Fixed Judgment full_eval : program output
 
 
 /*Expression Evaluation*/
@@ -279,10 +282,10 @@ update_rec_fields addField(F, Rest) Init V addVal(
 
 /*Program Evaluation*/
 
-paramsToNameList Params Names
+eval_fun Fun Name Names Body
 eval_program addFun(Name, Names, Body, FG) Rest O
------------------------------------------------------------ [EP-Add]
-eval_program FG addProgram(fun(Name, Params, Body), Rest) O
+------------------------------------------------- [EP-Add]
+eval_program FG addProgram(Fun, Rest) O
 
 
 eval_c emptyOutput FG emptyEval Main G O
@@ -290,8 +293,13 @@ eval_c emptyOutput FG emptyEval Main G O
 eval_program FG endProgram(Main) O
 
 
+paramsToNameList Params Names
+------------------------------------------------ [EF-Fun]
+eval_fun fun(Name, Params, Body) Name Names Body
+
+
 eval_program emptyFun P O
-------------------------- [FE-Program]
+========================= [FE-Program]
 full_eval P O
 
 

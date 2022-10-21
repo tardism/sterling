@@ -21,6 +21,16 @@ params ::= ...
            addParams(X, Ty, Rest)
 
 
+/*New way to declare a function, with a minimum program counter to 
+  start checking*/
+fun ::= ...
+      | secfun(string, seclevel, params, c)
+
+------------------------------------------- [Trans-Secfun]
+|{fun}- secfun(Name, Sec, Params, Body) ~~>
+        fun(Name, Params, Body)
+
+
 seclevel ::= public | private
 Translation seclevel :
 
@@ -56,4 +66,23 @@ paramsToTyCtx addSecParams(X, S, Ty, Rest) addTy(X, Ty, TRest)
 paramsToNameList Rest NRest
 -------------------------------------------------------- [PtNL-AddSec]
 paramsToNameList addSecParams(X, S, Ty, Rest) addNames(X, NRest)
+
+
+
+/*Host Relations for New Fun*/
+
+paramsToTyCtx Params G
+typeOK FG G Body G2
+-------------------------------------------- [T-Secfun]
+funTyOK FG secfun(Name, Level, Params, Body)
+
+
+paramsToTyList Params ArgTys
+------------------------------------------------------ [GFT-Secfun]
+getFunTy secfun(Name, Level, Params, Body) Name ArgTys
+
+
+paramsToNameList Params Names
+---------------------------------------------------------- [EF-Secfun]
+eval_fun secfun(Name, Level, Params, Body) Name Names Body
 
