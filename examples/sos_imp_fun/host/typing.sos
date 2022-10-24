@@ -66,7 +66,7 @@ Judgment typeOf : tyctx e* ty
 Judgment typeRecFields : tyctx recFieldExprs* tyctx
 /*Statements*/
 Judgment typeOK : funtyctx tyctx c* tyctx
-Judgment typeArgs : funtyctx tyctx args* tyList
+Judgment typeArgs : tyctx args* tyList
 /*Functions*/
 Judgment funTyOK : funtyctx fun*
 Judgment paramsToTyCtx : params* tyctx
@@ -199,7 +199,12 @@ typeOf G E Ty
 typeOK FG G recUpdate(Rec, Fields, E) G
 
 
-typeArgs FG G Args ArgsTys
+typeOf G E Ty
+------------------------- [T-Print]
+typeOK FG G printVal(E) G
+
+
+typeArgs G Args ArgsTys
 lookupFunTy FG F ArgsTys
 --------------------------- [T-Call]
 typeOK FG G call(F, Args) G
@@ -224,14 +229,14 @@ checkRecUpdate addField(F, Rest) RecFieldTys Ty
 
 /*Args Typing*/
 
-------------------------------- [TA-End]
-typeArgs FG G endArgs endTyList
+---------------------------- [TA-End]
+typeArgs G endArgs endTyList
 
 
-typeArgs FG G Rest RestTys
+typeArgs G Rest RestTys
 typeOf G E Ty
------------------------------------------------------ [TA-Add]
-typeArgs FG G addArgs(E, Rest) addTyList(Ty, RestTys)
+-------------------------------------------------- [TA-Add]
+typeArgs G addArgs(E, Rest) addTyList(Ty, RestTys)
 
 
 

@@ -309,7 +309,7 @@ secure_fun FG fun(Name, Params, Body)
 paramsToSecCtx Params G
 secure PC FG G Body G2
 -------------------------------------------- [SF-Secfun]
-secure_fun GF secfun(Name, PC, Params, Body)
+secure_fun FG secfun(Name, PC, Params, Body)
 
 
 |{fun}- F ~~> FT
