@@ -18,7 +18,7 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 
   constructors.moduleName = top.moduleName;
 
-  local fullName::QName = addQNameBase(top.moduleName, type);
+  production fullName::QName = addQNameBase(top.moduleName, type);
 
   constructors.builtType = nameType(fullName, location=top.location);
 
@@ -143,7 +143,7 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
   production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.constructorDecls =
-      [constructorEnvItem(fullName, top.builtType, tyargs)];
+      [constructorEnvItem(fullName, top.builtType, tyargs.types)];
   top.tyDecls = [];
   top.judgmentDecls = [];
 

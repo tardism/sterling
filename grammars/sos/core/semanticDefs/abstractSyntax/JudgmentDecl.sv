@@ -17,7 +17,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
 {
   top.pp = "Judgment " ++ name ++ " : " ++ ty.pp_space ++ "\n";
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.tyDecls = [];
   top.constructorDecls = [];
@@ -119,7 +119,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
 {
   top.pp = "Fixed Judgment " ++ name ++ " : " ++ ty.pp_space ++ "\n";
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.tyDecls = [];
   top.constructorDecls = [];
@@ -164,7 +164,7 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
 {
   top.pp = "#Error judgment declaration:  " ++ name ++ "#\n";
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.tyDecls = [];
   top.constructorDecls = [];
@@ -204,7 +204,9 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls =
-      [translationEnvItem(addQNameBase(top.moduleName, tyname), args)];
+      [translationEnvItem(fullTyName, args)];
+
+  production fullTyName::QName = addQNameBase(top.moduleName, tyname);
 
   args.tyEnv = top.tyEnv;
 
