@@ -6,9 +6,12 @@ nonterminal AbsSyntaxDecl with
    moduleName,
    constructorDecls, tyDecls, judgmentDecls, translationDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   transRuleConstructors_down,
    errors,
    location;
 propagate errors on AbsSyntaxDecl;
+
+inherited attribute expectedTransRules::Boolean;
 
 --When we first declare a type and constructors
 abstract production initialAbsSyntaxDecl
@@ -29,6 +32,9 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 
   constructors.tyEnv = top.tyEnv;
   constructors.constructorEnv = top.constructorEnv;
+  constructors.expectedTransRules = false;
+  constructors.transRuleConstructors_down =
+      top.transRuleConstructors_down;
 
   --Check there is exactly one translation relation declared
   local possibleTrans::[TranslationEnvItem] =
@@ -65,6 +71,14 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   top.pp = type.pp ++ " ::= ...\n" ++ constructors.pp ++ "\n";
 
   constructors.moduleName = top.moduleName;
+  constructors.expectedTransRules =
+      type.tyFound &&
+      case type.fullTy of
+      | nameType(n) -> !sameModule(top.moduleName, n)
+      | _ -> false
+      end;
+  constructors.transRuleConstructors_down =
+      top.transRuleConstructors_down;
 
   type.tyEnv = top.tyEnv;
   constructors.builtType =
@@ -72,6 +86,16 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
      then type.fullTy
      else errorType(location=top.location);
   top.errors <- type.tyErrors;
+  top.errors <-
+      if type.tyFound
+      then case type.fullTy of
+           | nameType(_) -> []
+           | _ ->
+             [errorMessage("Can only define new constructors for " ++
+                 "user-defined types, not " ++ type.fullTy.pp,
+                 location=top.location)]
+           end
+      else [];
 
   top.constructorDecls = constructors.constructorDecls;
   top.tyDecls = constructors.tyDecls;
@@ -91,6 +115,7 @@ nonterminal AbsConstructorDecls with
    moduleName,
    constructorDecls, tyDecls, judgmentDecls,
    tyEnv, constructorEnv,
+   expectedTransRules, transRuleConstructors_down,
    errors,
    location;
 propagate errors on AbsConstructorDecls;
@@ -123,6 +148,11 @@ top::AbsConstructorDecls ::= d1::AbsConstructorDecls
 
   d1.builtType = top.builtType;
   d2.builtType = top.builtType;
+
+  d1.expectedTransRules = top.expectedTransRules;
+  d2.expectedTransRules = top.expectedTransRules;
+  d1.transRuleConstructors_down = top.transRuleConstructors_down;
+  d2.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.constructorDecls = d1.constructorDecls ++ d2.constructorDecls;
   top.tyDecls = d1.tyDecls ++ d2.tyDecls;
@@ -168,5 +198,14 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
       else [errorMessage("Declared type arguments to constructor " ++
                fullName.pp ++ " cannot contain variable types",
                location=top.location)];
+
+  --Must have a translation rule if one is expected
+  top.errors <-
+      if top.expectedTransRules
+      then if contains(fullName, top.transRuleConstructors_down)
+           then []
+           else [errorMessage("Missing rule for translating " ++
+                    fullName.pp, location=top.location)]
+      else [];
 }
 

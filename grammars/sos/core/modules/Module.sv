@@ -138,6 +138,7 @@ top::ModuleList ::= m::Module rest::ModuleList
   m.translationEnv = buildEnv(trns);
   m.ruleEnv = buildEnv(rules);
   m.concreteEnv = buildEnv(concretes);
+  m.transRuleConstructors_down = m.transRuleConstructors;
 
   top.errorString =
       if rest.errorString == ""
@@ -247,6 +248,7 @@ nonterminal Module with
    ruleDecls, buildsOnDecls, concreteDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    concreteEnv,
+   transRuleConstructors, transRuleConstructors_down,
    modName,
    errorString;
 
@@ -264,6 +266,7 @@ top::Module ::= name::String files::Files
   top.ruleDecls = files.ruleDecls;
   top.buildsOnDecls = files.buildsOnDecls;
   top.concreteDecls = files.concreteDecls;
+  top.transRuleConstructors = files.transRuleConstructors;
 
   files.tyEnv = top.tyEnv;
   files.constructorEnv = top.constructorEnv;
@@ -271,6 +274,7 @@ top::Module ::= name::String files::Files
   files.translationEnv = top.translationEnv;
   files.ruleEnv = top.ruleEnv;
   files.concreteEnv = top.concreteEnv;
+  files.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =
       if files.errorString == ""
@@ -297,6 +301,7 @@ nonterminal Files with
    ruleDecls, buildsOnDecls, concreteDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
    concreteEnv,
+   transRuleConstructors, transRuleConstructors_down,
    errorString;
 
 abstract production nilFiles
@@ -309,6 +314,7 @@ top::Files ::=
   top.ruleDecls = [];
   top.buildsOnDecls = [];
   top.concreteDecls = [];
+  top.transRuleConstructors = [];
 
   top.errorString = "";
 }
@@ -327,18 +333,22 @@ top::Files ::= filename::String f::File rest::Files
   top.ruleDecls = f.ruleDecls ++ rest.ruleDecls;
   top.buildsOnDecls = f.buildsOnDecls ++ rest.buildsOnDecls;
   top.concreteDecls = rest.concreteDecls;
+  top.transRuleConstructors =
+      f.transRuleConstructors ++ rest.transRuleConstructors;
 
   f.tyEnv = top.tyEnv;
   f.constructorEnv = top.constructorEnv;
   f.judgmentEnv = top.judgmentEnv;
   f.translationEnv = top.translationEnv;
   f.ruleEnv = top.ruleEnv;
+  f.transRuleConstructors_down = top.transRuleConstructors_down;
   rest.tyEnv = top.tyEnv;
   rest.constructorEnv = top.constructorEnv;
   rest.judgmentEnv = top.judgmentEnv;
   rest.translationEnv = top.translationEnv;
   rest.ruleEnv = top.ruleEnv;
   rest.concreteEnv = top.concreteEnv;
+  rest.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =
       if null(f.errors)
@@ -364,6 +374,7 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   top.ruleDecls = rest.ruleDecls;
   top.buildsOnDecls = rest.buildsOnDecls;
   top.concreteDecls = f.concreteDecls ++ rest.concreteDecls;
+  top.transRuleConstructors = rest.transRuleConstructors;
 
   f.tyEnv = top.tyEnv;
   f.constructorEnv = top.constructorEnv;
@@ -374,6 +385,7 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   rest.translationEnv = top.translationEnv;
   rest.ruleEnv = top.ruleEnv;
   rest.concreteEnv = top.concreteEnv;
+  rest.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =
       if null(f.errors)

@@ -7,6 +7,7 @@ nonterminal Rule with
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
    ruleDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+   transRuleConstructors,
    errors,
    location;
 propagate errors on Rule;
@@ -59,6 +60,11 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --initially no variable types are known
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
+
+  top.transRuleConstructors =
+      if conclusion.isTransJudgment
+      then conclusion.transRuleConstructors
+      else [];
 
   top.errors <-
       if !conclusion.isRelJudgment
@@ -137,6 +143,8 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
 
+  top.transRuleConstructors = [];
+
   --Check conclusion is extensible relation
   top.errors <-
       if !conclusion.isRelJudgment ||
@@ -211,6 +219,8 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   --rule is unit of determining var types, so turn finalSubst here
   premises.finalSubst = conclusion.upSubst;
   conclusion.finalSubst = conclusion.upSubst;
+
+  top.transRuleConstructors = [];
 
   --get any unification errors
   top.errors <- errorsFromSubst(conclusion.upSubst);

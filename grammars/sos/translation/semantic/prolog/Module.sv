@@ -6,13 +6,13 @@ import sos:core:concreteDefs:abstractSyntax;
 
 
 attribute
-   prologTranslationRules, prologRules, instanTransPrologRules
+   prologTranslationRules, prologRules
 occurs on Module, ModuleList;
 
 --Instantiations for just the last module compiled
-synthesized attribute instanTransPrologRules::[(QName,
-                                                Maybe<PrologFormula>,
-                                                PrologTerm)];
+synthesized attribute
+   instanTransPrologRules::[(QName, Maybe<PrologFormula>, PrologTerm)]
+occurs on ModuleList;
 
 aspect production nilModuleList
 top::ModuleList ::=

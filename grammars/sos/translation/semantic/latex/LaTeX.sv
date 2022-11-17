@@ -264,3 +264,10 @@ top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
         else "";
   local base::String = substitute("_", "\\_", name.base);
 }
+
+
+aspect production errorConstructorEnvItem
+top::ConstructorEnvItem ::= name::QName
+{
+  top.ppLaTeX = "";
+}

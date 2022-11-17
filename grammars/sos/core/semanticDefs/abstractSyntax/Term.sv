@@ -8,6 +8,7 @@ nonterminal Term with
    type, upSubst, downSubst, finalSubst,
    downVarTypes, upVarTypes,
    headIsConstructor, headConstructorCurrentModule, isVariable,
+   headConstructor,
    errors,
    location;
 propagate errors on Term;
@@ -16,6 +17,8 @@ propagate errors on Term;
 synthesized attribute headIsConstructor::Boolean;
 --whether the term's head is from the current module or is imported
 synthesized attribute headConstructorCurrentModule::Boolean;
+--constructor of the term at the head
+synthesized attribute headConstructor::QName;
 --whether the term is a variable
 synthesized attribute isVariable::Boolean;
 
@@ -42,6 +45,11 @@ top::Term ::= name::QName
            name.fullConstrName
       else true; --if not found, just assume it matches
   top.isVariable = false;
+
+  top.headConstructor =
+      if name.constrFound
+      then name.fullConstrName
+      else name;
 }
 
 
@@ -67,6 +75,8 @@ top::Term ::= name::String
   top.headIsConstructor = false;
   top.headConstructorCurrentModule = false; --placeholder
   top.isVariable = true;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
 }
 
 
@@ -84,6 +94,8 @@ top::Term ::= int::Integer
   top.headIsConstructor = false;
   top.headConstructorCurrentModule = false; --placeholder
   top.isVariable = false;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
 }
 
 
@@ -101,6 +113,8 @@ top::Term ::= s::String
   top.headIsConstructor = false;
   top.headConstructorCurrentModule = false; --placeholder
   top.isVariable = false;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
 }
 
 
@@ -144,6 +158,11 @@ top::Term ::= constructor::QName args::TermList
            constructor.fullConstrName
       else true; --if not found, just assume it matches
   top.isVariable = false;
+
+  top.headConstructor =
+      if constructor.constrFound
+      then constructor.fullConstrName
+      else baseName("err", location=bogusLoc());
 }
 
 
@@ -173,6 +192,8 @@ top::Term ::= tm::Term ty::Type
   top.headIsConstructor = tm.headIsConstructor;
   top.headConstructorCurrentModule = tm.headConstructorCurrentModule;
   top.isVariable = tm.isVariable;
+
+  top.headConstructor = tm.headConstructor;
 }
 
 

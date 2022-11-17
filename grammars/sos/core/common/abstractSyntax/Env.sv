@@ -64,3 +64,15 @@ top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
   top.isError = false;
 }
 
+
+abstract production errorConstructorEnvItem
+top::ConstructorEnvItem ::= name::QName
+{
+  top.name = name;
+
+  top.type = errorType(location=bogusLoc());
+  top.types = nilTypeList(location=bogusLoc());
+
+  top.isError = true;
+}
+

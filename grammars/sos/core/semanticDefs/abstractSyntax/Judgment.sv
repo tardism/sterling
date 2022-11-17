@@ -9,6 +9,7 @@ nonterminal Judgment with
    downVarTypes, upVarTypes,
    headRel, isRelJudgment, isTransJudgment, transType,
    isConclusion, isExtensibleRule, isTranslationRule,
+   transRuleConstructors,
    errors,
    location;
 propagate errors on Judgment;
@@ -67,6 +68,8 @@ top::Judgment ::= rel::QName args::TermList
   top.isTransJudgment = false;
   top.transType = error("Should not access");
 
+  top.transRuleConstructors = [];
+
   top.errors <-
       if top.isConclusion && !top.isExtensibleRule
         --fixed relations can't add new rules in other modules
@@ -122,6 +125,8 @@ top::Judgment ::= rel::QName args::TermList
   top.isRelJudgment = true;
   top.isTransJudgment = false;
   top.transType = error("Should not access");
+
+  top.transRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion
@@ -201,6 +206,8 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
                        end
                   else ty;
 
+  top.transRuleConstructors = [t.headConstructor];
+
   top.errors <-
       if top.isConclusion && top.isTranslationRule
       then [errorMessage("Cannot write a translation rule for " ++
@@ -255,6 +262,8 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   top.transType =
       error("Should not access transType on non-translation");
 
+  top.transRuleConstructors = [];
+
   top.errors <-
       if top.isConclusion
       then [errorMessage("Conclusion of rule must be a relation or" ++
@@ -294,6 +303,8 @@ top::Judgment ::= t1::Term op::TopBinOp t2::Term
   top.isTransJudgment = false;
   top.transType =
       error("Should not access transType on non-translation");
+
+  top.transRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion

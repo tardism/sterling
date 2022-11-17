@@ -32,6 +32,12 @@ inherited attribute downVarTypes::[(String, Type)];
 synthesized attribute upVarTypes::[(String, Type)];
 
 
+--Constructors for which translation rules are defined
+--e.g. for translation rule `|{T}- c(A, B, C) ~~> X`, we get c
+synthesized attribute transRuleConstructors::[QName];
+inherited attribute transRuleConstructors_down::[QName];
+
+
 synthesized attribute isExtensible::Boolean;
 
 synthesized attribute pcIndex::Integer; --zero-based
