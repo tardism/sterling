@@ -24,7 +24,7 @@ function runProlog
 IOVal<Integer> ::= m::ModuleList a::Decorated CmdArgs i::IOToken
 {
   local prologProgram::PrologProgram =
-        buildPrologProgram(m.prologRules);
+        buildPrologProgram(m.prologRules ++ m.instanTransPrologRules);
   local prologString::String = prologProgram.pp;
 
   local message::IOToken = printT("Producing Prolog output\n", i);

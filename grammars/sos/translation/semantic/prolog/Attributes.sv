@@ -22,9 +22,6 @@ synthesized attribute pcVar::String;
 synthesized attribute
    prologTranslationRules::[(JudgmentEnvItem, String,
                              Maybe<PrologFormula>, PrologTerm)];
-inherited attribute
-   prologTranslationRules_down::[(JudgmentEnvItem, String,
-                                  Maybe<PrologFormula>, PrologTerm)];
 
 
 --Pass up all rules so we can output them in groups by name

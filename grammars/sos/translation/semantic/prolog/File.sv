@@ -2,14 +2,13 @@ grammar sos:translation:semantic:prolog;
 
 
 attribute
-   prologTranslationRules, prologTranslationRules_down,
+   prologTranslationRules,
    prologRules
 occurs on File, Decls;
 
 aspect production file
 top::File ::= moduleName::QName decls::Decls
 {
-  decls.prologTranslationRules_down = top.prologTranslationRules_down;
   top.prologTranslationRules = decls.prologTranslationRules;
 
   top.prologRules = decls.prologRules;
@@ -45,8 +44,7 @@ aspect production absSyntaxDecls
 top::Decls ::= a::AbsSyntaxDecl
 {
   top.prologTranslationRules = [];
-  a.prologTranslationRules_down = top.prologTranslationRules_down;
-  top.prologRules = a.prologRules;
+  top.prologRules = [];
 }
 
 
@@ -63,8 +61,6 @@ top::Decls ::= d1::Decls d2::Decls
 {
   top.prologTranslationRules =
       d1.prologTranslationRules ++ d2.prologTranslationRules;
-  d1.prologTranslationRules_down = top.prologTranslationRules_down;
-  d2.prologTranslationRules_down = top.prologTranslationRules_down;
   top.prologRules = d1.prologRules ++ d2.prologRules;
 }
 
