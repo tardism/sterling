@@ -24,13 +24,9 @@ synthesized attribute pcVar::String;
 
 
 --Pass up translation rules
---[(judgment being defined, PC var name, premises, conclusion)]
+--[(judgment being defined, PC var name, rule)]
 synthesized attribute
-   lpTranslationRules::[(JudgmentEnvItem, String,
-                         [LambdaPrologFormula], LambdaPrologTerm)];
-inherited attribute
-   lpTranslationRules_down::[(JudgmentEnvItem, String,
-                              [LambdaPrologFormula], LambdaPrologTerm)];
+   lpTranslationRules::[(JudgmentEnvItem, String, LambdaPrologRule)];
 
 
 

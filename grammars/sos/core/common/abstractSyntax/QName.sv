@@ -14,6 +14,9 @@ attribute compareTo, isEqual occurs on QName;
 --Get the short name in the qualified name
 synthesized attribute base::String occurs on QName;
 
+--Get the module for the qualified name ("" for non-qualified)
+synthesized attribute baselessName::String occurs on QName;
+
 --Put a new base name on the end (e.g. turn a:b:c into a:b:c:d)
 inherited attribute addBase::String occurs on QName;
 synthesized attribute baseAdded::QName occurs on QName;
@@ -37,6 +40,8 @@ top::QName ::= name::String
   top.pp = name;
 
   top.base = name;
+
+  top.baselessName = "";
 
   top.baseAdded =
       moduleLayerName(name,
@@ -92,6 +97,9 @@ top::QName ::= name::String rest::QName
   top.pp = name ++ ":" ++ rest.pp;
 
   top.base = rest.base;
+
+  top.baselessName = name ++ if rest.baselessName == ""
+                             then "" else ":" ++ rest.baselessName;
 
   rest.addBase = top.addBase;
   top.baseAdded =

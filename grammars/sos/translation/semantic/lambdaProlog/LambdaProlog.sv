@@ -548,11 +548,15 @@ String ::= lpModuleName::String importedSOSModules::[String]
 
 
 
+
+
 function makeLPModuleName
 String ::= sosExtModule::String
 {
   return substitute(":", "-", sosExtModule);
 }
+
+
 
 
 

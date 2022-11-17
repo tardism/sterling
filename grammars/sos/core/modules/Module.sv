@@ -9,6 +9,8 @@ imports sos:core:semanticDefs:abstractSyntax;
 imports sos:core:concreteDefs:concreteSyntax only ConcreteFile_c;
 imports sos:core:concreteDefs:abstractSyntax;
 
+import silver:util:graph as graph;
+
 
 --Sets of declarations known to modules
 --e.g. if moduleTyDecls=[(mod:ule, tys)], module mod:ule knows types
@@ -19,6 +21,9 @@ synthesized attribute moduleJudgmentDecls::[(String, [JudgmentEnvItem])];
 synthesized attribute moduleTranslationDecls::[(String, [TranslationEnvItem])];
 synthesized attribute moduleRuleDecls::[(String, [RuleEnvItem])];
 synthesized attribute moduleConcreteDecls::[(String, [ConcreteEnvItem])];
+
+--Sets of modules known to modules
+synthesized attribute buildsOns::[(String, [String])];
 
 synthesized attribute nameList::[String];
 synthesized attribute modName::String;
@@ -47,6 +52,7 @@ nonterminal ModuleList with
    nameList,
    moduleTyDecls, moduleConstructorDecls, moduleJudgmentDecls,
    moduleTranslationDecls, moduleRuleDecls, moduleConcreteDecls,
+   buildsOns,
    errorString;
 
 abstract production nilModuleList
@@ -60,6 +66,8 @@ top::ModuleList ::=
   top.moduleTranslationDecls = [];
   top.moduleRuleDecls = [];
   top.moduleConcreteDecls = [];
+
+  top.buildsOns = [];
 
   top.errorString = "";
 }
@@ -115,6 +123,15 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.moduleConcreteDecls =
       (m.modName, concretes)::rest.moduleConcreteDecls;
 
+  top.buildsOns =
+      (m.modName, map((.pp), m.buildsOnDecls))::rest.buildsOns;
+
+  --Pairs of judgments and the constructors that don't know about them
+  --Useful for translations to fill in translation rules
+  production newRuleCombinations::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+     getPairsOfUnknown(top.moduleJudgmentDecls, top.moduleConstructorDecls,
+                       top.buildsOns, m.modName);
+
   m.tyEnv = buildEnv(tys);
   m.constructorEnv = buildEnv(cons);
   m.judgmentEnv = buildEnv(jdgs);
@@ -138,6 +155,87 @@ function lookupAllModules
      --it has to exist, if this is called from a well-built ModuleList
              lookup(s, decls).fromJust ++ rest,
            [], map((.pp), modules));
+}
+
+--Get the pairs of judgments and constructors not previously known in
+--the same module
+function getPairsOfUnknown
+[(JudgmentEnvItem, [ConstructorEnvItem])] ::=
+     jdgs::[(String, [JudgmentEnvItem])]
+     cons::[(String, [ConstructorEnvItem])]
+     buildsOns::[(String, [String])]
+     currentMod::String
+{
+  --get all pairs of modules
+  local allPairs::[(String, String)] = produceAllPairs(buildsOns);
+  --build a graph to get the transitive closure
+  local g::graph:Graph<String> =
+     foldr(\ p::(String, [String]) rest::graph:Graph<String> ->
+             graph:add(flatMap(\ x::String -> [(x, p.1)],
+                               p.2), rest),
+           graph:empty(), buildsOns);
+  local closurePairs::[(String, String)] =
+     graph:toList(graph:transitiveClosure(g));
+  --unknown pairs are  allPairs \ closurePairs
+  local unknownPairs::[(String, String)] =
+     removeAllBy(\ p1::(String, String) p2::(String, String) ->
+                   (p1.1 == p2.1 && p1.2 == p2.2) || --regular
+                   (p1.2 == p2.1 && p1.1 == p2.2),   --flipped
+                 closurePairs, allPairs);
+
+  --group by first module
+  local sorted::[(String, String)] = sort(unknownPairs);
+  local grouped::[[(String, String)]] = group(sorted);
+  --replace first module with judgments from that module
+  local pairedOut::[(String, [String])] =
+     map(\ l::[(String, String)] -> (head(l).1, map(snd, l)), grouped);
+  local jdgGroups::[([JudgmentEnvItem], [String])] =
+     map(\ p::(String, [String]) ->
+           (filter(\ j::JudgmentEnvItem ->
+                     j.name.baselessName == p.1,
+                   lookup(p.1, jdgs).fromJust), p.2),
+         pairedOut);
+  --replace second module with constructors from that module
+  local jdgConPairs::[([JudgmentEnvItem], [ConstructorEnvItem])] =
+     map(\ p::([JudgmentEnvItem], [String]) ->
+           (p.1,
+            flatMap(\ x::String ->
+                      filter(\ c::ConstructorEnvItem ->
+                               c.name.baselessName == x,
+                             lookup(x, cons).fromJust),
+                    p.2)),
+         jdgGroups);
+
+  --get the pairs of judgments and constructors to which they apply
+  local splitOut::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+     flatMap(\ p::([JudgmentEnvItem], [ConstructorEnvItem]) ->
+               map(pair(_, p.2), p.1),
+             jdgConPairs);
+  local extOnly::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+     filter(\ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
+              p.1.isExtensible,
+            splitOut);
+  local filteredCons::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+     map(\ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
+           (p.1,
+            filter(\ c::ConstructorEnvItem ->
+                     p.1.pcType == c.type, p.2)),
+         extOnly);
+
+  return filteredCons;
+}
+
+function produceAllPairs
+[(String, String)] ::= l::[(String, [String])]
+{
+  return
+     case l of
+     | [] -> []
+     | [_] -> []
+     | (h, _)::tl ->
+       flatMap(\ p::(String, [String]) -> [(h, p.1), (p.1, h)],
+               tl) ++ produceAllPairs(tl)
+     end;
 }
 
 

@@ -6,6 +6,9 @@ b ::= ...
     | less(a, a)
 
 
+-------------------------------------- [Trans-Less]
+|{b}- less(A1, A2) ~~> greater(A1, A2)
+
 
 eval_a E A1 I1
 eval_a E A2 I2

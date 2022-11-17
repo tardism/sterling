@@ -2,7 +2,9 @@ grammar sos:core:semanticDefs:abstractSyntax;
 
 
 nonterminal JudgmentEnvItem with
-   name, types, isExtensible, pcIndex, isError;
+   name, types, isExtensible, pcIndex, pcType, isError;
+
+synthesized attribute pcType::Type;
 
 abstract production extJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
@@ -14,6 +16,7 @@ top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
   top.isExtensible = true;
 
   top.pcIndex = pcIndex;
+  top.pcType = head(drop(pcIndex, args.toList));
 
   top.isError = false;
 }
@@ -29,6 +32,7 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
   top.isExtensible = false;
 
   top.pcIndex = error("Should not access on non-extensible judgment");
+  top.pcType = error("Should not access on non-extensible judgment");
 
   top.isError = false;
 }
@@ -44,6 +48,7 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
   top.isExtensible = true; --default to assuming this
 
   top.pcIndex = 0; --default value
+  top.pcType = errorType(location=bogusLoc());
 
   top.isError = true;
 }

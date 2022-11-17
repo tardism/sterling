@@ -21,8 +21,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.lpRules = [];
 
-  top.lpTranslationRules = [(conclusion.headRel, conclusion.pcVar,
-                             premises.lp, conclusion.lpTerm)];
+  top.lpTranslationRules =
+      [(conclusion.headRel, conclusion.pcVar,
+        if null(premises.lp)
+        then factLambdaPrologRule(conclusion.lpTerm)
+        else ruleLambdaPrologRule(
+                conclusion.lpTerm,
+                foldr1(andLambdaPrologFormula, premises.lp)))];
 }
 
 

@@ -28,5 +28,15 @@ hs_err_pid*
 # Silver generated
 build.xml
 
+# LaTeX files
+*.tex
+*.pdf
+
 # Prolog files
 *.pl
+
+# Lambda Prolog files
+*.sig
+*.mod
+*.lp
+*.lpo

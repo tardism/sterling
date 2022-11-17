@@ -2,15 +2,13 @@ grammar sos:translation:semantic:lambdaProlog;
 
 
 attribute
-   lpDecls, lpRules, lpTranslationRules, lpTranslationRules_down
+   lpDecls, lpRules, lpTranslationRules
 occurs on File;
 
 aspect production file
 top::File ::= moduleName::QName decls::Decls
 {
   top.lpDecls = decls.lpDecls;
-
-  decls.lpTranslationRules_down = top.lpTranslationRules_down;
 
   top.lpRules = decls.lpRules;
   top.lpTranslationRules = decls.lpTranslationRules;
@@ -21,7 +19,7 @@ top::File ::= moduleName::QName decls::Decls
 
 
 attribute
-   lpDecls, lpRules, lpTranslationRules, lpTranslationRules_down
+   lpDecls, lpRules, lpTranslationRules
 occurs on Decls;
 
 aspect production nilDecls
@@ -59,9 +57,7 @@ top::Decls ::= a::AbsSyntaxDecl
 {
   top.lpDecls = a.lp;
 
-  a.lpTranslationRules_down = top.lpTranslationRules_down;
-
-  top.lpRules = a.lpRules;
+  top.lpRules = [];
   top.lpTranslationRules = [];
 }
 
@@ -80,9 +76,6 @@ aspect production branchDecls
 top::Decls ::= d1::Decls d2::Decls
 {
   top.lpDecls = d1.lpDecls ++ d2.lpDecls;
-
-  d1.lpTranslationRules_down = top.lpTranslationRules_down;
-  d2.lpTranslationRules_down = top.lpTranslationRules_down;
 
   top.lpRules = d1.lpRules ++ d2.lpRules;
   top.lpTranslationRules =
