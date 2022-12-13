@@ -1,0 +1,88 @@
+Module functions:security
+
+Builds on functions:host
+
+/*New Statement and Translation*/
+c ::= ...
+    | declareSec(string, seclevel, ty, e)
+
+
+--------------------------------------------------- [Trans-DeclareSec]
+|{c}- declareSec(X, S, Ty, E) ~~> declare(X, Ty, E)
+
+
+/*New way to declare function parameters*/
+params ::= ...
+         | addSecParams(string, seclevel, ty, params)
+
+
+------------------------------------------- [Trans-AddSecParams]
+|{params}- addSecParams(X, S, Ty, Rest) ~~>
+           addParams(X, Ty, Rest)
+
+
+/*New way to declare a function, with a minimum program counter to 
+  start checking*/
+fun ::= ...
+      | secfun(string, seclevel, params, c)
+
+------------------------------------------- [Trans-Secfun]
+|{fun}- secfun(Name, Sec, Params, Body) ~~>
+        fun(Name, Params, Body)
+
+
+seclevel ::= public | private
+Translation seclevel :
+
+
+
+
+/*Typing and Evaluation for New Statement*/
+
+noTy G X /*still can't overwrite existing decls*/
+typeOf G E Ty
+--------------------------------------------------- [T-DeclareSec]
+typeOK FG G declareSec(X, S, Ty, E) addTy(X, Ty, G)
+
+
+eval_e G E V
+------------------------------------------------------- [E-DeclareSec]
+eval_c O FG G declareSec(X, S, Ty, E) addVal(X, V, G) O
+
+
+
+/*Host Relations for New Parameter*/
+
+paramsToTyList Rest TRest
+-------------------------------------------------------- [PtTL-AddSec]
+paramsToTyList addSecParams(X, S, Ty, Rest) addTyList(Ty, TRest)
+
+
+paramsToTyCtx Rest TRest
+-------------------------------------------------------- [PtTC-AddSec]
+paramsToTyCtx addSecParams(X, S, Ty, Rest) addTy(X, Ty, TRest)
+
+
+paramsToNameList Rest NRest
+-------------------------------------------------------- [PtNL-AddSec]
+paramsToNameList addSecParams(X, S, Ty, Rest) addNames(X, NRest)
+
+
+
+/*Host Relations for New Fun*/
+
+paramsToTyCtx Params G
+typeOK FG G Body G2
+-------------------------------------------- [T-Secfun]
+funTyOK FG secfun(Name, Level, Params, Body)
+
+
+paramsToTyList Params ArgTys
+------------------------------------------------------ [GFT-Secfun]
+getFunTy secfun(Name, Level, Params, Body) Name ArgTys
+
+
+paramsToNameList Params Names
+---------------------------------------------------------- [EF-Secfun]
+eval_fun secfun(Name, Level, Params, Body) Name Names Body
+

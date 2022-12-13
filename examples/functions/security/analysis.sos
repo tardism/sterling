@@ -1,0 +1,401 @@
+Module functions:security
+
+secctx ::= emptySec
+         | addSec(string, seclevel, secctx)
+Translation secctx :
+
+
+Judgment lookupSec : secctx* string seclevel
+
+-------------------------------- [LS-Here]
+lookupSec addSec(X, S, Rest) X S
+
+
+lookupSec Rest X XS
+X != Y
+---------------------------------- [LS-Later]
+lookupSec addSec(Y, YS, Rest) X XS
+
+
+
+funsecctx ::= emptyFunSec
+            | addFunSec(string, seclevel, seclevelList, funsecctx)
+              /*name, starting PC, param sec levels, rest*/
+Translation funsecctx :
+
+
+Judgment lookupFunSec : funsecctx* string seclevel seclevelList
+
+--------------------------------------------- [LFS-Here]
+lookupFunSec addFunSec(X, S, SL, Rest) X S SL
+
+
+lookupFunSec Rest X XS XSL
+X != Y
+------------------------------------------------- [LFS-Later]
+lookupFunSec addFunSec(Y, YS, YSL, Rest) X XS XSL
+
+
+seclevelList ::= endSeclevelList
+               | addSeclevelList(seclevel, seclevelList)
+Translation seclevelList :
+
+
+Judgment paramsToSecList : params* seclevelList
+
+----------------------------------------- [PtSL-End]
+paramsToSecList endParams endSeclevelList
+
+
+paramsToSecList Rest SRest
+----------------------------------------------------------- [PtSL-Add]
+paramsToSecList addParams(X, Ty, Rest) addSeclevelList(public, SRest)
+
+
+paramsToSecList Rest SRest
+------------------------------------------------------ [PtSL-AddSec]
+paramsToSecList addSecParams(X, S, Ty, Rest
+                   ) addSeclevelList(S, SRest)
+
+
+|{params}- P ~~> PT
+paramsToSecList PT S
+-------------------- [PtSL-Trans]*
+paramsToSecList P S
+
+
+
+
+/*Take two security levels and the get the higher one*/
+Judgment join : seclevel* seclevel seclevel
+
+------------------------- [J-Publics]
+join public public public
+
+
+---------------------- [J-Private1]
+join private S private
+
+
+---------------------- [J-Private2]
+join S private private
+
+
+
+
+/*Expressions*/
+Judgment level : secctx e* seclevel
+Judgment rf_level : secctx recFieldExprs* seclevel
+/*Statements*/
+Judgment secure : seclevel funsecctx secctx c* secctx
+Judgment level_args : secctx args* seclevelList
+/*Functions*/
+Judgment secure_fun : funsecctx fun*
+Judgment paramsToSecCtx : params* secctx
+/*Program*/
+Judgment secure_program : funsecctx program*
+Judgment buildFunSecCtx : program* funsecctx
+Judgment getFunSec : fun* string seclevel seclevelList
+                        /*name, starting level, arg sec levels*/
+/*The actual check for the program*/
+Fixed Judgment programSecCheck : program
+
+
+/*Expression Security Level*/
+
+--------------------- [S-Num]
+level G num(I) public
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+---------------------- [S-Plus]
+level G plus(E1, E2) S
+
+
+lookupSec G X S
+----------------- [S-Name]
+level G name(X) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+------------------------- [S-Greater]
+level G greater(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+-------------------- [S-Eq]
+level G eq(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+--------------------- [S-And]
+level G and(E1, E2) S
+
+
+level G E1 S1
+level G E2 S2
+join S1 S2 S
+-------------------- [S-Or]
+level G or(E1, E2) S
+
+
+------------------- [S-True]
+level G true public
+
+
+-------------------- [S-False]
+level G false public
+
+
+rf_level G Fields S
+-------------------------- [S-RecBuild]
+level G recBuild(Fields) S
+
+
+level G Rec S
+------------------------------------ [S-RecField]
+level G recFieldAccess(Rec, Field) S
+
+
+|{e}- E ~~> ET
+level G ET S
+-------------- [S-TransExpr]*
+level G E S
+
+
+
+/*Record Field Security Level*/
+
+---------------------------------- [S-RFEnd]
+rf_level G endRecFieldExprs public
+
+
+level G E S1
+rf_level G Rest S2
+join S1 S2 S
+----------------------------------------- [S-RFAdd]
+rf_level G addRecFieldExprs(L, E, Rest) S
+
+
+|{recFieldExprs}- RF ~~> RFT
+rf_level G RFT S
+---------------------------- [S-RFTrans]*
+rf_level G RF S
+
+
+
+/*Statement Security*/
+
+--------------------- [S-Noop]
+secure PC FG G noop G
+
+
+secure PC FG G C1 G1
+secure PC FG G1 C2 G2
+----------------------------- [S-Seq]
+secure PC FG G seq(C1, C2) G2
+
+
+level G E public
+----------------------------------------------------- [S-Declare]
+secure PC FG G declare(X, Ty, E) addSec(X, public, G)
+
+
+level G E S
+------------------------------------------- [S-DeclareSecPrivate]
+secure PC FG G declareSec(X, private, Ty, E
+          ) addSec(X, private, G)
+
+
+level G E public
+---------------------------------------------- [S-DeclareSecPublic]
+secure public FG G declareSec(X, public, Ty, E
+                ) addSec(X, public, G)
+
+
+/*To assign to public var, need both PC and expr to be public*/
+level G E public
+lookupSec G X public
+--------------------------------- [S-AssignPublic]
+secure public FG G assign(X, E) G
+
+
+/*Can assign anything to a private var, anytime*/
+level G E S
+lookupSec G X private
+----------------------------- [S-AssignPrivate]
+secure PC FG G assign(X, E) G
+
+
+level G Cond S
+join PC S NewPC
+secure NewPC FG G Then GTh
+secure NewPC FG G Else GEl
+--------------------------------------------- [S-IfThenElse]
+secure PC FG G ifThenElse(Cond, Then, Else) G
+/*branches are new scopes, so we throw their security updates away*/
+
+
+level G Cond S
+join PC S NewPC
+secure NewPC FG G Body G1
+---------------------------------- [S-While]
+secure PC FG G while(Cond, Body) G
+/*body is a new scope*/
+
+
+level G E public
+-------------------------------- [S-Print]
+secure public FG G printVal(E) G
+/*can only print public values, and can only print if we didn't use
+  private variables to get here*/
+
+
+lookupFunSec FG Fun private Levels
+level_args G Args Levels
+---------------------------------- [S-CallPrivate]
+secure PC FG G call(Fun, Args) G
+/*can always call a function starting in a private state*/
+
+
+lookupFunSec FG Fun public Levels
+level_args G Args Levels
+------------------------------------ [S-CallPublic]
+secure public FG G call(Fun, Args) G
+/*can only call a function starting in a public state if we are also
+  in a public state (didn't branch on private vars)*/
+
+
+|{c}- C ~~> CT
+secure PC FG G CT G1
+-------------------- [S-Trans]*
+secure PC FG G C G1
+
+
+
+------------------------------------ [LA-End]
+level_args G endArgs endSeclevelList
+
+
+level G E S
+level_args G Rest SRest
+------------------------------------------------------- [LA-Add]
+level_args G addArgs(E, Rest) addSeclevelList(S, SRest)
+
+
+|{args}- A ~~> AT
+level_args G AT S
+----------------- [LA-Trans]*
+level_args G A S
+
+
+
+/*Function Security*/
+
+paramsToSecCtx Params G
+secure public FG G Body G2
+------------------------------------- [SF-Fun]
+secure_fun FG fun(Name, Params, Body)
+
+
+paramsToSecCtx Params G
+secure PC FG G Body G2
+-------------------------------------------- [SF-Secfun]
+secure_fun FG secfun(Name, PC, Params, Body)
+
+
+|{fun}- F ~~> FT
+secure_fun FG FT
+---------------- [SF-Trans]*
+secure_fun FG F
+
+
+
+--------------------------------- [PtSC-End]
+paramsToSecCtx endParams emptySec
+
+
+paramsToSecCtx Rest SRest
+----------------------------------------------------------- [PtSC-Add]
+paramsToSecCtx addParams(X, Ty, Rest) addSec(X, public, SRest)
+
+
+paramsToSecCtx Rest SRest
+-------------------------------------------------------- [PtSC-AddSec]
+paramsToSecCtx addSecParams(X, S, Ty, Rest) addSec(X, S, SRest)
+
+
+|{params}- P ~~> PT
+paramsToSecCtx PT S
+------------------- [PtSC-Trans]*
+paramsToSecCtx P S
+
+
+
+/*Program Security*/
+
+secure public FG emptySec MainBody GS2
+-------------------------------------- [SP-End]
+secure_program FG endProgram(MainBody)
+
+
+secure_fun FG Fun
+secure_program FG Rest
+--------------------------------------- [SP-Add]
+secure_program FG addProgram(Fun, Rest)
+
+
+|{program}- P ~~> PT
+secure_program FG PT
+-------------------- [SP-Trans]*
+secure_program FG P
+
+
+
+------------------------------------- [BFSC-End]
+buildFunSecCtx endProgram emptyFunSec
+
+
+buildFunSecCtx Rest SRest
+getFunSec Fun Name Lev Secs
+----------------------------------------------------- [BFSC-Add]
+buildFunSecCtx addProgram(Fun, Rest
+                  ) addFunSec(Name, Lev, Secs, SRest)
+
+
+|{program}- P ~~> PT
+buildFunSecCtx PT GS
+-------------------- [BFSC-Trans]*
+buildFunSecCtx P GS
+
+
+
+paramsToSecList Params SL
+------------------------------------------------ [GFS-Fun]
+getFunSec fun(Name, Params, Body) Name public SL
+
+
+paramsToSecList Params SL
+------------------------------------------------- [GFS-Secfun]
+getFunSec secfun(Name, S, Params, Body) Name S SL
+
+
+|{fun}- F ~~> FT
+getFunSec FT Name S SL
+---------------------- [GFS-Trans]*
+getFunSec F Name S SL
+
+
+
+buildFunSecCtx P FG
+secure_program FG P
+=================== [PSecCheck]
+programSecCheck P

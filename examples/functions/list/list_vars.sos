@@ -1,0 +1,41 @@
+Module functions:list
+
+/*Expression Vars*/
+
+-------------------- [V-Nil]
+vars nil emptyDomain
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+------------------- [V-Cons]
+vars cons(E1, E2) D
+
+
+vars E D
+-------------- [V-Null]
+vars null(E) D
+
+
+vars E D
+-------------- [V-Head]
+vars head(E) D
+
+
+vars E D
+-------------- [V-Tail]
+vars tail(E) D
+
+
+vars E1 D1
+vars E2 D2
+joinDomains D1 D2 D
+-------------------- [V-Index]
+vars index(E1, E2) D
+
+
+vars E D
+---------------- [V-Length]
+vars length(E) D
+

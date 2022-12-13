@@ -1,0 +1,5 @@
+#!/bin/bash
+
+MODULE="functions:composed"
+
+sos-ext $@ -I .. $MODULE

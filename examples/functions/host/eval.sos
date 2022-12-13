@@ -1,0 +1,325 @@
+Module functions:host
+
+evalctx ::= emptyEval
+          | addVal(string, value, evalctx)
+Translation evalctx :
+
+
+Judgment lookupVal : evalctx* string value
+
+-------------------------------- [LV-Here]
+lookupVal addVal(X, V, Rest) X V
+
+
+lookupVal Rest X XV
+X != Y
+---------------------------------- [LV-Later]
+lookupVal addVal(Y, YV, Rest) X XV
+
+
+
+functx ::= emptyFun
+         | addFun(string, nameList, c, functx)
+Translation functx :
+
+nameList ::= endNames
+           | addNames(string, nameList)
+Translation nameList :
+
+
+Judgment lookupFun : functx* string nameList c
+
+--------------------------------------------- [LF-Here]
+lookupFun addFun(F, NL, Body, Rest) F NL Body
+
+
+lookupFun Rest X XNL XBody
+X != Y
+------------------------------------------------ [LF-Later]
+lookupFun addFun(Y, YNL, YBody, Rest) F FNL Body
+
+
+Judgment paramsToNameList : params* nameList
+
+----------------------------------- [PtNL-End]
+paramsToNameList endParams endNames
+
+
+paramsToNameList Rest NRest
+---------------------------------------------------------- [PtNL-Add]
+paramsToNameList addParams(X, Ty, Rest) addNames(X, NRest)
+
+
+
+/*Output from the program printing*/
+output ::= emptyOutput
+         | addOutput(value, output)
+Translation output :
+
+
+
+
+Judgment eval_e : evalctx e* value
+Judgment eval_rf : evalctx recFieldExprs* evalctx
+/*Thread printing output through*/
+Judgment eval_c : output functx evalctx c* evalctx output
+/*given arguments and names, produce an eval ctx for the function*/
+Judgment eval_args : evalctx args* nameList evalctx
+/*get the evaluation information from a function
+  (name, parameter names, body)*/
+Judgment eval_fun : fun* string nameList c
+/*evaluate a program to find its output under a fun ctx*/
+Judgment eval_program : functx program* output
+/*Evaluate a full program to get its output*/
+Fixed Judgment full_eval : program output
+
+
+/*Expression Evaluation*/
+
+------------------------- [E-Num]
+eval_e G num(I) intVal(I)
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 + I2 = I
+------------------------------- [E-Plus]
+eval_e G plus(E1, E2) intVal(I)
+
+
+lookupVal G X V
+------------------ [E-Name]
+eval_e G name(X) V
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 > I2
+-------------------------------- [E-GreaterTrue]
+eval_e G greater(E1, E2) trueVal
+
+
+eval_e G E1 intVal(I1)
+eval_e G E2 intVal(I2)
+I1 <= I2
+--------------------------------- [E-GreaterFalse]
+eval_e G greater(E1, E2) falseVal
+
+
+eval_e G E1 V1
+eval_e G E2 V2
+val_eq V1 V2
+--------------------------- [E-EqTrue]
+eval_e G eq(E1, E2) trueVal
+
+
+eval_e G E1 V1
+eval_e G E2 V2
+! val_eq V1 V2
+---------------------------- [E-EqFalse]
+eval_e G eq(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+eval_e G E2 trueVal
+---------------------------- [E-AndTrue]
+eval_e G and(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+----------------------------- [E-AndFalse1]
+eval_e G and(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+eval_e G E2 falseVal
+----------------------------- [E-AndFalse2]
+eval_e G and(E1, E2) falseVal
+
+
+eval_e G E1 trueVal
+--------------------------- [E-OrTrue1]
+eval_e G or(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+eval_e G E2 trueVal
+--------------------------- [E-OrTrue2]
+eval_e G or(E1, E2) trueVal
+
+
+eval_e G E1 falseVal
+eval_e G E2 falseVal
+---------------------------- [E-OrFalse]
+eval_e G or(E1, E2) falseVal
+
+
+--------------------- [E-True]
+eval_e G true trueVal
+
+
+----------------------- [E-False]
+eval_e G false falseVal
+
+
+eval_rf G Fields FieldVals
+------------------------------------------- [E-RecBuild]
+eval_e G recBuild(Fields) recVal(FieldVals)
+
+
+eval_e G Rec recVal(Fields)
+lookupVal Fields Field V
+------------------------------------- [E-RecField]
+eval_e G recFieldAccess(Rec, Field) V
+
+
+
+/*Record Field Evaluation*/
+
+------------------------------------ [ERF-End]
+eval_rf G endRecFieldExprs emptyEval
+
+
+eval_e G E V
+eval_rf G Rest FVs
+-------------------------------------------------------- [ERF-Add]
+eval_rf G addRecFieldExprs(L, E, Rest) addVal(L, V, FVs)
+
+
+
+/*Command Evaluation*/
+
+---------------------- [E-Noop]
+eval_c O FG G noop G O
+
+
+eval_c O FG G C1 G1 O1
+eval_c O1 FG G1 C2 G2 O2
+------------------------------- [E-Seq]
+eval_c O FG G seq(C1, C2) G2 O2
+
+
+eval_e G E V
+------------------------------------------------- [E-Declare]
+eval_c O FG G declare(X, Ty, E) addVal(X, V, G) O
+
+
+eval_e G E V
+-------------------------------------------- [E-Assign]
+eval_c O FG G assign(X, E) addVal(X, V, G) O
+
+
+eval_e G Cond trueVal
+eval_c O FG G Then G1 O1
+------------------------------------------------ [E-IfThenElseTrue]
+eval_c O FG G ifThenElse(Cond, Then, Else) G1 O1
+
+
+eval_e G Cond falseVal
+eval_c O FG G Else G1 O1
+------------------------------------------------ [E-IfThenElseFalse]
+eval_c O FG G ifThenElse(Cond, Then, Else) G1 O1
+
+
+eval_e G Cond falseVal
+----------------------------------- [E-WhileFalse]
+eval_c O FG G while(Cond, Body) G O
+
+
+eval_e G Cond trueVal
+eval_c O FG G Body G1 O1
+eval_c O1 FG G1 while(Cond, Body) G2 O2
+--------------------------------------- [E-WhileTrue]
+eval_c O FG G while(Cond, Body) G2 O2
+
+
+eval_e G E V
+lookupVal G Rec recVal(Fields)
+update_rec_fields RecFields Fields V Result
+--------------------------------------------------- [E-RecUpdate]
+eval_c O FG G recUpdate(Rec, RecFields, E) Result O
+
+
+eval_e G E V
+------------------------------------------- [E-Print]
+eval_c O FG G printVal(E) G addOutput(V, O)
+
+
+lookupFun FG Fun ParamNames Body
+eval_args G Args ParamNames ArgsCtx
+eval_c O FG ArgsCtx Body G2 O2
+----------------------------------- [E-Call]
+eval_c O FG G call(Fun, Args) G O2
+
+
+
+-------------------------------------- [EA-End]
+eval_args G endArgs endNames emptyEval
+
+
+eval_e G E V
+eval_args G Rest NRest C
+------------------------------------------------------------- [EA-Add]
+eval_args G addArgs(E, Rest) addNames(X, NRest) addVal(X, V, C)
+
+
+/*Update the associations in the first tyCtx for the fields,
+  descending through it to place the value in the final one, producing
+  the ending tyCtx*/
+Judgment update_rec_fields : recFields* evalctx value evalctx
+
+------------------------------------------------------- [URF-One]
+update_rec_fields oneField(F) Init V addVal(F, V, Init)
+
+
+lookupVal Init F recVal(FFields)
+update_rec_fields Rest FFields V UpdatedFFields
+--------------------------------------------------- [URF-Step]
+update_rec_fields addField(F, Rest) Init V addVal(
+                   F, recVal(UpdatedFFields), Init)
+
+
+
+/*Program Evaluation*/
+
+eval_fun Fun Name Names Body
+eval_program addFun(Name, Names, Body, FG) Rest O
+------------------------------------------------- [EP-Add]
+eval_program FG addProgram(Fun, Rest) O
+
+
+eval_c emptyOutput FG emptyEval Main G O
+---------------------------------------- [EP-End]
+eval_program FG endProgram(Main) O
+
+
+paramsToNameList Params Names
+------------------------------------------------ [EF-Fun]
+eval_fun fun(Name, Params, Body) Name Names Body
+
+
+eval_program emptyFun P O
+========================= [FE-Program]
+full_eval P O
+
+
+
+/*Check equality in a way appropriate to each value type*/
+Judgment val_eq : value* value
+
+-------------------------- [VE-Int]
+val_eq intVal(I) intVal(I)
+
+
+---------------------- [VE-True]
+val_eq trueVal trueVal
+
+
+------------------------ [VE-False]
+val_eq falseVal falseVal
+
+
+evalctx_eq Fields1 Fields2
+-------------------------------------- [VE-Rec]
+val_eq recVal(Fields1) recVal(Fields2)
+

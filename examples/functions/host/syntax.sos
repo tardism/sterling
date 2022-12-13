@@ -1,0 +1,76 @@
+Module functions:host
+
+/*Expressions*/
+e ::= num(int)
+    | plus(e, e)
+    | name(string)
+    | greater(e, e)
+    | eq(e, e)
+    | and(e, e)
+    | or(e, e)
+    | true
+    | false
+    | call(string, args)
+    | recBuild(recFieldExprs)
+    | recFieldAccess(e, string)
+Translation e :
+
+recFieldExprs ::= endRecFieldExprs
+                | addRecFieldExprs(string, e, recFieldExprs)
+Translation recFieldExprs :
+
+args ::= endArgs
+       | addArgs(e, args)
+Translation args :
+
+
+/*Statement Commands*/
+c ::= noop
+    | seq(c, c)
+    | declare(string, ty, e)
+    | assign(string, e)
+    | ifThenElse(e, c, c)
+    | while(e, c)
+    | recUpdate(string, recFields, e) /*rec.field = e*/
+    | printVal(e)
+Translation c :
+
+recFields ::= oneField(string)
+            | addField(string, recFields)
+Translation recFields :
+
+
+/*Functions*/
+fun ::= fun(string, ty, string, params, c)
+          /*name, return type, return var, params, body*/
+Translation fun :
+
+params ::= endParams
+         | addParams(string, ty, params)
+Translation params :
+
+
+/*Program*/
+program ::= endProgram
+          | addProgram(fun, program) /*other functions*/
+Translation program :
+
+
+/*Types*/
+ty ::= intTy
+     | boolTy
+     | recTy(tyctx)
+Translation ty :
+
+tyList ::= endTyList
+         | addTyList(ty, tyList)
+Translation tyList :
+
+
+/*Evaluation Values*/
+value ::= intVal(int)
+        | trueVal
+        | falseVal
+        | recVal(evalctx)
+Translation value :
+

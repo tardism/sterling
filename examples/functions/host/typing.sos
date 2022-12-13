@@ -1,0 +1,335 @@
+Module functions:host
+
+tyctx ::= emptyTy
+        | addTy(string, ty, tyctx)
+Translation tyctx :
+
+
+Judgment lookupTy : tyctx* string ty
+
+-------------------------------- [L-Here]
+lookupTy addTy(X, Ty, Rest) X Ty
+
+
+lookupTy Rest X XTy
+X != Y
+---------------------------------- [L-Later]
+lookupTy addTy(Y, YTy, Rest) X XTy
+
+
+Judgment noTy : tyctx* string
+
+-------------- [NT-Empty]
+noTy emptyTy X
+
+
+noTy Rest X
+X != Y
+-------------------------- [NT-Add]
+noTy addTy(Y, YTy, Rest) X
+
+
+
+funtyctx ::= emptyFunTy
+           | addFunTy(string, ty, tyList, funtyctx)
+            /*function name, return type, parameter types, rest*/
+Translation funtyctx :
+
+
+Judgment lookupFunTy : funtyctx* string ty tyList
+
+----------------------------------------------- [LFT-Here]
+lookupFunTy addFunTy(F, Ret, TL, Rest) F Ret TL
+
+
+lookupFunTy Rest X XRet XTL
+X != Y
+--------------------------------------------------- [LFT-Later]
+lookupFunTy addFunTy(Y, YRet, YTL, Rest) F XRet FTL
+
+
+Judgment paramsToTyList : params* tyList
+
+---------------------------------- [PtTL-End]
+paramsToTyList endParams endTyList
+
+
+paramsToTyList Rest TyRest
+----------------------------------------------------------- [PtTL-Add]
+paramsToTyList addParams(X, Ty, Rest) addTyList(Ty, TyRest)
+
+
+
+
+/*Expressions*/
+Judgment typeOf : funtyctx tyctx e* ty
+Judgment typeRecFields : funtyctx tyctx recFieldExprs* tyctx
+/*Statements*/
+Judgment typeOK : funtyctx tyctx c* tyctx
+Judgment typeArgs : funtyctx tyctx args* tyList
+/*Functions*/
+Judgment funTyOK : funtyctx fun*
+Judgment paramsToTyCtx : params* tyctx
+/*Program*/
+Judgment programTyOK : funtyctx  program*
+Judgment buildFunTyCtx : program* funtyctx
+Judgment getFunTy : fun* string ty tyList /*name, arg types*/
+/*The actual check for the program*/
+Fixed Judgment programChecks : program
+
+
+/*Expression Typing*/
+
+------------------------ [T-Num]
+typeOf FG G num(I) intTy
+
+
+typeOf FG G E1 intTy
+typeOf FG G E2 intTy
+------------------------------ [T-Plus]
+typeOf FG G plus(E1, E2) intTy
+
+
+lookupTy G X Ty
+---------------------- [T-Name]
+typeOf FG G name(X) Ty
+
+
+typeOf FG G E1 intTy
+typeOf FG G E2 intTy
+--------------------------------- [T-Greater]
+typeOf FG G greater(E1, E2) intTy
+
+
+typeOf FG G E1 Ty
+typeOf FG G E2 Ty
+------------------------- [T-Eq]
+typeOf FG G eq(E1, E2) Ty
+
+
+typeOf FG G E1 boolTy
+typeOf FG G E2 boolTy
+------------------------------ [T-And]
+typeOf FG G and(E1, E2) boolTy
+
+
+typeOf FG G E1 boolTy
+typeOf FG G E2 boolTy
+----------------------------- [T-Or]
+typeOf FG G or(E1, E2) boolTy
+
+
+----------------------- [T-True]
+typeOf FG G true boolTy
+
+
+------------------------ [T-False]
+typeOf FG G false boolTy
+
+
+lookupFunTy FG F Ret ArgTys
+typeArgs FG G Args ArgTys
+----------------------------- [T-Call]
+typeOf FG G call(F, Args) Ret
+
+
+typeRecFields FG G Fields FTys
+---------------------------------------- [T-RecBuild]
+typeOf FG G recBuild(Fields) recTy(FTys)
+
+
+typeOf FG G Rec recTy(Fields)
+lookupTy Fields Field FTy
+------------------------------------------ [T-RecField]
+typeOf FG G recFieldAccess(Rec, Field) FTy
+
+
+
+/*Record Field Typing*/
+
+------------------------------------------- [TRF-End]
+typeRecFields FG G endRecFieldExprs emptyTy
+
+
+typeOf FG G E Ty
+typeRecFields FG G Rest FTys
+noTy FTys L /*each label only occurs once*/
+------------------------------------------------------------ [TRF-Add]
+typeRecFields FG G addRecFieldExprs(L, E, Rest) addTy(L, Ty, FTys)
+
+
+
+/*Args Typing*/
+
+------------------------------- [TA-End]
+typeArgs FG G endArgs endTyList
+
+
+typeArgs FG G Rest RestTys
+typeOf FG G E Ty
+----------------------------------------------------- [TA-Add]
+typeArgs FG G addArgs(E, Rest) addTyList(Ty, RestTys)
+
+
+
+/*Statement Typing*/
+
+------------------ [T-Noop]
+typeOK FG G noop G
+
+
+typeOK FG G C1 G1
+typeOK FG G1 C2 G2
+-------------------------- [T-Seq]
+typeOK FG G seq(C1, C2) G2
+
+
+noTy G X /*can't overwrite existing decls*/
+typeOf FG G E Ty
+--------------------------------------------- [T-Declare]
+typeOK FG G declare(X, Ty, E) addTy(X, Ty, G)
+
+
+typeOf FG G E Ty
+lookupTy G X Ty
+-------------------------- [T-Assign]
+typeOK FG G assign(X, E) G
+
+
+typeOf FG G Cond boolTy
+typeOK FG G Then GT
+typeOK FG G Else GE
+------------------------------------------ [T-IfThenElse]
+typeOK FG G ifThenElse(Cond, Then, Else) G
+/*branches open new scopes*/
+
+
+typeOf FG G Cond boolTy
+typeOK FG G Body GB
+------------------------------- [T-While]
+typeOK FG G while(Cond, Body) G
+/*body opens a new scope*/
+
+
+lookupTy G Rec recTy(FFields)
+checkRecUpdate Fields FFields Ty
+typeOf FG G E Ty
+--------------------------------------- [T-RecUpdate]
+typeOK FG G recUpdate(Rec, Fields, E) G
+
+
+typeOf FG G E Ty
+------------------------- [T-Print]
+typeOK FG G printVal(E) G
+
+
+
+/*Check whether the update to the nested fields is valid
+  The tyctx is the fields of the record*/
+Judgment checkRecUpdate : recFields* tyctx ty
+
+lookupTy RecFieldTys F Ty
+----------------------------------------- [CRU-OneField]
+checkRecUpdate oneField(F) RecFieldTys Ty
+
+
+lookupTy RecFieldTys F recTy(FFieldTys)
+checkRecUpdate Rest FFieldTys Ty
+----------------------------------------------- [CRU-AddField]
+checkRecUpdate addField(F, Rest) RecFieldTys Ty
+
+
+
+/*Function Typing*/
+
+paramsToTyCtx Params G
+typeOK FG addTy(RetName, RetTy, G) Body G2 /*ret name declared*/
+-------------------------------------------------- [T-Fun]
+funTyOK FG fun(Name, RetTy, RetName, Params, Body)
+
+
+------------------------------- [PtTC-End]
+paramsToTyCtx endParams emptyTy
+
+
+paramsToTyCtx Rest TRest
+-------------------------------------------------------- [PtTC-Add]
+paramsToTyCtx addParams(X, Ty, Rest) addTy(X, Ty, TRest)
+
+
+
+/*Program Typing*/
+
+------------------------- [T-ProgramEnd]
+programTyOK FG endProgram
+
+
+funTyOK FG Fun
+programTyOK FG Rest
+------------------------------------ [T-ProgramAdd]
+programTyOK FG addProgram(Fun, Rest)
+
+
+
+----------------------------------- [BFTC-End]
+buildFunTyCtx endProgram emptyFunTy
+
+
+buildFunTyCtx Rest FRest
+getFunTy Fun Name Ret ArgTys
+----------------------------------------------------------- [BFTC-Add]
+buildFunTyCtx addProgram(Fun, Rest) addFunTy(Name, Ret, ArgTys, FRest)
+
+
+
+paramsToTyList Params ArgTys
+---------------------------------------------------------------- [GFT]
+getFunTy fun(Name, RetTy, RetName, Params, Body) Name RetTy ArgTys
+
+
+
+/*Gather the function types, then typecheck the program*/
+buildFunTyCtx P FG
+programTyOK FG P
+lookupFunTy FG "main" Ret Args
+============================== [PCheck]
+programChecks P
+
+
+
+
+/*Typing for values to allow type soundness*/
+Judgment typeOfVal : value* ty
+
+------------------------- [TV-Int]
+typeOfVal intVal(I) intTy
+
+
+------------------------ [TV-True]
+typeOfVal trueVal boolTy
+
+
+------------------------- [TV-False]
+typeOfVal falseVal boolTy
+
+
+typeOfEvalctx Fields FTys
+------------------------------------ [TV-Rec]
+typeOfVal recVal(Fields) recTy(FTys)
+
+
+
+
+/*Typing for evaluation contexts to allow type soundness and recVal
+  typing*/
+Judgment typeOfEvalctx : evalctx* tyctx
+
+------------------------------- [TEC-Empty]
+typeOfEvalctx emptyEval emptyTy
+
+
+typeOfVal V Ty
+typeOfEvalctx Rest RestTys
+------------------------------------------------------ [TEC-Add]
+typeOfEvalctx addVal(X, V, Rest) addTy(X, Ty, RestTys)
+
