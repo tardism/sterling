@@ -1,6 +1,6 @@
-Module sos_imp_fun:list
+Module sos_imp_proc:list
 
-Builds on sos_imp_fun:host
+Builds on sos_imp_proc:host
 
 /*New Expressions and Translations*/
 e ::= ...

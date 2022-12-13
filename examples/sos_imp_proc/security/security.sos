@@ -1,6 +1,6 @@
-Module sos_imp_fun:security
+Module sos_imp_proc:security
 
-Builds on sos_imp_fun:host
+Builds on sos_imp_proc:host
 
 /*New Statement and Translation*/
 c ::= ...

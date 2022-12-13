@@ -1,4 +1,4 @@
-Module sos_imp_fun:security
+Module sos_imp_proc:security
 
 secctx ::= emptySec
          | addSec(string, seclevel, secctx)

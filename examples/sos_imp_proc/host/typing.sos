@@ -1,4 +1,4 @@
-Module sos_imp_fun:host
+Module sos_imp_proc:host
 
 tyctx ::= emptyTy
         | addTy(string, ty, tyctx)

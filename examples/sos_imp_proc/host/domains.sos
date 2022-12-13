@@ -1,4 +1,4 @@
-Module sos_imp_fun:host
+Module sos_imp_proc:host
 
 domain ::= emptyDomain
          | addDomain(string, domain)
