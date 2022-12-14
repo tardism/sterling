@@ -36,7 +36,7 @@ lookupFun addFun(F, NL, Body, Rest) F NL Body
 lookupFun Rest X XNL XBody
 X != Y
 ------------------------------------------------ [LF-Later]
-lookupFun addFun(Y, YNL, YBody, Rest) F FNL Body
+lookupFun addFun(Y, YNL, YBody, Rest) X XNL Body
 
 
 Judgment paramsToNameList : params* nameList

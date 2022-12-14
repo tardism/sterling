@@ -19,7 +19,8 @@ lookupVal addVal(Y, YV, Rest) X XV
 
 
 functx ::= emptyFun
-         | addFun(string, nameList, c, functx)
+         | addFun(string, string, nameList, c, functx)
+                /*fun name, ret name, params, body, rest*/
 Translation functx :
 
 nameList ::= endNames
@@ -27,16 +28,17 @@ nameList ::= endNames
 Translation nameList :
 
 
-Judgment lookupFun : functx* string nameList c
+Judgment lookupFun : functx* string string nameList c
+                   /*functx fun name, ret name, param names, body*/
 
---------------------------------------------- [LF-Here]
-lookupFun addFun(F, NL, Body, Rest) F NL Body
+------------------------------------------------------ [LF-Here]
+lookupFun addFun(F, Ret, NL, Body, Rest) F Ret NL Body
 
 
-lookupFun Rest X XNL XBody
+lookupFun Rest X XRet XNL XBody
 X != Y
------------------------------------------------- [LF-Later]
-lookupFun addFun(Y, YNL, YBody, Rest) F FNL Body
+----------------------------------------------------------- [LF-Later]
+lookupFun addFun(Y, YRet, YNL, YBody, Rest) X XRet XNL Body
 
 
 Judgment paramsToNameList : params* nameList
@@ -59,131 +61,140 @@ Translation output :
 
 
 
-Judgment eval_e : evalctx e* value
-Judgment eval_rf : evalctx recFieldExprs* evalctx
+/*Expressions need output, functx because of function calls*/
+Judgment eval_e : output functx evalctx e* value output
+Judgment eval_rf : output functx evalctx recFieldExprs* evalctx output
 /*Thread printing output through*/
 Judgment eval_c : output functx evalctx c* evalctx output
 /*given arguments and names, produce an eval ctx for the function*/
-Judgment eval_args : evalctx args* nameList evalctx
+Judgment eval_args : output functx evalctx args* nameList evalctx output
 /*get the evaluation information from a function
-  (name, parameter names, body)*/
-Judgment eval_fun : fun* string nameList c
+  (name, return name, parameter names, body)*/
+Judgment eval_fun : fun* string string nameList c
 /*evaluate a program to find its output under a fun ctx*/
-Judgment eval_program : functx program* output
+Judgment eval_program : valuelist functx program* output
 /*Evaluate a full program to get its output*/
-Fixed Judgment full_eval : program output
+Fixed Judgment full_eval : valuelist program output
 
 
 /*Expression Evaluation*/
 
-------------------------- [E-Num]
-eval_e G num(I) intVal(I)
+-------------------------------- [E-Num]
+eval_e O FG G num(I) intVal(I) O
 
 
-eval_e G E1 intVal(I1)
-eval_e G E2 intVal(I2)
+eval_e O FG G E1 intVal(I1) O1
+eval_e O1 FG G E2 intVal(I2) O2
 I1 + I2 = I
-------------------------------- [E-Plus]
-eval_e G plus(E1, E2) intVal(I)
+--------------------------------------- [E-Plus]
+eval_e O FG G plus(E1, E2) intVal(I) O2
 
 
 lookupVal G X V
------------------- [E-Name]
-eval_e G name(X) V
+------------------------- [E-Name]
+eval_e O FG G name(X) V O
 
 
-eval_e G E1 intVal(I1)
-eval_e G E2 intVal(I2)
+eval_e O FG G E1 intVal(I1) O1
+eval_e O1 FG G E2 intVal(I2) O2
 I1 > I2
--------------------------------- [E-GreaterTrue]
-eval_e G greater(E1, E2) trueVal
+---------------------------------------- [E-GreaterTrue]
+eval_e O FG G greater(E1, E2) trueVal O2
 
 
-eval_e G E1 intVal(I1)
-eval_e G E2 intVal(I2)
+eval_e O FG G E1 intVal(I1) O1
+eval_e O1 FG G E2 intVal(I2) O2
 I1 <= I2
---------------------------------- [E-GreaterFalse]
-eval_e G greater(E1, E2) falseVal
+----------------------------------------- [E-GreaterFalse]
+eval_e O FG G greater(E1, E2) falseVal O2
 
 
-eval_e G E1 V1
-eval_e G E2 V2
+eval_e O FG G E1 V1 O1
+eval_e O1 FG G E2 V2 O2
 val_eq V1 V2
---------------------------- [E-EqTrue]
-eval_e G eq(E1, E2) trueVal
+----------------------------------- [E-EqTrue]
+eval_e O FG G eq(E1, E2) trueVal O1
 
 
-eval_e G E1 V1
-eval_e G E2 V2
+eval_e O FG G E1 V1 O1
+eval_e O1 FG G E2 V2 O2
 ! val_eq V1 V2
----------------------------- [E-EqFalse]
-eval_e G eq(E1, E2) falseVal
+------------------------------------ [E-EqFalse]
+eval_e O FG G eq(E1, E2) falseVal O2
 
 
-eval_e G E1 trueVal
-eval_e G E2 trueVal
----------------------------- [E-AndTrue]
-eval_e G and(E1, E2) trueVal
+eval_e O FG G E1 trueVal O1
+eval_e O1 FG G E2 trueVal O2
+------------------------------------ [E-AndTrue]
+eval_e O FG G and(E1, E2) trueVal O2
 
 
-eval_e G E1 falseVal
------------------------------ [E-AndFalse1]
-eval_e G and(E1, E2) falseVal
+eval_e O FG G E1 falseVal O1
+------------------------------------- [E-AndFalse1]
+eval_e O FG G and(E1, E2) falseVal O1
 
 
-eval_e G E1 trueVal
-eval_e G E2 falseVal
------------------------------ [E-AndFalse2]
-eval_e G and(E1, E2) falseVal
+eval_e O FG G E1 trueVal O1
+eval_e O FG G E2 falseVal O2
+------------------------------------- [E-AndFalse2]
+eval_e O FG G and(E1, E2) falseVal O2
 
 
-eval_e G E1 trueVal
---------------------------- [E-OrTrue1]
-eval_e G or(E1, E2) trueVal
+eval_e O FG G E1 trueVal O1
+----------------------------------- [E-OrTrue1]
+eval_e O FG G or(E1, E2) trueVal O1
 
 
-eval_e G E1 falseVal
-eval_e G E2 trueVal
---------------------------- [E-OrTrue2]
-eval_e G or(E1, E2) trueVal
+eval_e O FG G E1 falseVal O1
+eval_e O1 FG G E2 trueVal O2
+----------------------------------- [E-OrTrue2]
+eval_e O FG G or(E1, E2) trueVal O2
 
 
-eval_e G E1 falseVal
-eval_e G E2 falseVal
----------------------------- [E-OrFalse]
-eval_e G or(E1, E2) falseVal
+eval_e O FG G E1 falseVal O1
+eval_e O1 FG G E2 falseVal O2
+------------------------------------ [E-OrFalse]
+eval_e O FG G or(E1, E2) falseVal O2
 
 
---------------------- [E-True]
-eval_e G true trueVal
+---------------------------- [E-True]
+eval_e O FG G true trueVal O
 
 
------------------------ [E-False]
-eval_e G false falseVal
+------------------------------ [E-False]
+eval_e O FG G false falseVal O
 
 
-eval_rf G Fields FieldVals
-------------------------------------------- [E-RecBuild]
-eval_e G recBuild(Fields) recVal(FieldVals)
+lookupFun FG Fun RetName ParamNames Body
+eval_args O FG G Args ParamNames ArgsCtx O1
+eval_c O1 FG ArgsCtx Body G2 O2
+lookupVal G2 RetName V
+------------------------------------------- [E-Call]
+eval_e O FG G call(F, Args) V O2
 
 
-eval_e G Rec recVal(Fields)
+eval_rf O FG G Fields FieldVals O1
+--------------------------------------------------- [E-RecBuild]
+eval_e O FG G recBuild(Fields) recVal(FieldVals) O1
+
+
+eval_e O FG G Rec recVal(Fields) O1
 lookupVal Fields Field V
-------------------------------------- [E-RecField]
-eval_e G recFieldAccess(Rec, Field) V
+--------------------------------------------- [E-RecField]
+eval_e O FG G recFieldAccess(Rec, Field) V O1
 
 
 
 /*Record Field Evaluation*/
 
------------------------------------- [ERF-End]
-eval_rf G endRecFieldExprs emptyEval
+------------------------------------------- [ERF-End]
+eval_rf O FG G endRecFieldExprs emptyEval O
 
 
-eval_e G E V
-eval_rf G Rest FVs
--------------------------------------------------------- [ERF-Add]
-eval_rf G addRecFieldExprs(L, E, Rest) addVal(L, V, FVs)
+eval_e O FG G E V O1
+eval_rf O1 FG G Rest FVs O2
+---------------------------------------------------------------- [ERF-Add]
+eval_rf O FG G addRecFieldExprs(L, E, Rest) addVal(L, V, FVs) O2
 
 
 
@@ -199,68 +210,62 @@ eval_c O1 FG G1 C2 G2 O2
 eval_c O FG G seq(C1, C2) G2 O2
 
 
-eval_e G E V
-------------------------------------------------- [E-Declare]
-eval_c O FG G declare(X, Ty, E) addVal(X, V, G) O
+eval_e O FG G E V O1
+-------------------------------------------------- [E-Declare]
+eval_c O FG G declare(X, Ty, E) addVal(X, V, G) O1
 
 
-eval_e G E V
--------------------------------------------- [E-Assign]
-eval_c O FG G assign(X, E) addVal(X, V, G) O
+eval_e O FG G E V O1
+--------------------------------------------- [E-Assign]
+eval_c O FG G assign(X, E) addVal(X, V, G) O1
 
 
-eval_e G Cond trueVal
-eval_c O FG G Then G1 O1
+eval_e O FG G Cond trueVal O1
+eval_c O1 FG G Then G1 O2
 ------------------------------------------------ [E-IfThenElseTrue]
-eval_c O FG G ifThenElse(Cond, Then, Else) G1 O1
+eval_c O FG G ifThenElse(Cond, Then, Else) G1 O2
 
 
-eval_e G Cond falseVal
-eval_c O FG G Else G1 O1
+eval_e O FG G Cond falseVal O1
+eval_c O1 FG G Else G1 O2
 ------------------------------------------------ [E-IfThenElseFalse]
-eval_c O FG G ifThenElse(Cond, Then, Else) G1 O1
+eval_c O FG G ifThenElse(Cond, Then, Else) G1 O2
 
 
-eval_e G Cond falseVal
------------------------------------ [E-WhileFalse]
-eval_c O FG G while(Cond, Body) G O
+eval_e O FG G Cond falseVal O1
+------------------------------------ [E-WhileFalse]
+eval_c O FG G while(Cond, Body) G O1
 
 
-eval_e G Cond trueVal
-eval_c O FG G Body G1 O1
-eval_c O1 FG G1 while(Cond, Body) G2 O2
+eval_e O FG G Cond trueVal O1
+eval_c O1 FG G Body G1 O2
+eval_c O2 FG G1 while(Cond, Body) G2 O3
 --------------------------------------- [E-WhileTrue]
-eval_c O FG G while(Cond, Body) G2 O2
+eval_c O FG G while(Cond, Body) G2 O3
 
 
-eval_e G E V
+eval_e O FG G E V O1
 lookupVal G Rec recVal(Fields)
 update_rec_fields RecFields Fields V Result
---------------------------------------------------- [E-RecUpdate]
-eval_c O FG G recUpdate(Rec, RecFields, E) Result O
+---------------------------------------------------- [E-RecUpdate]
+eval_c O FG G recUpdate(Rec, RecFields, E) Result O1
 
 
-eval_e G E V
-------------------------------------------- [E-Print]
-eval_c O FG G printVal(E) G addOutput(V, O)
-
-
-lookupFun FG Fun ParamNames Body
-eval_args G Args ParamNames ArgsCtx
-eval_c O FG ArgsCtx Body G2 O2
------------------------------------ [E-Call]
-eval_c O FG G call(Fun, Args) G O2
+eval_e O FG G E V O1
+-------------------------------------------- [E-Print]
+eval_c O FG G printVal(E) G addOutput(V, O1)
 
 
 
--------------------------------------- [EA-End]
-eval_args G endArgs endNames emptyEval
+--------------------------------------------- [EA-End]
+eval_args O FG G endArgs endNames emptyEval O
 
 
-eval_e G E V
-eval_args G Rest NRest C
+eval_e O FG G E V O1
+eval_args O1 FG G Rest NRest C O2
 ------------------------------------------------------------- [EA-Add]
-eval_args G addArgs(E, Rest) addNames(X, NRest) addVal(X, V, C)
+eval_args O FG G addArgs(E, Rest) addNames(
+                                     X, NRest) addVal(X, V, C) O2
 
 
 /*Update the associations in the first tyCtx for the fields,
@@ -282,25 +287,47 @@ update_rec_fields addField(F, Rest) Init V addVal(
 
 /*Program Evaluation*/
 
-eval_fun Fun Name Names Body
-eval_program addFun(Name, Names, Body, FG) Rest O
-------------------------------------------------- [EP-Add]
-eval_program FG addProgram(Fun, Rest) O
+eval_fun Fun Name RetName Names Body
+eval_program MainArgs addFun(Name, RetName, Names, Body, FG) Rest O
+------------------------------------------------------------- [EP-Add]
+eval_program ManArgs FG addProgram(Fun, Rest) O
 
 
-eval_c emptyOutput FG emptyEval Main G O
+lookupFun FG "main" RetName Params Body
+buildEvalctx Params MainArgs G
+eval_c emptyOutput FG G Body G O
 ---------------------------------------- [EP-End]
-eval_program FG endProgram(Main) O
+eval_program MainArgs FG endProgram O
 
 
 paramsToNameList Params Names
 ------------------------------------------------ [EF-Fun]
-eval_fun fun(Name, Params, Body) Name Names Body
+eval_fun fun(Name, RetTye, RetName, Params, Body
+            ) Name RetName Names Body
 
 
-eval_program emptyFun P O
-========================= [FE-Program]
-full_eval P O
+eval_program Args emptyFun P O
+============================== [FE-Program]
+full_eval Args P O
+
+
+
+valuelist ::= emptyvals
+            | addVals(value, valuelist)
+Translation valuelist :
+
+
+/*Turn a list of names and a list of values into an evalctx*/
+Judgment buildEvalctx : nameList* valuelist evalctx
+
+----------------------------------------- [BEC-End]
+buildEvalctx endNames emptyvals emptyEval
+
+
+buildEvalctx PRest VRest ERest
+------------------------------------------------------------ [BEC-Add]
+buildEvalctx addNames(N, PRest
+                     ) addVals(V, VRest) addVal(N, V, ERest)
 
 
 
