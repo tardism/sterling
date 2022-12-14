@@ -24,11 +24,11 @@ params ::= ...
 /*New way to declare a function, with a minimum program counter to 
   start checking*/
 fun ::= ...
-      | secfun(string, seclevel, params, c)
+      | secfun(string, seclevel, ty, seclevel, string, params, c)
 
-------------------------------------------- [Trans-Secfun]
-|{fun}- secfun(Name, Sec, Params, Body) ~~>
-        fun(Name, Params, Body)
+------------------------------------------------------- [Trans-Secfun]
+|{fun}- secfun(Name, Sec, RetTy, RetSec, RetName, Params, Body) ~~>
+        fun(Name, RetTy, RetName, Params, Body)
 
 
 seclevel ::= public | private
@@ -40,14 +40,14 @@ Translation seclevel :
 /*Typing and Evaluation for New Statement*/
 
 noTy G X /*still can't overwrite existing decls*/
-typeOf G E Ty
+typeOf FG G E Ty
 --------------------------------------------------- [T-DeclareSec]
 typeOK FG G declareSec(X, S, Ty, E) addTy(X, Ty, G)
 
 
-eval_e G E V
-------------------------------------------------------- [E-DeclareSec]
-eval_c O FG G declareSec(X, S, Ty, E) addVal(X, V, G) O
+eval_e FG G E V O
+----------------------------------------------------- [E-DeclareSec]
+eval_c FG G declareSec(X, S, Ty, E) addVal(X, V, G) O
 
 
 
@@ -72,17 +72,19 @@ paramsToNameList addSecParams(X, S, Ty, Rest) addNames(X, NRest)
 /*Host Relations for New Fun*/
 
 paramsToTyCtx Params G
-typeOK FG G Body G2
--------------------------------------------- [T-Secfun]
-funTyOK FG secfun(Name, Level, Params, Body)
+typeOK FG addTy(RetName, RetTy, G) Body G2 /*ret name declared*/
+------------------------------------------------------------ [T-Secfun]
+funTyOK FG secfun(Name, Level, RetTy, RetSec, RetName, Params, Body)
 
 
 paramsToTyList Params ArgTys
------------------------------------------------------- [GFT-Secfun]
-getFunTy secfun(Name, Level, Params, Body) Name ArgTys
+--------------------------------------------------------- [GFT-Secfun]
+getFunTy secfun(Name, Level, RetTy, RetSec, RetName, Params, Body
+               ) Name RetTy ArgTys
 
 
 paramsToNameList Params Names
----------------------------------------------------------- [EF-Secfun]
-eval_fun secfun(Name, Level, Params, Body) Name Names Body
+--------------------------------------------------------- [EF-Secfun]
+eval_fun secfun(Name, Level, RetTy, RetSec, RetName, Params, Body
+               ) Name RetName Names Body
 

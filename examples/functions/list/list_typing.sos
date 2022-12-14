@@ -2,40 +2,40 @@ Module functions:list
 
 /*Expression Typing*/
 
------------------------ [T-Nil]
-typeOf G nil listTy(Ty)
+-------------------------- [T-Nil]
+typeOf FG G nil listTy(Ty)
 
 
-typeOf G E1 Ty
-typeOf G E2 listTy(Ty)
--------------------------------- [T-Cons]
-typeOf G cons(E1, E2) listTy(Ty)
+typeOf FG G E1 Ty
+typeOf FG G E2 listTy(Ty)
+----------------------------------- [T-Cons]
+typeOf FG G cons(E1, E2) listTy(Ty)
 
 
-typeOf G E listTy(Ty)
------------------------ [T-Null]
-typeOf G null(E) boolTy
+typeOf FG G E listTy(Ty)
+-------------------------- [T-Null]
+typeOf FG G null(E) boolTy
 
 
-typeOf G E listTy(Ty)
---------------------- [T-Head]
-typeOf G head(E) Ty
+typeOf FG G E listTy(Ty)
+------------------------ [T-Head]
+typeOf FG G head(E) Ty
 
 
-typeOf G E listTy(Ty)
---------------------------- [T-Tail]
-typeOf G tail(E) listTy(Ty)
+typeOf FG G E listTy(Ty)
+------------------------------ [T-Tail]
+typeOf FG G tail(E) listTy(Ty)
 
 
-typeOf G Lst listTy(Ty)
-typeOf G Index intTy
------------------------------- [T-Index]
-typeOf G index(List, Index) Ty
+typeOf FG G Lst listTy(Ty)
+typeOf FG G Index intTy
+--------------------------------- [T-Index]
+typeOf FG G index(List, Index) Ty
 
 
-typeOf G Lst listTy(Ty)
--------------------------- [T-Length]
-typeOf G length(Lst) intTy
+typeOf FG G Lst listTy(Ty)
+----------------------------- [T-Length]
+typeOf FG G length(Lst) intTy
 
 
 

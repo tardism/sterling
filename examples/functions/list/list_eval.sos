@@ -2,47 +2,49 @@ Module functions:list
 
 /*Expression Evaluation*/
 
-------------------- [E-Nil]
-eval_e G nil nilVal
+---------------------------------- [E-Nil]
+eval_e FG G nil nilVal emptyOutput
 
 
-eval_e G E1 V1
-eval_e G E2 V2
-------------------------------------- [E-Cons]
-eval_e G cons(E1, E2) consVal(V1, V2)
+eval_e FG G E1 V1 O1
+eval_e FG G E2 V2 O2
+appendOutput O1 O2 O
+------------------------------------------ [E-Cons]
+eval_e FG G cons(E1, E2) consVal(V1, V2) O
 
 
-eval_e G E nilVal
----------------------- [E-NullTrue]
-eval_e G null(E) trueVal
+eval_e FG G E nilVal O
+----------------------------- [E-NullTrue]
+eval_e FG G null(E) trueVal O
 
 
-eval_e G E consVal(V1, V2)
--------------------------- [E-NullFalse]
-eval_e G null(E) falseVal
+eval_e FG G E consVal(V1, V2) O
+------------------------------- [E-NullFalse]
+eval_e FG G null(E) falseVal O
 
 
-eval_e G E consVal(V1, V2)
--------------------------- [E-Head]
-eval_e G head(E) V1
+eval_e FG G E consVal(V1, V2) O
+------------------------------- [E-Head]
+eval_e FG G head(E) V1 O
 
 
-eval_e G E consVal(V1, V2)
--------------------------- [E-Tail]
-eval_e G tail(E) V2
+eval_e FG G E consVal(V1, V2) O
+------------------------------- [E-Tail]
+eval_e FG G tail(E) V2 O
 
 
-eval_e G E1 ListVal
-eval_e G E2 intVal(I)
+eval_e FG G E1 ListVal O1
+eval_e FG G E2 intVal(I) O2
 index ListVal I V
------------------------- [E-Index]
-eval_e G index(E1, E2) V
+appendOutput O1 O2 O
+----------------------------- [E-Index]
+eval_e FG G index(E1, E2) V O
 
 
-eval_e G E ListVal
+eval_e FG G E ListVal O
 length ListVal Length
---------------------------------- [E-Length]
-eval_e G length(E) intVal(Length)
+-------------------------------------- [E-Length]
+eval_e FG G length(E) intVal(Length) O
 
 
 /*Support for list expression evaluation*/

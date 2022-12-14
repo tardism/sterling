@@ -73,7 +73,7 @@ Judgment paramsToTyCtx : params* tyctx
 /*Program*/
 Judgment programTyOK : funtyctx  program*
 Judgment buildFunTyCtx : program* funtyctx
-Judgment getFunTy : fun* string ty tyList /*name, arg types*/
+Judgment getFunTy : fun* string ty tyList /*name, ret ty, arg types*/
 /*The actual check for the program*/
 Fixed Judgment programChecks : program
 
