@@ -3,6 +3,7 @@
 THIS_SCRIPT=$(readlink -f "${BASH_SOURCE[0]}")
 
 SOS_HOME=${THIS_SCRIPT/\/sos-ext}
+export SOS_GENERATED=${SOS_HOME}/generated/
 
 JAR="$SOS_HOME/sos-ext.jar"
 

@@ -21,17 +21,21 @@ IOVal<Integer> ::= _ _ _ _
 
 
 function runExtensibella
-IOVal<Integer> ::= m::ModuleList a::Decorated CmdArgs i::IOToken
+IOVal<Integer> ::= m::ModuleList genLoc::String
+                   a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken =
       printT("Producing Extensibella output\n", i);
 
-  local filename::String = a.generateModuleName ++ "__definition.thm";
+  local gendir::String = genLoc ++ "extensibella/";
+  local filename::String =
+      gendir ++ a.generateModuleName ++ "___definition.thm";
+  local mkdir::IOVal<Boolean> = mkdirT(gendir, message);
   local outputFile::IOToken =
       writeFileT(filename,
          buildExtensibellaFile(m.ebKinds, m.ebConstrs,
             m.ebJudgments, m.ebRulesByModule),
-         message);
+         mkdir.io);
 
   return if a.outputExtensibella
          then ioval(outputFile, 0)

@@ -21,7 +21,8 @@ IOVal<Integer> ::= _ _ _ _
 
 
 function runLambdaProlog
-IOVal<Integer> ::= m::ModuleList a::Decorated CmdArgs i::IOToken
+IOVal<Integer> ::= m::ModuleList genLoc::String
+                   a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken = printT("Producing Lambda Prolog output\n", i);
 

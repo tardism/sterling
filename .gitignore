@@ -40,3 +40,6 @@ build.xml
 *.mod
 *.lp
 *.lpo
+
+# Generated directory
+generated/

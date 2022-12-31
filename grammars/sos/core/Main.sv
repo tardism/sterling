@@ -32,17 +32,16 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 
 function run
 IOVal<Integer> ::= args::[String]
-                   abstractFileParse::(ParseResult<File_c> ::=
-                                          String String)
-                   concreteFileParse::(ParseResult<ConcreteFile_c> ::=
-                                          String String)
-                   ioin::IOToken
+   abstractFileParse::(ParseResult<File_c> ::= String String)
+   concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   ioin::IOToken
 {
-  production attribute actions::[(IOVal<Integer> ::= ModuleList
-                                     Decorated CmdArgs IOToken)] with ++;
+  --String is location of generated directory
+  production attribute actions::[(IOVal<Integer> ::= ModuleList String
+                                  Decorated CmdArgs IOToken)] with ++;
   actions :=
      [
-      \ m::ModuleList a::Decorated CmdArgs i::IOToken ->
+      \ m::ModuleList gen::String a::Decorated CmdArgs i::IOToken ->
         if m.errorString != ""
         then ioval(printT(m.errorString ++ "\n", i), 1)
         else ioval(printT("No errors found\n", i), 0)
@@ -56,6 +55,8 @@ IOVal<Integer> ::= args::[String]
   local modules::IOVal<Either<String ModuleList>> =
         buildModuleList(a.generateModuleName, rootLoc,
                         abstractFileParse, concreteFileParse, ioin);
+  local genLoc::IOVal<String> =
+        envVarT("SOS_GENERATED", modules.io);
 
   return
      case e of
@@ -69,12 +70,12 @@ IOVal<Integer> ::= args::[String]
        | right(mods) ->
          --run all actions in the order in which they occur
          foldl(\ rest::IOVal<Integer>
-                 act::(IOVal<Integer> ::= ModuleList Decorated CmdArgs
-                                          IOToken) ->
+                 act::(IOVal<Integer> ::= ModuleList String
+                          Decorated CmdArgs IOToken) ->
                  if rest.iovalue != 0 --error in a previous action
                  then rest
-                 else act(mods, a, rest.io),
-               ioval(modules.io, 0), actions)
+                 else act(mods, genLoc.iovalue, a, rest.io),
+               ioval(genLoc.io, 0), actions)
        end
      end;
 }

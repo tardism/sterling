@@ -21,7 +21,8 @@ IOVal<Integer> ::= _ _ _ _
 
 
 function runProlog
-IOVal<Integer> ::= m::ModuleList a::Decorated CmdArgs i::IOToken
+IOVal<Integer> ::= m::ModuleList genLoc::String
+                   a::Decorated CmdArgs i::IOToken
 {
   local prologProgram::PrologProgram =
         buildPrologProgram(m.prologRules ++ m.instanTransPrologRules);
