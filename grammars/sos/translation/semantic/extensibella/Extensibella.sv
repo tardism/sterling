@@ -22,7 +22,7 @@ abstract production constrDecl
 top::ConstrDecl ::= name::String args::[ExtensibellaType]
                     produced::ExtensibellaType
 {
-  top.pp = "Type " ++ name ++
+  top.pp = "Type " ++ name ++ "   " ++
            foldr(extensibellaArrowTy, produced, args).pp ++ ".\n";
 }
 
