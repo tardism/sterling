@@ -8,7 +8,8 @@ occurs on Term;
 aspect production const
 top::Term ::= name::QName
 {
-  top.eb = nameExtensibellaTerm(name.ebConstructorName);
+  top.eb =
+      nameExtensibellaTerm(name.fullConstrName.ebConstructorName);
 }
 
 
@@ -36,8 +37,9 @@ top::Term ::= s::String
 aspect production appTerm
 top::Term ::= constructor::QName args::TermList
 {
-  top.eb = applicationExtensibellaTerm(constructor.ebConstructorName,
-                                       args.eb);
+  top.eb = applicationExtensibellaTerm(
+              constructor.fullConstrName.ebConstructorName,
+              args.eb);
 }
 
 

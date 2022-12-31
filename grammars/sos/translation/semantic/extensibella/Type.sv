@@ -8,7 +8,11 @@ occurs on Type;
 aspect production nameType
 top::Type ::= name::QName
 {
-  top.eb = extensibellaNameTy(name.ebTypeName);
+  top.eb =
+      case name.fullTy of
+      | nameType(n) -> extensibellaNameTy(n.ebTypeName)
+      | _ -> error("Not possible")
+      end;
 }
 
 
@@ -43,7 +47,7 @@ top::Type ::=
 aspect production pcType
 top::Type ::= t::Type
 {
-  top.eb = t.eb;
+  --get by copying from forward
 }
 
 

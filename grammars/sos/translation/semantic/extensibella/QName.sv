@@ -12,12 +12,21 @@ top::QName ::= name::String
 {
   top.eb_base = name;
 
-  top.ebTypeName = error("Must have full type name for translation");
+  top.ebTypeName =
+      error("Must have full type name for translation (" ++
+            top.pp ++ ") (" ++ top.location.filename ++ ":" ++
+            toString(top.location.line) ++ ":" ++
+            toString(top.location.column) ++ ")");
   top.ebConstructorName =
-      error("Must have full constructor name for translation");
+      error("Must have full constructor name for translation (" ++
+            top.pp ++ ")");
   top.ebJudgmentName = top.fullJudgment.eb;
   top.ebTranslationName =
-     error("Must have full type name for translation of translation");
+      error("Must have full type name for translation of " ++
+            "translation (" ++ top.pp ++ ") (" ++
+            top.location.filename ++ ":" ++
+            toString(top.location.line) ++ ":" ++
+            toString(top.location.column) ++ ")");
 }
 
 

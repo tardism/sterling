@@ -22,7 +22,11 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   top.ebKinds = [];
 
   top.ebConstrs = constructors.ebConstrs;
-  constructors.builtEBType = extensibellaNameTy(type.ebTypeName);
+  constructors.builtEBType =
+      case type.fullTy of
+      | nameType(n) -> extensibellaNameTy(n.ebTypeName)
+      | _ -> error("Not possible")
+      end;
 }
 
 
