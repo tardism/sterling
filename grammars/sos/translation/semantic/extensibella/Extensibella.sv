@@ -376,6 +376,13 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
 }
 
 
+function buildExtensibellaInterfaceFile
+String ::= modName::String buildsOns::[(String, [String])]
+{
+  return implode("\n", lookup(modName, buildsOns).fromJust);
+}
+
+
 
 
 

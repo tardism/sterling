@@ -27,18 +27,27 @@ IOVal<Integer> ::= m::ModuleList genLoc::String
   local message::IOToken =
       printT("Producing Extensibella output\n", i);
 
-  local gendir::String = genLoc ++ "extensibella/";
-  local filename::String =
-      gendir ++ a.generateModuleName ++ "___definition.thm";
   local mkdir::IOVal<Boolean> = mkdirT(gendir, message);
-  local outputFile::IOToken =
-      writeFileT(filename,
+  local gendir::String = genLoc ++ "extensibella/";
+  --definition file
+  local defFilename::String =
+      gendir ++ a.generateModuleName ++ "___definition.thm";
+  local outputDefFile::IOToken =
+      writeFileT(defFilename,
          buildExtensibellaFile(m.ebKinds, m.ebConstrs,
             m.ebJudgments, m.ebRulesByModule),
          mkdir.io);
+  --interface file
+  local interfaceFilename::String =
+      gendir ++ a.generateModuleName ++ "___interface.xthmi";
+  local outputInterfaceFile::IOToken =
+      writeFileT(interfaceFilename,
+         buildExtensibellaInterfaceFile(a.generateModuleName,
+                                        m.buildsOns),
+         outputDefFile);
 
   return if a.outputExtensibella
-         then ioval(outputFile, 0)
+         then ioval(outputInterfaceFile, 0)
          else ioval(i, 0);
 }
 
