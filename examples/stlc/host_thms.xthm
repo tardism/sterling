@@ -1,0 +1,29 @@
+Module stlc:host.
+
+Theorem lookup_unique : forall X G Ty1 Ty2,
+  lookup X G Ty1 -> lookup X G Ty2 -> Ty1 = Ty2.
+induction on 1. intros Lkp1 Lkp2. L1: case Lkp1.
+  %Subgoal 1:  lookup 1 later
+   L2: case Lkp2.
+     %Subgoal 1.1:  lookup 2 later
+      apply IH to L1 L3. search.
+     %Subgoal 1.2:  lookup 2 here
+      apply L2 to _.
+  %Subgoal 2:  lookup 1 here
+   L2: case Lkp2.
+     %Subgoal 2.1:  lookup 2 later
+      apply L1 to _.
+     %Subgoal 2.2:  lookup 2 here
+      search.
+
+
+Extensible_Theorem
+  ty_unique : forall G T Ty1 Ty2,
+    Type1: typeOf G T Ty1 -> Type2: typeOf G T Ty2 -> Ty1 = Ty2
+  on Type1.
+%Subgoal 1:  app
+ case Type2. apply IH to Type3 H1. search.
+%Subogal 2:  abs
+ case Type2. apply IH to Type3 H1. search.
+%Subgoal 3:  var
+ case Type2. apply lookup_unique to Type3 H1. search.

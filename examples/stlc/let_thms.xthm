@@ -1,0 +1,11 @@
+Module stlc:let.
+
+%Set debug on.
+
+%Make sure this is defined, since it should have been imported
+Show lookup_unique.
+
+Prove stlc:host:ty_unique.
+%let
+ Ty2: case Type2. apply IH to Type3 Ty2. apply IH to Type4 Ty1.
+ search.
