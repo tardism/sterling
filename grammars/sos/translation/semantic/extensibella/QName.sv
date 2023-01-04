@@ -7,6 +7,8 @@ synthesized attribute ebConstructorName::String occurs on QName;
 synthesized attribute ebJudgmentName::String occurs on QName;
 synthesized attribute ebTranslationName::String occurs on QName;
 
+synthesized attribute ebUnknownName::String occurs on QName;
+
 aspect production baseName
 top::QName ::= name::String
 {
@@ -27,6 +29,10 @@ top::QName ::= name::String
             top.location.filename ++ ":" ++
             toString(top.location.line) ++ ":" ++
             toString(top.location.column) ++ ")");
+
+  top.ebUnknownName =
+      error("Must have full type for unknown name (" ++ top.pp ++
+            ")");
 }
 
 
@@ -41,6 +47,8 @@ top::QName ::= name::String rest::QName
   top.ebTypeName = "$ty__" ++ top.eb_base;
   top.ebConstructorName = top.eb_base;
   top.ebTranslationName = "$trans__" ++ top.eb_base;
+
+  top.ebUnknownName = "$unknown__" ++ top.eb_base;
 }
 
 

@@ -5,8 +5,12 @@ import sos:core:concreteDefs:abstractSyntax;
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules
+   ebTranslationRules,
+   defFileContents, interfaceFileContents
 occurs on ModuleList;
+
+synthesized attribute defFileContents::String;
+synthesized attribute interfaceFileContents::String;
 
 aspect production nilModuleList
 top::ModuleList ::=
@@ -16,6 +20,11 @@ top::ModuleList ::=
   top.ebRulesByModule = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
+
+  top.defFileContents =
+      error("Should not access on empty module list");
+  top.interfaceFileContents =
+      error("Should not access on empty module list");
 }
 
 
@@ -33,73 +42,55 @@ top::ModuleList ::= m::Module rest::ModuleList
         [(mod, rules ++ instantiatedTransRules)]
       | _ -> error("Not possible")
       end ++ rest.ebRulesByModule;
+  --fill in trans rules for constructors not known with them before
   local instantiatedTransRules::[Def] =
-     flatMap(
-        \ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
-          case lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
-                          j1.name == j2.name,
-                        p.1, top.ebTranslationRules) of
-          | just((conc, prems, pc)) ->
-            let used_vars::[String] =
-                flatMap((.vars), prems) ++ conc.vars
-            in
-            let pcless_vars::[String] =
-                remove(pc, used_vars)
-            in
-              map(\ c::ConstructorEnvItem ->
-                    let childNames::[String] =
-                        foldr(\ x::Type rest::[String] ->
-                                case x of
-                                | nameType(n) ->
-                                  freshName(capitalize(n.base),
-                                            rest ++ pcless_vars)
-                                | intType() ->
-                                  freshName("I", rest ++ pcless_vars)
-                                | stringType() ->
-                                  freshName("S", rest ++ pcless_vars)
-                                | _ ->
-                                  freshName("X", rest ++ pcless_vars)
-                                end::rest,
-                              [], c.types.toList)
-                    in
-                    let tm::ExtensibellaTerm =
-                        applicationExtensibellaTerm(
-                           decorate c.name with {
-                              constructorEnv = m.constructorEnv;
-                           }.ebConstructorName,
-                           map(varExtensibellaTerm, childNames))
-                    in
-                    let newConc::Metaterm =
-                        decorate conc with {
-                           replaceVar = pc;
-                           replaceVal = tm;
-                        }.replaced
-                    in
-                    let newPrems::[Metaterm] =
-                        map(\ m::Metaterm ->
-                              decorate m with {
-                                 replaceVar = pc;
-                                 replaceVal = tm;
-                              }.replaced, prems)
-                    in
-                    let newPremVars::[String] =
-                        removeAll(newConc.vars,
-                           nub(flatMap((.vars), newPrems)))
-                    in
-                      if null(newPrems)
-                      then factDef(newConc)
-                      else if null(newPremVars)
-                      then ruleDef(newConc,
-                              foldr1(andMetaterm, newPrems))
-                      else ruleDef(newConc,
-                              existsMetaterm(newPremVars,
-                                foldr1(andMetaterm, newPrems)))
-                    end end end end end,
-                  p.2)
-            end end
-          | nothing() -> [] --host relations have no translation rule
-          end,
-        newRuleCombinations);
+     instantiateExtensibellaTransRules(newRuleCombinations,
+        top.ebTranslationRules);
+
+  --types known in this module but not defined here
+  local importedTys::[TypeEnvItem] =
+      removeAllBy(\ ty1::TypeEnvItem ty2::TypeEnvItem ->
+                    ty1.name == ty2.name,
+                  m.tyDecls, --remove new
+                  head(top.moduleTyDecls).2); --from all known
+  --split relations into imported and new
+  local jdgSplit::([JudgmentEnvItem], [JudgmentEnvItem]) =
+      partition(\ j::JudgmentEnvItem ->
+                  j.name.baselessName == m.modName,
+                head(top.moduleJudgmentDecls).2);
+  local newJdgs::[JudgmentEnvItem] = jdgSplit.1;
+  local importedJdgs::[JudgmentEnvItem] = jdgSplit.2;
+
+  --declaration for unknown constructors
+  local unknownConstrs::[ConstrDecl] =
+      map(\ t::TypeEnvItem ->
+            constrDecl(t.name.ebUnknownName, [],
+               extensibellaNameTy(t.name.ebTypeName)),
+          importedTys);
+  --rules for imported relations so they hold on unknown constructors
+  local rulesImportedUnknown::[Def] =
+      buildImportedUnknownRules(importedJdgs, importedTys,
+                                m.judgmentEnv);
+  --rules for translation rules holding on unknown constructors
+  local constrEnvs::[ConstructorEnvItem] =
+      map(\ t::TypeEnvItem ->
+            constructorEnvItem(
+               baseName(t.name.ebUnknownName, location=bogusLoc()),
+               nameType(t.name, location=bogusLoc()),
+               nilTypeList(location=bogusLoc())),
+          importedTys);
+  local rulesNewUnknown::[Def] =
+      instantiateExtensibellaTransRules(
+         map(\ j::JudgmentEnvItem -> (j, constrEnvs), newJdgs),
+         top.ebTranslationRules);
+
+  top.defFileContents =
+      buildExtensibellaFile(top.ebKinds,
+         top.ebConstrs ++ unknownConstrs,
+         top.ebJudgments, top.ebRulesByModule,
+         rulesImportedUnknown ++ rulesNewUnknown);
+  top.interfaceFileContents =
+      buildExtensibellaInterfaceFile(m.modName, top.buildsOns);
 }
 
 

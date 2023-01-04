@@ -33,17 +33,12 @@ IOVal<Integer> ::= m::ModuleList genLoc::String
   local defFilename::String =
       gendir ++ a.generateModuleName ++ "___definition.thm";
   local outputDefFile::IOToken =
-      writeFileT(defFilename,
-         buildExtensibellaFile(m.ebKinds, m.ebConstrs,
-            m.ebJudgments, m.ebRulesByModule),
-         mkdir.io);
+      writeFileT(defFilename, m.defFileContents, mkdir.io);
   --interface file
   local interfaceFilename::String =
       gendir ++ a.generateModuleName ++ "___interface.xthmi";
   local outputInterfaceFile::IOToken =
-      writeFileT(interfaceFilename,
-         buildExtensibellaInterfaceFile(a.generateModuleName,
-                                        m.buildsOns),
+      writeFileT(interfaceFilename, m.interfaceFileContents,
          outputDefFile);
 
   return if a.outputExtensibella

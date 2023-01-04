@@ -349,6 +349,7 @@ top::ExtensibellaType ::=
 function buildExtensibellaFile
 String ::= kinds::[KindDecl] constrs::[ConstrDecl]
    jdgs::[(String, [ExtensibellaType])] rules::[(String, [Def])]
+   finalDefs::[Def] --rules that go at the end (unknown constructors)
 {
   {-
     We sort these because we want the rules to be in a consestent
@@ -363,7 +364,8 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
       sortBy(\ p1::(String, [Def]) p2::(String, [Def]) ->
                p1.1 < p2.1, rules);
   local basicRules::[Def] =
-      flatMap(\ p::(String, [Def]) -> p.2, sortedRules);
+      flatMap(\ p::(String, [Def]) -> p.2, sortedRules) ++
+      finalDefs;
   local defs::Definition =
       definition(jdgs,
          foldr(\ d::Def rest::Defs -> addDefs(d, rest),
@@ -380,6 +382,155 @@ function buildExtensibellaInterfaceFile
 String ::= modName::String buildsOns::[(String, [String])]
 {
   return implode("\n", lookup(modName, buildsOns).fromJust);
+}
+
+
+
+--go through a list of judgments and constructors to fill in the
+--translation rules of the judgments for the constructors
+function instantiateExtensibellaTransRules
+[Def] ::= newRuleComs::[(JudgmentEnvItem, [ConstructorEnvItem])]
+   ebTransRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
+{
+  local headJdg::JudgmentEnvItem = head(newRuleComs).1;
+  local newConstrs::[ConstructorEnvItem] = head(newRuleComs).2;
+
+  --get translation rule
+  local transRule::Maybe<(Metaterm, [Metaterm], String)> =
+      lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
+                 j1.name == j2.name,
+               headJdg, ebTransRules);
+  local conc::Metaterm = transRule.fromJust.1;
+  local prems::[Metaterm] = transRule.fromJust.2;
+  local pc::String = transRule.fromJust.3;
+
+  --get vars
+  local used_vars::[String] = flatMap((.vars), prems) ++ conc.vars;
+  local pcless_vars::[String] = remove(pc, used_vars);
+
+  return
+     case newRuleComs of
+     | [] -> []
+     | _::rest ->
+       instantiateExtensibellaTransRules_help(
+          newConstrs, conc, prems, pc, pcless_vars) ++
+       instantiateExtensibellaTransRules(rest, ebTransRules)
+     end;
+}
+--go through the list of constructors to instantiate a particular
+--translation rule for it
+function instantiateExtensibellaTransRules_help
+[Def] ::= constrs::[ConstructorEnvItem] conc::Metaterm
+          prems::[Metaterm] pc::String pcless_vars::[String]
+{
+  local c::ConstructorEnvItem = head(constrs);
+  --build new term
+  local childNames::[String] =
+      foldr(\ x::Type rest::[String] ->
+              case x of
+              | nameType(n) ->
+                freshName(capitalize(n.base), rest ++ pcless_vars)
+              | intType() -> freshName("I", rest ++ pcless_vars)
+              | stringType() -> freshName("S", rest ++ pcless_vars)
+              | _ -> freshName("X", rest ++ pcless_vars)
+              end::rest,
+            [], c.types.toList);
+  local tm::ExtensibellaTerm =
+      applicationExtensibellaTerm(
+         decorate c.name with {
+            constructorEnv = error("Not needed");
+         }.ebConstructorName,
+         map(varExtensibellaTerm, childNames));
+  --build new rule
+  local newConc::Metaterm =
+      decorate conc with {
+         replaceVar = pc;
+         replaceVal = tm;
+      }.replaced;
+  local newPrems::[Metaterm] =
+      map(\ m::Metaterm ->
+            decorate m with {
+               replaceVar = pc;
+               replaceVal = tm;
+            }.replaced, prems);
+  local newPremVars::[String] =
+      removeAll(newConc.vars,
+         nub(flatMap((.vars), newPrems)));
+  local finalDef::Def =
+      if null(newPrems)
+      then factDef(newConc)
+      else if null(newPremVars)
+      then ruleDef(newConc, foldr1(andMetaterm, newPrems))
+      else ruleDef(newConc, existsMetaterm(newPremVars,
+                               foldr1(andMetaterm, newPrems)));
+  --walk through all constructors
+  return case constrs of
+         | [] -> []
+         | _::rest ->
+           finalDef::instantiateExtensibellaTransRules_help(
+                        rest, conc, prems, pc, pcless_vars)
+         end;
+}
+
+
+--Build Extensibella rules for the unknown constructor for the types
+--for each judgment
+function buildImportedUnknownRules
+[Def] ::= jdgs::[JudgmentEnvItem] tys::[TypeEnvItem]
+          jenv::Env<JudgmentEnvItem>
+{
+  return case jdgs of
+         | [] -> []
+         | j::tl when j.isExtensible ->
+           buildImportedUnknownRules_help(j, tys, jenv) ++
+           buildImportedUnknownRules(tl, tys, jenv)
+         | _::tl ->
+           buildImportedUnknownRules(tl, tys, jenv)
+         end;
+}
+
+function buildImportedUnknownRules_help
+[Def] ::= j::JudgmentEnvItem tys::[TypeEnvItem]
+          jenv::Env<JudgmentEnvItem>
+{
+  local ty::TypeEnvItem = head(tys);
+  --names for all children
+  local childNames::[String] =
+      foldr(\ x::Type rest::[String] ->
+              case x of
+              | nameType(n) -> freshName(capitalize(n.base), rest)
+              | intType() -> freshName("I", rest)
+              | stringType() -> freshName("S", rest)
+              | _ -> freshName("X", rest)
+              end::rest,
+          [], take(j.pcIndex, j.types.toList) ++
+              drop(j.pcIndex + 1, j.types.toList));
+  local termed::[ExtensibellaTerm] =
+      map(varExtensibellaTerm, childNames);
+  --fill in unknown constructor for PC
+  local args::[ExtensibellaTerm] =
+      take(j.pcIndex, termed) ++
+      [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
+      drop(j.pcIndex, termed);
+  --full definition of rule
+  --no requirements, since we don't know what other modules will have
+  local d::Def =
+      factDef(relationMetaterm(
+                 decorate j.name with {
+                    judgmentEnv=jenv;
+                 }.ebJudgmentName, args));
+  return
+      case tys of
+      | [] -> []
+      | _::rest ->
+        case j.pcType of
+        | nameType(q) ->
+          if q == ty.name
+          then d::buildImportedUnknownRules_help(j, rest, jenv)
+          else buildImportedUnknownRules_help(j, rest, jenv)
+        | _ -> error("Not possible")
+        end
+      end;
 }
 
 
@@ -404,8 +555,11 @@ String ::= name::String
 function freshName
 String ::= base::String used::[String]
 {
-  return if contains(base, used)
-         then freshName_help(base, 1, used)
+  local reservedWords::[String] =
+      ["Module", "Close", "CoDefine", "Define", "Kind", "Query",
+       "Quit", "Set", "Show", "Split", "Theorem", "Type", "Prove"];
+  return if contains(base, reservedWords ++ used)
+         then freshName_help(base, 1, reservedWords ++ used)
          else base;
 }
 function freshName_help
