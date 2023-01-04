@@ -79,9 +79,13 @@ top::ModuleList ::= m::Module rest::ModuleList
                nameType(t.name, location=bogusLoc()),
                nilTypeList(location=bogusLoc())),
           importedTys);
+  local joinedNewJdgs::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+      map(\ j::JudgmentEnvItem ->
+            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+                       constrEnvs)),
+          newJdgs);
   local rulesNewUnknown::[Def] =
-      instantiateExtensibellaTransRules(
-         map(\ j::JudgmentEnvItem -> (j, constrEnvs), newJdgs),
+      instantiateExtensibellaTransRules( joinedNewJdgs,
          top.ebTranslationRules);
 
   top.defFileContents =

@@ -381,7 +381,13 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
 function buildExtensibellaInterfaceFile
 String ::= modName::String buildsOns::[(String, [String])]
 {
-  return implode("\n", lookup(modName, buildsOns).fromJust);
+  return
+     case lookup(modName, buildsOns) of
+     | just(x) -> implode("\n", x)
+     | nothing() ->
+       error("buildExtensibellaInterfaceFile could not find " ++
+             "module " ++ modName)
+     end;
 }
 
 
@@ -412,8 +418,12 @@ function instantiateExtensibellaTransRules
      case newRuleComs of
      | [] -> []
      | _::rest ->
-       instantiateExtensibellaTransRules_help(
-          newConstrs, conc, prems, pc, pcless_vars) ++
+       case transRule of
+       | just(_) ->
+         instantiateExtensibellaTransRules_help(
+            newConstrs, conc, prems, pc, pcless_vars)
+       | nothing() -> [] --if PC type is new, no translation rule
+       end ++
        instantiateExtensibellaTransRules(rest, ebTransRules)
      end;
 }

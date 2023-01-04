@@ -14,7 +14,7 @@ lookupSec addSec(X, S, Rest) X S
 lookupSec Rest X XS
 X != Y
 ---------------------------------- [LS-Later]
-lookupSec addSec(Y, YS, Rest) X XV
+lookupSec addSec(Y, YS, Rest) X XS
 
 
 

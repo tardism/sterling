@@ -20,8 +20,10 @@ top::QName ::= name::String
             toString(top.location.line) ++ ":" ++
             toString(top.location.column) ++ ")");
   top.ebConstructorName =
-      error("Must have full constructor name for translation (" ++
-            top.pp ++ ")");
+      if startsWith("$unknown__", name)
+      then name
+      else error("Must have full constructor name for translation" ++
+                 " (" ++ top.pp ++ ")");
   top.ebJudgmentName = top.fullJudgment.eb;
   top.ebTranslationName =
       error("Must have full type name for translation of " ++
