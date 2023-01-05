@@ -28,3 +28,7 @@ synthesized attribute ebJudgments::[(String, [ExtensibellaType])];
 
 --Variable for the PC in a translation rule's conclusion
 synthesized attribute pcVar::String;
+
+
+--is relation for a type
+synthesized attribute ebIs::String;

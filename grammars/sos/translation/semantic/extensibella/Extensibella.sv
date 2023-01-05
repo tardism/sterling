@@ -437,13 +437,7 @@ function instantiateExtensibellaTransRules_help
   --build new term
   local childNames::[String] =
       foldr(\ x::Type rest::[String] ->
-              case x of
-              | nameType(n) ->
-                freshName(capitalize(n.base), rest ++ pcless_vars)
-              | intType() -> freshName("I", rest ++ pcless_vars)
-              | stringType() -> freshName("S", rest ++ pcless_vars)
-              | _ -> freshName("X", rest ++ pcless_vars)
-              end::rest,
+              freshNameFromType(x, rest ++ pcless_vars)::rest,
             [], c.types.toList);
   local tm::ExtensibellaTerm =
       applicationExtensibellaTerm(
@@ -507,12 +501,7 @@ function buildImportedUnknownRules_help
   --names for all children
   local childNames::[String] =
       foldr(\ x::Type rest::[String] ->
-              case x of
-              | nameType(n) -> freshName(capitalize(n.base), rest)
-              | intType() -> freshName("I", rest)
-              | stringType() -> freshName("S", rest)
-              | _ -> freshName("X", rest)
-              end::rest,
+              freshNameFromType(x, rest)::rest,
           [], take(j.pcIndex, j.types.toList) ++
               drop(j.pcIndex + 1, j.types.toList));
   local termed::[ExtensibellaTerm] =
@@ -560,6 +549,19 @@ String ::= name::String
         | "z" -> "Z" | x -> x
         end;
   return first ++ substring(1, length(name), name);
+}
+
+function freshNameFromType
+String ::= ty::Type used::[String]
+{
+  local base::String =
+      case ty of
+      | intType() -> "I"
+      | stringType() -> "S"
+      | nameType(q) -> capitalize(q.base)
+      | errorType() -> "X"
+      end;
+  return freshName(base, used);
 }
 
 function freshName

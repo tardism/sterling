@@ -8,6 +8,7 @@ synthesized attribute ebJudgmentName::String occurs on QName;
 synthesized attribute ebTranslationName::String occurs on QName;
 
 synthesized attribute ebUnknownName::String occurs on QName;
+synthesized attribute ebIsName::String occurs on QName;
 
 aspect production baseName
 top::QName ::= name::String
@@ -35,6 +36,7 @@ top::QName ::= name::String
   top.ebUnknownName =
       error("Must have full type for unknown name (" ++ top.pp ++
             ")");
+  top.ebIsName = error("Must have full type for is name");
 }
 
 
@@ -51,6 +53,11 @@ top::QName ::= name::String rest::QName
   top.ebTranslationName = "$trans__" ++ top.eb_base;
 
   top.ebUnknownName = "$unknown__" ++ top.eb_base;
+
+  --mo:du:le:is_name
+  top.ebIsName = "$ext__0__" ++
+      substitute(":", name_sep, top.baselessName) ++
+      name_sep ++ "is_" ++ top.base;
 }
 
 
