@@ -1,0 +1,180 @@
+Module sec_SOS:security.
+
+
+Prove sec_SOS:host:joinDomains_total.
+Prove sec_SOS:host:joinDomains_is.
+Prove sec_SOS:host:joinDomains_mem.
+
+Prove sec_SOS:host:vars_is, sec_SOS:host:vars_rf_is.
+Prove sec_SOS:host:vars_exist, sec_SOS:host:vars_rf_exist.
+
+Prove sec_SOS:host:lookupTy_unique.
+Prove sec_SOS:host:typeOf_unique, sec_SOS:host:typeRecFields_unique.
+Prove sec_SOS:host:typeOK_unique.
+%declareSec
+ Ty2: case Ty2. apply typeOf_unique to Ty4 Ty5. search.
+
+Prove sec_SOS:host:lookupVal_unique.
+Prove sec_SOS:host:eval_e_unique,
+      sec_SOS:host:eval_rf_unique.
+Prove sec_SOS:host:eval_c_unique,
+      sec_SOS:host:update_rec_fields_unique.
+%declareSec
+ Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
+
+Prove sec_SOS:host:memDomain_joinDomains_left.
+Prove sec_SOS:host:memDomain_joinDomains_right.
+Prove sec_SOS:host:vars_eval_same_result,
+      sec_SOS:host:vars_equal_rf_same_result.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%                         SECURITY THEOREMS                          %
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+Extensible_Theorem
+  lookupSec_unique : forall G X L1 L2,
+    Lkp1 : lookupSec G X L1 ->
+    Lkp2 : lookupSec G X L2 ->
+    L1 = L2
+  on Lkp1.
+%1 by LS-Here
+ Lkp2: case Lkp2.
+   %2 by LS-Here
+    search.
+   %2 by LS-Later
+    apply Lkp3 to _.
+%1 by LS-Later
+ Lkp2: case Lkp2.
+   %2 by LS-Here
+    apply Lkp4 to _.
+   %2 by LS-Later
+    apply IH to Lkp3 Lkp2. search.
+
+
+%We need this to make join_unique below possible
+%Problem arises due to disallowed case analysis
+Extensible_Theorem
+  join_private : forall A S,
+    Join : join A private S ->
+    S = private
+  on Join.
+%J-Private 1
+ search.
+%J-Private 2
+ search.
+Extensible_Theorem
+  join_unique : forall A B S1 S2,
+    J1 : join A B S1 ->
+    J2 : join A B S2 ->
+    S1 = S2
+  on J1.
+%1 by J-Publics
+ case J2. search.
+%1 by J-Private1
+ case J2. search. search.
+%1 by J-Private 2
+ apply join_private to J2. search.
+Extensible_Theorem
+  join_public : forall A B,
+    J: join A B public ->
+    A = public /\ B = public
+  on J.
+%J-Publics
+ search.
+
+
+Extensible_Theorem
+  level_public_vars : forall SG E V X,
+    Lev : level SG E public ->
+    Vars : vars E V ->
+    Mem : memDomain X V ->
+    lookupSec SG X public
+  on Lev,
+  level_public_vars_rf : forall SG RF V X,
+    Lev : rf_level SG RF public ->
+    Vars : vars_rf RF V ->
+    Mem : memDomain X V ->
+    lookupSec SG X public
+  on Lev.
+%level_public_vars
+  %S-Num
+   case Vars. case Mem.
+  %S-Plus
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem D1
+      apply IH to Lev1 Vars1 Mem'. search.
+     %mem D2
+      apply IH to Lev2 Vars2 Mem'. search.
+  %S-Name
+   case Vars. Mem': case Mem. search. case Mem'.
+  %S-Greater
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem D1
+      apply IH to Lev1 Vars1 Mem'. search.
+     %mem D2
+      apply IH to Lev2 Vars2 Mem'. search.
+  %S-Eq
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem D1
+      apply IH to Lev1 Vars1 Mem'. search.
+     %mem D2
+      apply IH to Lev2 Vars2 Mem'. search.
+  %S-And
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem D1
+      apply IH to Lev1 Vars1 Mem'. search.
+     %mem D2
+      apply IH to Lev2 Vars2 Mem'. search.
+  %S-Or
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem D1
+      apply IH to Lev1 Vars1 Mem'. search.
+     %mem D2
+      apply IH to Lev2 Vars2 Mem'. search.
+  %S-True
+   case Vars. case Mem.
+  %S-False
+   case Vars. case Mem.
+  %S-RecBuild
+   Vars: case Vars. apply IH1 to Lev1 Vars Mem. search.
+  %S-RecField
+   Vars: case Vars. apply IH to Lev1 Vars Mem. search.
+  %Preservability
+   skip.
+%level_public_vars_rf
+  %S-RfEnd
+   case Vars. case Mem.
+  %S-RfAdd
+   Vars1: case Vars. apply join_public to Lev3.
+   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+     %mem DE
+      apply IH to Lev1 Vars2 Mem'. search.
+     %mem DRest
+      apply IH1 to Lev2 Vars1 Mem'. search.
+  %Preservability
+   skip.
+
+
+Define public_equiv : secctx -> evalctx -> evalctx -> prop by
+public_equiv S G1 G2 :=
+  forall X V1 V2,
+    lookupSec S X public ->
+    lookupVal G1 X V1 -> lookupVal G2 X V2 -> V1 = V2.
+
+
+Theorem level_secure : forall SG G1 G2 E V1 V2,
+  is_e E -> level SG E public -> public_equiv SG G1 G2 ->
+  eval_e G1 E V1 -> eval_e G2 E V2 ->
+  V1 = V2.
+intros IsE Lev Equiv Ev1 Ev2. Vars: apply vars_exist to IsE.
+Equiv: case Equiv. apply vars_eval_same_result to _ Vars Ev1 Ev2.
+  intros Mem Lkp1 Lkp2. LkpS: apply level_public_vars to Lev Vars Mem.
+  apply Equiv to LkpS Lkp1 Lkp2. search.
+search.

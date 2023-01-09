@@ -1,0 +1,213 @@
+Module sec_SOS:list.
+
+
+Prove sec_SOS:host:joinDomains_total.
+
+
+Prove sec_SOS:host:joinDomains_is.
+
+
+Prove sec_SOS:host:joinDomains_mem.
+
+
+Prove sec_SOS:host:vars_is,
+      sec_SOS:host:vars_rf_is.
+%vars_is
+  %nil list
+   search.
+  %cons list
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %null check
+   IsE1: case IsE. apply IH to IsE1 Vars1. search.
+  %head of list
+   IsE1: case IsE. apply IH to IsE1 Vars1. search.
+  %tail of list
+   IsE1: case IsE. apply IH to IsE1 Vars1. search.
+  %index into list
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %length of list
+   IsE1: case IsE. apply IH to IsE1 Vars1. search.
+
+
+Prove sec_SOS:host:vars_exist,
+      sec_SOS:host:vars_rf_exist.
+%vars_exist
+  %nil list
+   search.
+  %cons list
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %null check
+   apply IH to IsE1. search.
+  %head of list
+   apply IH to IsE1. search.
+  %tail of list
+   apply IH to IsE1. search.
+  %index into list
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %length of list
+   apply IH to IsE1. search.
+
+
+Prove sec_SOS:host:lookupTy_unique.
+
+
+Prove sec_SOS:host:typeOf_unique,
+      sec_SOS:host:typeRecFields_unique.
+%typeOf_unique
+  %nil list
+   Ty2: case Ty2. skip. %This isn't actually true
+  %cons list
+   Ty2: case Ty2. apply IH to Ty3 Ty2. apply IH to Ty4 Ty5. search.
+  %null check
+   Ty2: case Ty2. search.
+  %head of list
+   Ty2: case Ty2. apply IH to Ty3 Ty2. search.
+  %tail of list
+   Ty2: case Ty2. apply IH to Ty3 Ty2. search.
+  %index into list
+   Ty2: case Ty2. apply IH to Ty3 Ty2. search.
+  %length of list
+   Ty2: case Ty2. search.
+
+
+Prove sec_SOS:host:typeOK_unique.
+
+
+Prove sec_SOS:host:lookupVal_unique.
+
+
+Extensible_Theorem
+  index_negative_false : forall L I V,
+    Index : index L I V ->
+    Neg : I < 0 ->
+    false
+  on Index.
+%Index-0
+ case Neg.
+%Index-Step
+ apply IH to Index2 _. skip. %what thm?
+%Preservability
+ apply IH to Index2 Neg.
+Extensible_Theorem
+  index_unique : forall L I V1 V2,
+    Index1 : index L I V1 ->
+    Index2 : index L I V2 ->
+    V1 = V2
+  on Index1.
+%1 by Index-0
+ Index2: case Index2.
+   %2 by Index-0
+    search.
+   %2 by Index-Step
+    case Index2. case H1. apply index_negative_false to Index3 _.
+%1 by Index-Step
+ Index2: case Index2.
+   %2 by Index-0
+    case Index3. case H1. apply index_negative_false to Index4 _.
+   %2 by Index-Step
+    apply minus_integer_unique to Index3 Index2.
+    apply IH to Index4 Index5. search.
+%Preservability
+ skip.
+
+Extensible_Theorem
+  length_unique : forall L V1 V2,
+    Len1 : length L V1 ->
+    Len2 : length L V2 ->
+    V1 = V2
+  on Len1.
+%1 by Len-Nil
+ case Len2. search.
+%1 by Len-Cons
+ Len2: case Len2. apply IH to Len3 Len2.
+ apply plus_integer_unique to Len4 Len5. search.
+%Preservability
+ skip.
+
+
+Prove sec_SOS:host:eval_e_unique,
+      sec_SOS:host:eval_rf_unique.
+%eval_e_unique
+  %E-Nil
+   case Ev2. search.
+  %E-Cons
+   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev5. search.
+  %E-NullTrue
+   Ev2: case Ev2.
+     %2 by E-NullTrue
+      search.
+     %2 by E-NullFalse
+      apply IH to Ev3 Ev2.
+  %E-NullFalse
+   Ev2: case Ev2.
+     %2 by E-NullTrue
+      apply IH to Ev3 Ev2.
+     %2 by E-NullFalse
+      search.
+  %E-Head
+   Ev2: case Ev2. apply IH to Ev3 Ev2. search.
+  %E-Tail
+   Ev2: case Ev2. apply IH to Ev3 Ev2. search.
+  %E-Index
+   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev6.
+   apply index_unique to Ev5 Ev7. search.
+  %E-Length
+   Ev2: case Ev2. apply IH to Ev3 Ev2.
+   apply sec_SOS:list:length_unique to Ev4 Ev5. search.
+
+
+Prove sec_SOS:host:eval_c_unique,
+      sec_SOS:host:update_rec_fields_unique.
+
+
+Prove sec_SOS:host:memDomain_joinDomains_left.
+
+
+Prove sec_SOS:host:memDomain_joinDomains_right.
+
+
+Prove sec_SOS:host:vars_eval_same_result,
+      sec_SOS:host:vars_equal_rf_same_result.
+%vars_eval_same_result
+  %E-Nil
+   case Ev2. search.
+  %E-Cons
+   Ev2: case Ev2. Vars1: case Vars.
+   apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+   apply IH to _ Vars2 Ev4 Ev5. backchain vars_equiv_right. search.
+  %E-NullTrue
+   Ev2: case Ev2.
+     %2 by E-NullTrue
+      search.
+     %2 by E-NullFalse
+      Vars1: case Vars. apply IH to _ Vars1 Ev3 Ev2.
+  %E-NullFalse
+   Ev2: case Ev2.
+     %2 by E-NullTrue
+      Vars1: case Vars. apply IH to _ Vars1 Ev3 Ev2.
+     %2 by E-NullFalse
+      search.
+  %E-Head
+   Ev2: case Ev2. Vars1: case Vars. apply IH to _ Vars1 Ev3 Ev2.
+   search.
+  %E-Tail
+   Ev2: case Ev2. Vars1: case Vars. apply IH to _ Vars1 Ev3 Ev2.
+   search.
+  %E-Index
+   Ev2: case Ev2. Vars1: case Vars.
+   apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+   apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+   apply index_unique to Ev5 Ev7. search.
+  %E-Length
+   Ev2: case Ev2. Vars1: case Vars. apply IH to _ Vars1 Ev3 Ev2.
+   apply sec_SOS:list:length_unique to Ev4 Ev5. search.

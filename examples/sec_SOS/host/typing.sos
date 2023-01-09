@@ -55,8 +55,8 @@ typeOf G name(X) Ty
 
 typeOf G E1 intTy
 typeOf G E2 intTy
------------------------------- [T-Greater]
-typeOf G greater(E1, E2) intTy
+------------------------------- [T-Greater]
+typeOf G greater(E1, E2) boolTy
 
 
 typeOf G E1 Ty

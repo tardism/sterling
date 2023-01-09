@@ -27,7 +27,7 @@ typeOf G E listTy(Ty)
 typeOf G tail(E) listTy(Ty)
 
 
-typeOf G Lst listTy(Ty)
+typeOf G List listTy(Ty)
 typeOf G Index intTy
 ------------------------------ [T-Index]
 typeOf G index(List, Index) Ty

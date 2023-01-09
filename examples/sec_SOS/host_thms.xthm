@@ -1,0 +1,601 @@
+Module sec_SOS:host.
+
+Extensible_Theorem
+  joinDomains_total : forall D1 D2,
+    IsD1 : is_domain D1 ->
+    IsD2 : is_domain D2 ->
+    exists D, joinDomains D1 D2 D
+  on IsD1.
+%JD-Empty
+ search.
+%JD-Add
+ apply IH to IsD4 IsD2. search.
+
+
+Extensible_Theorem
+  joinDomains_is : forall D1 D2 D,
+    IsD1 : is_domain D1 ->
+    IsD2 : is_domain D2 ->
+    J : joinDomains D1 D2 D ->
+    is_domain D
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ IsD1: case IsD1. apply IH to IsD3 IsD2 J1. search.
+
+
+Extensible_Theorem
+  joinDomains_mem : forall D1 D2 D X,
+    J : joinDomains D1 D2 D ->
+    Mem : memDomain X D ->
+    memDomain X D1 \/ memDomain X D2
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ Mem: case Mem.
+   %mem here
+    search.
+   %mem later
+    Or: apply IH to J1 Mem. Mem': case Or.
+      %mem D3
+       search.
+      %mem D2
+       search.
+
+
+Extensible_Theorem
+  vars_is : forall E V,
+    IsE : is_e E ->
+    Vars : vars E V ->
+    is_domain V
+  on Vars,
+  vars_rf_is : forall RF V,
+    IsRF : is_recFieldExprs RF ->
+    Vars : vars_rf RF V ->
+    is_domain V
+  on Vars.
+%vars_is
+  %V-Num
+   search.
+  %V-Plus
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %V-Name
+   case IsE. search.
+  %V-Greater
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %V-Eq
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %V-And
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %V-Or
+   IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
+   IsD2: apply IH to IsE2 Vars2.
+   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+  %V-True
+   search.
+  %V-False
+   search.
+  %V-RecBuild
+   IsRF: case IsE. apply IH1 to IsRF Vars1. search.
+  %V-RecAccess
+   IsE: case IsE. apply IH to IsE Vars1. search.
+%vars_rf_is
+  %VRF-Empty
+   search.
+  %VRF-Add
+   IsRF: case IsRF. IsDE: apply IH to IsRF1 Vars2.
+   IsDRest: apply IH1 to IsRF2 Vars1.
+   apply joinDomains_is to IsDE IsDRest Vars3. search.
+
+
+Extensible_Theorem
+  vars_exist : forall E,
+    IsE : is_e E ->
+    exists V, vars E V
+  on IsE,
+  vars_rf_exist : forall RF,
+    IsRF : is_recFieldExprs RF ->
+    exists V, vars_rf RF V
+  on IsRF.
+%vars_exist
+  %num
+   search.
+  %plus
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %name
+   search.
+  %greater
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %eq
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %and
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %or
+   Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
+   IsV: apply vars_is to IsE1 Vars1.
+   IsV1: apply vars_is to IsE2 Vars2.
+   apply joinDomains_total to IsV IsV1. search.
+  %true
+   search.
+  %false
+   search.
+  %rec build
+   apply IH1 to IsE1. search.
+  %rec field access
+   apply IH to IsE1. search.
+%vars_rf_exist
+  %endRecFieldExprs
+   search.
+  %addRecFieldExprs
+   VarsE: apply IH to IsRF2. VarsRest: apply IH1 to IsRF3.
+   IsV: apply vars_is to IsRF2 VarsE.
+   IsV1: apply vars_rf_is to IsRF3 VarsRest.
+   apply joinDomains_total to IsV IsV1. search.
+
+
+Extensible_Theorem
+  lookupTy_unique : forall G X T1 T2,
+    Lkp1: lookupTy G X T1 ->
+    Lkp2: lookupTy G X T2 ->
+    T1 = T2
+  on Lkp1.
+%1 by LV-Here
+ Lkp2: case Lkp2.
+   %2 by LV-Here
+    search.
+   %2 by LV-Later
+    apply Lkp3 to _.
+%1 by LV-Later
+ Lkp2: case Lkp2.
+   %2 by LV-Here
+    apply Lkp4 to _.
+   %2 by LV-Later
+    apply IH to Lkp3 Lkp2. search.
+
+
+Extensible_Theorem
+  typeOf_unique : forall G E T1 T2,
+    Ty1: typeOf G E T1 ->
+    Ty2: typeOf G E T2 ->
+    T1 = T2
+  on Ty1,
+  typeRecFields_unique : forall G RF T1 T2,
+    Ty1: typeRecFields G RF T1 ->
+    Ty2: typeRecFields G RF T2 ->
+    T1 = T2
+  on Ty1.
+%typeOf_unique
+  %T-Num
+   case Ty2. search.
+  %T-Plus
+   Ty2: case Ty2. search.
+  %T-Name
+   Ty2: case Ty2. apply lookupTy_unique to Ty3 Ty2. search.
+  %T-Greater
+   Ty2: case Ty2. search.
+  %T-Eq
+   Ty2: case Ty2. apply IH to Ty3 Ty2. search.
+  %T-And
+   case Ty2. search.
+  %T-Or
+   case Ty2. search.
+  %T-True
+   case Ty2. search.
+  %T-False
+   case Ty2. search.
+  %T-RecBuild
+   Ty2: case Ty2. apply IH1 to Ty3 Ty2. search.
+  %T-RecField
+   Ty2: case Ty2. apply IH to Ty3 Ty2.
+   apply lookupTy_unique to Ty4 Ty5. search.
+%typeRecFields_unique
+  %TRF-End
+   case Ty2. search.
+  %TRF-Add
+   Ty2: case Ty2. apply IH to Ty3 Ty2. apply IH1 to Ty4 Ty6. search.
+
+
+Extensible_Theorem
+  typeOK_unique : forall G C G1 G2,
+    Ty1: typeOK G C G1 ->
+    Ty2: typeOK G C G2 ->
+    G1 = G2
+  on Ty1.
+%T-Noop
+ case Ty2. search.
+%T-Seq
+ Ty2: case Ty2. apply IH to Ty3 Ty2. apply IH to Ty4 Ty5. search.
+%T-Declare
+ Ty2: case Ty2. apply typeOf_unique to Ty4 Ty5. search.
+%T-Assign
+ Ty2: case Ty2. apply typeOf_unique to Ty3 Ty2. search.
+%T-IfThenElse
+ Ty2: case Ty2. search.
+%T-While
+ Ty2: case Ty2. apply IH to Ty4 Ty5. search.
+%T-RecUpdate
+ Ty2: case Ty2. search.
+
+
+Extensible_Theorem
+  lookupVal_unique : forall G X V1 V2,
+    Lkp1: lookupVal G X V1 ->
+    Lkp2: lookupVal G X V2 ->
+    V1 = V2
+  on Lkp1.
+%1 by LV-Here
+ Lkp2: case Lkp2.
+   %2 by LV-Here
+    search.
+   %2 by LV-Later
+    apply Lkp3 to _.
+%1 by LV-Later
+ Lkp2: case Lkp2.
+   %2 by LV-Here
+    apply Lkp4 to _.
+   %2 by LV-Later
+    apply IH to Lkp3 Lkp2. search.
+
+
+Extensible_Theorem
+  eval_e_unique : forall G E V1 V2,
+    Ev1: eval_e G E V1 ->
+    Ev2: eval_e G E V2 ->
+    V1 = V2
+  on Ev1,
+  eval_rf_unique : forall G RF V1 V2,
+    Ev1: eval_rf G RF V1 ->
+    Ev2: eval_rf G RF V2 ->
+    V1 = V2
+  on Ev1.
+%1:  eval_e_unique
+  %1.1:  1 by E-Num
+   case Ev2. search.
+  %1.2:  1 by E-Plus
+   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev6.
+   apply plus_integer_unique to Ev5 Ev7. search.
+  %1.3:  1 by E-Name
+   Ev2: case Ev2. apply lookupVal_unique to Ev3 Ev2. search.
+  %1.4:  1 by E-GreaterTrue
+   Ev2: case Ev2.
+     %1.4.1:  2 by E-GreaterTrue
+      search.
+     %1.4.2:  2 by E-GreaterFalse
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. skip. %thm for this?
+  %1.5:  1 by E-GreaterFalse
+   Ev2: case Ev2.
+     %1.5.1:  2 by E-GreaterTrue
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. skip. %thm for this?
+     %1.5.2:  2 by E-GreaterFalse
+      search.
+  %1.6:  1 by E-EqTrue
+   Ev2: case Ev2.
+     %1.6.1:  2 by E-EqTrue
+      search.
+     %1.6.2:  2 b5 E-EqFalse
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. apply Ev7 to Ev5.
+  %1.7:  1 by E-EqFalse
+   Ev2: case Ev2.
+     %1.7.1:  2 by E-EqTrue
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. apply Ev5 to Ev7.
+     %1.7.2:  2 by E-EqFalse
+      search.
+  %1.8:  1 by E-AndTrue
+   Ev2: case Ev2.
+     %1.8.1:  2 by E-AndTrue
+      search.
+     %1.8.2:  2 by E-AndFalse1
+      apply IH to Ev3 Ev2.
+     %1.8.3:  2 by E-AndFalse2
+      apply IH to Ev4 Ev5.
+  %1.9:  1 by E-AndFalse1
+   Ev2: case Ev2.
+     %1.9.1:  2 by E-AndTrue
+      apply IH to Ev3 Ev2.
+     %1.9.2:  2 by E-AndFalse1
+      search.
+     %1.9.3:  2 by E-AndFalse2
+      search.
+  %1.10:  1 by E-AndFalse2
+   Ev2: case Ev2.
+     %1.10.1:  2 by E-AndTrue
+      apply IH to Ev4 Ev5.
+     %1.10.2:  2 by E-AndFalse1
+      search.
+     %1.10.3:  2 by E-AndFalse2
+      search.
+  %1.11:  1 by E-OrTrue1
+   Ev2: case Ev2.
+     %1.11.1:  2 by E-OrTrue1
+      search.
+     %1.11.2:  2 by E-OrTrue2
+      search.
+     %1.11.3:  2 by E-orFalse
+      apply IH to Ev3 Ev2.
+  %1.12:  1 by E-OrTrue2
+   Ev2: case Ev2.
+     %1.12.1:  2 by E-OrTrue1
+      search.
+     %1.12.2:  2 by E-OrTrue2
+      search.
+     %1.12.3:  2 by E-OrFalse
+      apply IH to Ev4 Ev5.
+  %1.13:  1 by E-OrFalse
+   Ev2: case Ev2.
+     %1.13.1:  2 by E-OrTrue1
+      apply IH to Ev3 Ev2.
+     %1.13.2:  2 by E-OrTrue2
+      apply IH to Ev4 Ev5.
+     %1.13.3:  2 by E-OrFalse
+      search.
+  %1.14:  1 by E-True
+   case Ev2. search.
+  %1.15:  1 by E-False
+   case Ev2. search.
+  %1.16:  1 by E-RecBuild
+   Ev2: case Ev2. apply IH1 to Ev3 Ev2. search.
+  %1.17:  1 by E-RecField
+   Ev2: case Ev2. apply IH to Ev3 Ev2.
+   apply lookupVal_unique to Ev4 Ev5. search.
+%2:  eval_rf_unique
+ %2.1:  ERF-End
+  case Ev2. search.
+ %2.2:  ERF-Add
+  Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH1 to Ev4 Ev5. search.
+
+
+Extensible_Theorem
+  eval_c_unique : forall G C G1 G2,
+    Ev1 : eval_c G C G1 ->
+    Ev2 : eval_c G C G2 ->
+    G1 = G2
+  on Ev1,
+  update_rec_fields_unique : forall F G V G1 G2,
+    U1: update_rec_fields F G V G1 ->
+    U2: update_rec_fields F G V G2 ->
+    G1 = G2
+  on U1.
+%eval_c_unique
+  %1 by E-Noop
+   case Ev2. search.
+  %1 by E-Seq
+   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev5. search.
+  %1 by E-Declare
+   Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
+  %1 by E-Assign
+   Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
+  %1 by E-IfThenElseTrue
+   Ev2: case Ev2.
+     %2 by E-IfThenElseTrue
+      apply IH to Ev4 Ev5. search.
+     %2 by E-IfThenElseFalse
+      apply eval_e_unique to Ev3 Ev2.
+  %1 by E-IfThenElseFalse
+   Ev2: case Ev2.
+     %2 by E-IfThenElseTrue
+      apply eval_e_unique to Ev3 Ev2.
+     %2 by E-IfThenElseFalse
+      apply IH to Ev4 Ev5. search.
+  %1 by E-WhileFalse
+   Ev2: case Ev2.
+     %2 by E-WhileFalse
+      search.
+     %2 by E-WhileTrue
+      apply eval_e_unique to Ev3 Ev2.
+  %1 by E-WhileTrue
+   Ev2: case Ev2.
+     %2 by E-WhileFalse
+      apply eval_e_unique to Ev3 Ev2.
+     %2 by E-WhileTrue
+      apply IH to Ev4 Ev6. apply IH to Ev5 Ev7. search.
+  %1 by E-RecUpdate
+   Ev2: case Ev2. apply lookupVal_unique to Ev4 Ev6.
+   apply eval_e_unique to Ev3 Ev2. apply IH1 to Ev5 Ev7. search.
+%update_rec_fields_unique
+  %1 by URF-One
+   case U2. search.
+  %1 by URF-Step
+   U2: case U2. apply lookupVal_unique to U3 U2. apply IH1 to U4 U5.
+   search.
+
+
+Extensible_Theorem
+  memDomain_joinDomains_left : forall X D1 D2 D,
+    Mem : memDomain X D1 ->
+    J : joinDomains D1 D2 D ->
+    memDomain X D
+  on Mem.
+%MD-Here
+ case J. search.
+%MD-Later
+ J: case J. apply IH to Mem1 J. search.
+Extensible_Theorem
+  memDomain_joinDomains_right : forall X D1 D2 D,
+    Mem : memDomain X D2 ->
+    J : joinDomains D1 D2 D ->
+    memDomain X D
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ apply IH to Mem J1. search.
+
+
+Theorem vars_equiv_left : forall G1 G2 D D1 D2,
+  (forall X U1 U2, memDomain X D -> lookupVal G1 X U1 ->
+                   lookupVal G2 X U2 -> U1 = U2) ->
+  joinDomains D1 D2 D ->
+  (forall X U1 U2, memDomain X D1 -> lookupVal G1 X U1 ->
+                   lookupVal G2 X U2 -> U1 = U2).
+intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
+backchain memDomain_joinDomains_left.
+Theorem vars_equiv_right : forall G1 G2 D D1 D2,
+  (forall X U1 U2, memDomain X D -> lookupVal G1 X U1 ->
+                   lookupVal G2 X U2 -> U1 = U2) ->
+  joinDomains D1 D2 D ->
+  (forall X U1 U2, memDomain X D2 -> lookupVal G1 X U1 ->
+                   lookupVal G2 X U2 -> U1 = U2).
+intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
+backchain memDomain_joinDomains_right.
+
+
+Extensible_Theorem
+  vars_eval_same_result : forall G1 G2 E D V1 V2,
+    Equiv : (forall X U1 U2,
+                memDomain X D ->
+                lookupVal G1 X U1 ->
+                lookupVal G2 X U2 -> U1 = U2) ->
+    Vars : vars E D ->
+    Ev1 : eval_e G1 E V1 ->
+    Ev2 : eval_e G2 E V2 ->
+    V1 = V2
+  on Ev1,
+  vars_equal_rf_same_result : forall G1 G2 RF D V1 V2,
+    Equiv : (forall X U1 U2,
+                memDomain X D ->
+                lookupVal G1 X U1 ->
+                lookupVal G2 X U2 -> U1 = U2) ->
+    Vars : vars_rf RF D ->
+    Ev1 : eval_rf G1 RF V1 ->
+    Ev2 : eval_rf G2 RF V2 ->
+    V1 = V2
+  on Ev1.
+%vars_equal_same_result
+  %1 by E-Num
+   case Ev2. search.
+  %1 by E-Plus
+   Ev2: case Ev2. Vars1: case Vars.
+   apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+   apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+   apply plus_integer_unique to Ev5 Ev7. search.
+  %1 by E-Name
+   Ev2: case Ev2. Vars: case Vars. apply Equiv to _ Ev3 Ev2. search.
+  %1 by E-GreaterTrue
+   Set subgoals off.
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-GreaterTrue
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right. search.
+     %2 by E-GreaterFalse
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+      skip. %what thm?
+  %1 by E-GreaterFalse
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-GreaterTrue
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+      skip. %what thm?
+     %2 by E-GreaterFalse
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right. search.
+  %1 by E-EqTrue
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-EqTrue
+      search.
+     %2 by E-EqFalse
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+      apply Ev7 to _.
+  %1 by E-EqFalse
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-EqTrue
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+      apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
+      apply Ev5 to _.
+     %2 by E-EqFalse
+      search.
+  %1 by E-AndTrue
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-AndTrue
+      search.
+     %2 by E-AndFalse1
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+     %2 by E-AndFalse2
+      apply IH to _ Vars2 Ev4 Ev5. backchain vars_equiv_right.
+  %1 by E-AndFalse1
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-AndTrue
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+     %2 by E-AndFalse1
+      search.
+     %2 by E-AndFalse2
+      search.
+  %1 by E-Andfalse2
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-AndTrue
+      apply IH to _ Vars2 Ev4 Ev5. backchain vars_equiv_right.
+     %2 by E-AndFalse1
+      search.
+     %2 by E-AndFalse2
+      search.
+  %1 by E-OrTrue1
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-OrTrue1
+      search.
+     %2 by E-OrTrue2
+      search.
+     %2 by E-OrFalse
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+  %1 by E-OrTrue2
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-OrTrue1
+      search.
+     %2 by E-OrTrue2
+      search.
+     %2 by E-OrFalse
+      apply IH to _Vars2 Ev4 Ev5. backchain vars_equiv_right.
+  %1 by E-OrFalse
+   Vars1: case Vars. Ev2: case Ev2.
+     %2 by E-OrTrue1
+      apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+     %2 by E-OrTrue2
+      apply IH to _ Vars2 Ev4 Ev5. backchain vars_equiv_right.
+     %2 by E-OrFalse
+      search.
+  %1 by E-True
+   case Ev2. search.
+  %1 by E-False
+   case Ev2. search.
+  %1 by E-RecBuild
+   Vars: case Vars. Ev2: case Ev2. apply IH1 to _ Vars Ev3 Ev2.
+   search.
+  %1 by E-RecField
+   Vars: case Vars. Ev2: case Ev2. apply IH to _ Vars Ev3 Ev2.
+   apply lookupVal_unique to Ev4 Ev5. search.
+%vars_equal_rf_same_result
+  %1 by ERF-End
+   case Ev2. search.
+  %1 by ERF-Add
+   Vars: case Vars. Ev2: case Ev2.
+   apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
+   apply IH1 to _ Vars Ev4 Ev5. backchain vars_equiv_right. search.
+
+
+%Translation constraint, which we haven't set up yet
+Theorem trans_eval_e : forall G E E' V,
+  |{e}- E ~~> E' -> eval_e G E V ->
+  exists V', eval_e G E V'.
+skip.

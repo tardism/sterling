@@ -5,6 +5,18 @@ domain ::= emptyDomain
 Translation domain :
 
 
+Judgment memDomain : string domain*
+
+------------------------------ [MD-Here]
+memDomain X addDomain(X, Rest)
+
+
+memDomain X Rest
+------------------------------ [MD-Later]
+memDomain X addDomain(Y, Rest)
+
+
+
 Judgment joinDomains : domain* domain domain
 
 --------------------------- [JD-Empty]
