@@ -283,11 +283,13 @@ Extensible_Theorem
      %1.4.1:  2 by E-GreaterTrue
       search.
      %1.4.2:  2 by E-GreaterFalse
-      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. skip. %thm for this?
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6.
+      apply greater_lesseq_integer_false to Ev5 Ev7.
   %1.5:  1 by E-GreaterFalse
    Ev2: case Ev2.
      %1.5.1:  2 by E-GreaterTrue
-      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6. skip. %thm for this?
+      apply IH to Ev3 Ev2. apply IH to Ev4 Ev6.
+      apply greater_lesseq_integer_false to Ev7 Ev5.
      %1.5.2:  2 by E-GreaterFalse
       search.
   %1.6:  1 by E-EqTrue
@@ -501,13 +503,13 @@ Extensible_Theorem
      %2 by E-GreaterFalse
       apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
       apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
-      skip. %what thm?
+      apply greater_lesseq_integer_false to Ev5 Ev7.
   %1 by E-GreaterFalse
    Vars1: case Vars. Ev2: case Ev2.
      %2 by E-GreaterTrue
       apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
       apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right.
-      skip. %what thm?
+      apply greater_lesseq_integer_false to Ev7 Ev5.
      %2 by E-GreaterFalse
       apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
       apply IH to _ Vars2 Ev4 Ev6. backchain vars_equiv_right. search.

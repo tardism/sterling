@@ -87,6 +87,19 @@ Prove sec_SOS:host:lookupVal_unique.
 
 
 Extensible_Theorem
+  index_is_integer : forall L I V,
+    Index : index L I V ->
+    is_integer I
+  on Index.
+%Index-0
+ search.
+%Index-Step
+ IsSubIndex: apply IH to Index2.
+ Is: apply minus_integer_is_integer_result to IsSubIndex Index1.
+ search.
+%Preservability
+ backchain IH.
+Extensible_Theorem
   index_negative_false : forall L I V,
     Index : index L I V ->
     Neg : I < 0 ->
@@ -95,7 +108,10 @@ Extensible_Theorem
 %Index-0
  case Neg.
 %Index-Step
- apply IH to Index2 _. skip. %what thm?
+ apply index_is_integer to Index.
+ apply less_integer__subtract_positive to _ _ Neg _ Index1.
+ apply minus_integer_is_integer to _ _ Index1.
+ apply IH to Index2 _.
 %Preservability
  apply IH to Index2 Neg.
 Extensible_Theorem
@@ -120,6 +136,18 @@ Extensible_Theorem
 %Preservability
  skip.
 
+Extensible_Theorem
+  length_is_integer : forall L V,
+    Len : length L V ->
+    is_integer V
+  on Len.
+%Len-Nil
+ search.
+%Len-Cons
+ IsSubLen: apply IH to Len1.
+ apply plus_integer_is_integer to _ _ Len2. search.
+%Preservability
+ apply IH to Len2. search.
 Extensible_Theorem
   length_unique : forall L V1 V2,
     Len1 : length L V1 ->
