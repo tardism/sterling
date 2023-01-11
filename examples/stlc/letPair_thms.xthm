@@ -1,0 +1,7 @@
+Module stlc:letPair.
+
+
+Prove stlc:host:ty_unique.
+%T-LetPair
+ Type2: case Type2. apply IH to Type3 Type2. apply IH to Type4 Type5.
+ search.
