@@ -11,7 +11,7 @@ term ::= ...
 
 /*Typing Rule*/
 typeOf G T1 pairTy(Ty1)
-typeOf add(X, Ty1, add(Y, Ty2, G)) T2 Ty2
+typeOf add(X, Ty1, add(Y, Ty1, G)) T2 Ty2
 ----------------------------------------- [T-LetPair]
 typeOf G letPair(X, Y, T1, T2) Ty2
 
