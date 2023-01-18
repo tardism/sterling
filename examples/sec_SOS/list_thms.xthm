@@ -1,13 +1,131 @@
 Module sec_SOS:list.
 
 
+Prove_Constraint sec_SOS:host:trans_e_unique.
+%nil
+ case H. search.
+%cons
+ case H. search.
+%null
+ case H. search.
+%head
+ case H. search.
+%tail
+ case H. search.
+%index
+ case H. search.
+%length
+ case H. search.
+Prove_Constraint sec_SOS:host:trans_e_is.
+%nil
+ search 8. %too big to solve at default depth
+%cons
+ case H. search 10. %too big
+%null
+ case H. search 7.
+%head
+ case H. search 7.
+%tail
+ case H. search 7.
+%index
+ case H. search.
+%length
+ case H. search.
+
+
+Prove_Constraint sec_SOS:host:trans_rf_unique.
+Prove_Constraint sec_SOS:host:trans_rf_is.
+Prove_Constraint sec_SOS:host:trans_c_unique.
+Prove_Constraint sec_SOS:host:trans_c_is.
+Prove_Constraint sec_SOS:host:trans_recFields_unique.
+Prove_Constraint sec_SOS:host:trans_recFields_is.
+
+
+Prove_Constraint sec_SOS:host:trans_ty_unique.
+%listTy
+ case H. search.
+Prove_Constraint sec_SOS:host:trans_ty_is.
+%listTy
+ case H. search 10.
+
+
+Prove_Constraint sec_SOS:host:trans_value_unique.
+%nilVal
+ case H. search.
+%consVal
+ case H. search.
+Prove_Constraint sec_SOS:host:trans_value_is.
+%nilVal
+ search 8.
+%consVal
+ case H. search 10.
+
+
+Prove_Constraint sec_SOS:host:trans_domain_mem_fwd.
+Prove_Constraint sec_SOS:host:trans_domain_mem_back.
+
+
+Prove sec_SOS:host:joinDomains_unique.
 Prove sec_SOS:host:joinDomains_total.
-
-
 Prove sec_SOS:host:joinDomains_is.
-
-
 Prove sec_SOS:host:joinDomains_mem.
+Prove sec_SOS:host:mem_joinDomains1.
+Prove sec_SOS:host:mem_joinDomains2.
+
+
+Prove sec_SOS:host:vars_unique,
+      sec_SOS:host:vars_rf_unique.
+%vars_unique
+ %nil
+  case Vars2. search.
+ %cons
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %null
+  Vars2: case Vars2. apply IH to Vars3 Vars2. search.
+ %head
+  Vars2: case Vars2. apply IH to Vars3 Vars2. search.
+ %tail
+  Vars2: case Vars2. apply IH to Vars3 Vars2. search.
+ %index
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %length
+  Vars2: case Vars2. apply IH to Vars3 Vars2. search.
+
+
+Prove_Constraint sec_SOS:host:trans_e_vars.
+%nil
+ case H2. case H1. case H1. case H2. case H3. %Abella bug?
+ skip.
+%cons
+ VarsCons: case H2. case H1. case H1. case H3. %same Abella bug
+ case H2. case H5.
+ case H8. apply vars_unique to VarsCons H6.
+ apply vars_unique to VarsCons1 H9. Or: apply joinDomains_mem to H4 H.
+ MemOr: case Or.
+   %mem X DE
+    skip.
+   %mem X DRest
+    Or: apply joinDomains_mem to H7 MemOr. MemOr1: case Or.
+      %mem X DE1
+       apply mem_joinDomains1 to VarsCons2 MemOr1. search.
+      %mem X DRest1
+       Or: apply joinDomains_mem to H10 MemOr1. MemOr2: case Or.
+         %mem X DE2
+          apply mem_joinDomains2 to VarsCons2 MemOr2. search.
+         %mem X emptyDomain
+          case MemOr2.
+%null
+ case H2. case H1.
+%head
+ 
+%tail
+ 
+%index
+ 
+%length
+ 
 
 
 Prove sec_SOS:host:vars_is,
@@ -84,6 +202,9 @@ Prove sec_SOS:host:typeOK_unique.
 
 
 Prove sec_SOS:host:lookupVal_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_eval_e.
 
 
 Extensible_Theorem
@@ -192,6 +313,12 @@ Prove sec_SOS:host:eval_e_unique,
   %E-Length
    Ev2: case Ev2. apply IH to Ev3 Ev2.
    apply sec_SOS:list:length_unique to Ev4 Ev5. search.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
 
 
 Prove sec_SOS:host:eval_c_unique,

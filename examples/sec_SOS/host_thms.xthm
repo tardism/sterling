@@ -1,5 +1,58 @@
 Module sec_SOS:host.
 
+Translation_Constraint trans_e_unique : forall E E1 E2,
+  |{e}- E ~~> E1 -> |{e}- E ~~> E2 -> E1 = E2.
+Translation_Constraint trans_e_is : forall E E',
+  |{e}- E ~~> E' -> is_e E -> is_e E'.
+
+Translation_Constraint trans_rf_unique : forall RF RF1 RF2,
+  |{recFieldExprs}- RF ~~> RF1 ->
+  |{recFieldExprs}- RF ~~> RF2 ->
+  RF1 = RF2.
+Translation_Constraint trans_rf_is : forall RF RF',
+  |{recFieldExprs}- RF ~~> RF' -> is_recFieldExprs RF ->
+  is_recFieldExprs RF'.
+
+Translation_Constraint trans_c_unique : forall C C1 C2,
+  |{c}- C ~~> C1 -> |{c}- C ~~> C2 -> C1 = C2.
+Translation_Constraint trans_c_is : forall C C',
+  |{c}- C ~~> C' -> is_c C -> is_c C'.
+
+Translation_Constraint trans_recFields_unique : forall RF RF1 RF2,
+  |{recFields}- RF ~~> RF1 -> |{recFields}- RF ~~> RF2 -> RF1 = RF2.
+Translation_Constraint trans_recFields_is : forall RF RF',
+  |{recFields}- RF ~~> RF' -> is_recFields RF -> is_recFields RF'.
+
+Translation_Constraint trans_ty_unique : forall Ty Ty1 Ty2,
+  |{ty}- Ty ~~> Ty1 -> |{ty}- Ty ~~> Ty2 -> Ty1 = Ty2.
+Translation_Constraint trans_ty_is : forall Ty Ty',
+  |{ty}- Ty ~~> Ty' -> is_ty Ty -> is_ty Ty'.
+
+Translation_Constraint trans_value_unique : forall V V1 V2,
+  |{value}- V ~~> V1 -> |{value}- V ~~> V2 -> V1 = V2.
+Translation_Constraint trans_value_is : forall V V',
+  |{value}- V ~~> V' -> is_value V -> is_value V'.
+
+
+Translation_Constraint trans_domain_mem_fwd : forall D D' X,
+  |{domain}- D ~~> D' -> memDomain X D -> memDomain X D'.
+
+Translation_Constraint trans_domain_mem_back : forall D D' X,
+  |{domain}- D ~~> D' -> memDomain X D' -> memDomain X D.
+
+
+Extensible_Theorem
+  joinDomains_unique : forall D1 D2 R1 R2,
+    J1 : joinDomains D1 D2 R1 ->
+    J2 : joinDomains D1 D2 R2 ->
+    R1 = R2
+  on J1.
+%JD-Empty
+ case J2. search.
+%JD-Add
+ J2: case J2. apply IH to J3 J2. search.
+
+
 Extensible_Theorem
   joinDomains_total : forall D1 D2,
     IsD1 : is_domain D1 ->
@@ -43,6 +96,85 @@ Extensible_Theorem
        search.
       %mem D2
        search.
+
+
+Extensible_Theorem
+  mem_joinDomains1 : forall D1 D2 D X,
+    J : joinDomains D1 D2 D ->
+    Mem : memDomain X D1 ->
+    memDomain X D
+  on J.
+%JD-Empty
+ case Mem.
+%JD-Add
+ Mem: case Mem.
+   %mem here
+    search.
+   %mem later
+    apply IH to J1 Mem. search.
+Extensible_Theorem
+  mem_joinDomains2 : forall D1 D2 D X,
+    J : joinDomains D1 D2 D ->
+    Mem : memDomain X D2 ->
+    memDomain X D
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ apply IH to J1 Mem. search.
+
+
+Extensible_Theorem
+  vars_unique : forall E V1 V2,
+    Vars1 : vars E V1 ->
+    Vars2 : vars E V2 ->
+    V1 = V2
+  on Vars1,
+  vars_rf_unique : forall RF V1 V2,
+    Vars1 : vars_rf RF V1 ->
+    Vars2 : vars_rf RF V2 ->
+    V1 = V2
+  on Vars1.
+%vars_unique
+ %V-Num
+  case Vars2. search.
+ %V-Plus
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %V-Name
+  case Vars2. search.
+ %V-Greater
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %V-Eq
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %V-And
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %V-Or
+  Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
+  apply joinDomains_unique to Vars5 Vars7. search.
+ %V-True
+  case Vars2. search.
+ %V-False
+  case Vars2. search.
+ %V-RecBuild
+  Vars2: case Vars2. apply IH1 to Vars3 Vars2. search.
+ %V-RecAccess
+  Vars2: case Vars2. apply IH to Vars3 Vars2. search.
+%vars_rf_unique
+ %VRF-Empty
+  case Vars2. search.
+ %VRF-Add
+  Vars2: case Vars2. apply IH to Vars4 Vars6.
+  apply IH1 to Vars3 Vars2. apply joinDomains_unique to Vars5 Vars7.
+  search.
+
+
+Translation_Constraint trans_e_vars : forall E E' V V' X,
+  |{e}- E ~~> E' -> vars E V -> vars E' V' ->
+  memDomain X V' -> memDomain X V.
 
 
 Extensible_Theorem
@@ -259,6 +391,11 @@ Extensible_Theorem
     apply IH to Lkp3 Lkp2. search.
 
 
+Translation_Constraint trans_eval_e : forall G E E' V,
+  |{e}- E ~~> E' -> eval_e G E V ->
+  exists V', eval_e G E V'.
+
+
 Extensible_Theorem
   eval_e_unique : forall G E V1 V2,
     Ev1: eval_e G E V1 ->
@@ -366,6 +503,14 @@ Extensible_Theorem
   case Ev2. search.
  %2.2:  ERF-Add
   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH1 to Ev4 Ev5. search.
+
+
+Translation_Constraint trans_c_eval : forall C C' G G2,
+  |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
+Translation_Constraint trans_c_eval_results :
+  forall C C' G G1 G2 X V1 V2,
+    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C G2 ->
+    lookupVal G X V1 -> lookupVal G X V2 -> V1 = V2.
 
 
 Extensible_Theorem
@@ -594,10 +739,3 @@ Extensible_Theorem
    Vars: case Vars. Ev2: case Ev2.
    apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
    apply IH1 to _ Vars Ev4 Ev5. backchain vars_equiv_right. search.
-
-
-%Translation constraint, which we haven't set up yet
-Theorem trans_eval_e : forall G E E' V,
-  |{e}- E ~~> E' -> eval_e G E V ->
-  exists V', eval_e G E V'.
-skip.
