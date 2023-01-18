@@ -66,6 +66,17 @@ Extensible_Theorem
 
 
 Extensible_Theorem
+  joinDomains_empty_right : forall D1 D2,
+    J : joinDomains D1 emptyDomain D2 ->
+    D1 = D2
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ apply IH to J1. search.
+
+
+Extensible_Theorem
   joinDomains_is : forall D1 D2 D,
     IsD1 : is_domain D1 ->
     IsD2 : is_domain D2 ->
@@ -76,6 +87,44 @@ Extensible_Theorem
  search.
 %JD-Add
  IsD1: case IsD1. apply IH to IsD3 IsD2 J1. search.
+
+
+Extensible_Theorem
+  joinDomains_assoc : forall D1 D2 D3 D12 D23 D D',
+    J1 : joinDomains D1 D2 D12 ->
+    J2 : joinDomains D12 D3 D ->
+    J3 : joinDomains D2 D3 D23 ->
+    J4 : joinDomains D1 D23 D' ->
+    D = D'
+  on J1.
+%JD-Empty
+ case J4. apply joinDomains_unique to J2 J3. search.
+%JD-Add
+ case J2. case J4. apply IH to J5 H1 J3 H2. search.
+
+
+Extensible_Theorem
+  join_something_join_anything : forall D1 D2 D D3,
+    J : joinDomains D1 D2 D ->
+    exists D', joinDomains D1 D3 D'
+  on J.
+%JD-Empty
+ search.
+%JD-Add
+ apply IH to J1 with D3 = D3. search.
+
+
+Extensible_Theorem
+  join_joined : forall D1 D11 D111 D2 D22 D222 D,
+    J1 : joinDomains D1 D11 D111 ->
+    J2 : joinDomains D2 D22 D222 ->
+    J3 : joinDomains D1 D2 D ->
+    exists D', joinDomains D D22 D'
+  on J1.
+%JD-Empty
+ case J1. case J3. search.
+%JD-Add
+ case J3. apply IH to J4 J2 H1. search.
 
 
 Extensible_Theorem
@@ -122,6 +171,57 @@ Extensible_Theorem
  search.
 %JD-Add
  apply IH to J1 Mem. search.
+
+
+Extensible_Theorem
+  vars_join : forall E V D,
+    Vars : vars E V ->
+    exists D', joinDomains V D D'
+  on Vars,
+  vars_rf_join : forall RF V D,
+    Vars : vars_rf RF V ->
+    exists D', joinDomains V D D'
+  on Vars.
+%vars_unique
+ %V-Num
+  search.
+ %V-Plus
+  J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
+ %V-Name
+  search.
+ %V-Greater
+  J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
+ %V-Eq
+  J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
+ %V-And
+  J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
+ %V-Or
+  J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
+ %V-True
+  search.
+ %V-False
+  search.
+ %V-RecBuild
+  apply IH1 to Vars1 with D = D. search.
+ %V-RecAccess
+  apply IH to Vars1 with D = D. search.
+%vars_rf_unique
+ %VRF-Empty
+  search.
+ %VRF-Add
+  J2: apply IH1 to Vars1 with D = D. J1: apply IH to Vars2 with D = D'.
+  apply join_joined to J1 J2 Vars3.
+  apply join_something_join_anything to H1 with D3 = D. search.
 
 
 Extensible_Theorem
@@ -172,9 +272,18 @@ Extensible_Theorem
   search.
 
 
+Translation_Constraint trans_e_vars_exist : forall E E' V,
+  |{e}- E ~~> E' -> vars E V -> exists V', vars E' V'.
 Translation_Constraint trans_e_vars : forall E E' V V' X,
   |{e}- E ~~> E' -> vars E V -> vars E' V' ->
-  memDomain X V' -> memDomain X V.
+  memDomain X V -> memDomain X V'.
+
+Translation_Constraint trans_rf_vars_exist : forall RF RF' V,
+  |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V ->
+  exists V', vars_rf RF' V'.
+Translation_Constraint trans_rf_vars : forall RF RF' V V' X,
+  |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V -> vars_rf RF' V' ->
+  memDomain X V -> memDomain X V'.
 
 
 Extensible_Theorem
@@ -393,7 +502,7 @@ Extensible_Theorem
 
 Translation_Constraint trans_eval_e : forall G E E' V,
   |{e}- E ~~> E' -> eval_e G E V ->
-  exists V', eval_e G E V'.
+  exists V', eval_e G E' V'.
 
 
 Extensible_Theorem
@@ -510,7 +619,7 @@ Translation_Constraint trans_c_eval : forall C C' G G2,
 Translation_Constraint trans_c_eval_results :
   forall C C' G G1 G2 X V1 V2,
     |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C G2 ->
-    lookupVal G X V1 -> lookupVal G X V2 -> V1 = V2.
+    lookupVal G1 X V1 -> lookupVal G2 X V2 -> V1 = V2.
 
 
 Extensible_Theorem

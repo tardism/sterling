@@ -1,9 +1,45 @@
 Module sec_SOS:security.
 
+Prove_Constraint sec_SOS:host:trans_e_unique.
+Prove_Constraint sec_SOS:host:trans_e_is.
+Prove_Constraint sec_SOS:host:trans_rf_unique.
+Prove_Constraint sec_SOS:host:trans_rf_is.
+Prove_Constraint sec_SOS:host:trans_c_unique.
+%declareSec
+ case Hyp1. search.
+Prove_Constraint sec_SOS:host:trans_c_is.
+%declareSec
+ case Hyp1. search.
+Prove_Constraint sec_SOS:host:trans_recFields_unique.
+Prove_Constraint sec_SOS:host:trans_recFields_is.
+Prove_Constraint sec_SOS:host:trans_ty_unique.
+Prove_Constraint sec_SOS:host:trans_ty_is.
+Prove_Constraint sec_SOS:host:trans_value_unique.
+Prove_Constraint sec_SOS:host:trans_value_is.
+Prove_Constraint sec_SOS:host:trans_domain_mem_fwd.
+Prove_Constraint sec_SOS:host:trans_domain_mem_back.
 
+Prove sec_SOS:host:joinDomains_unique.
 Prove sec_SOS:host:joinDomains_total.
+Prove sec_SOS:host:joinDomains_empty_right.
 Prove sec_SOS:host:joinDomains_is.
+Prove sec_SOS:host:joinDomains_assoc.
+Prove sec_SOS:host:join_something_join_anything.
+Prove sec_SOS:host:join_joined.
 Prove sec_SOS:host:joinDomains_mem.
+Prove sec_SOS:host:mem_joinDomains1.
+Prove sec_SOS:host:mem_joinDomains2.
+
+Prove sec_SOS:host:vars_join,
+      sec_SOS:host:vars_rf_join.
+
+Prove sec_SOS:host:vars_unique,
+      sec_SOS:host:vars_rf_unique.
+
+Prove_Constraint sec_SOS:host:trans_e_vars_exist.
+Prove_Constraint sec_SOS:host:trans_e_vars.
+Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
+Prove_Constraint sec_SOS:host:trans_rf_vars.
 
 Prove sec_SOS:host:vars_is, sec_SOS:host:vars_rf_is.
 Prove sec_SOS:host:vars_exist, sec_SOS:host:vars_rf_exist.
@@ -15,8 +51,20 @@ Prove sec_SOS:host:typeOK_unique.
  Ty2: case Ty2. apply typeOf_unique to Ty4 Ty5. search.
 
 Prove sec_SOS:host:lookupVal_unique.
+
+Prove_Constraint sec_SOS:host:trans_eval_e.
+
 Prove sec_SOS:host:eval_e_unique,
       sec_SOS:host:eval_rf_unique.
+
+Prove_Constraint sec_SOS:host:trans_c_eval.
+%declareSec
+ Ev: case Hyp1. search.
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
+%declareSec
+ Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
+ apply lookupVal_unique to Hyp3 Hyp4. search.
+
 Prove sec_SOS:host:eval_c_unique,
       sec_SOS:host:update_rec_fields_unique.
 %declareSec
@@ -147,7 +195,9 @@ Extensible_Theorem
   %S-RecField
    Vars: case Vars. apply IH to Lev1 Vars Mem. search.
   %Preservability
-   skip.
+   V: apply trans_e_vars_exist to Lev1 Vars.
+   Mem: apply trans_e_vars to Lev1 Vars V Mem.
+   apply IH to Lev2 V Mem1. search.
 %level_public_vars_rf
   %S-RfEnd
    case Vars. case Mem.
@@ -159,8 +209,9 @@ Extensible_Theorem
      %mem DRest
       apply IH1 to Lev2 Vars1 Mem'. search.
   %Preservability
-   skip.
-
+   V: apply trans_rf_vars_exist to Lev1 Vars.
+   Mem: apply trans_rf_vars to Lev1 Vars V Mem.
+   apply IH1 to Lev2 V Mem1. search.
 
 Define public_equiv : secctx -> evalctx -> evalctx -> prop by
 public_equiv S G1 G2 :=
