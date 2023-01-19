@@ -19,7 +19,7 @@ top::ConcreteSyntaxDecl ::= name::String ty::Type d::ConcreteProdDecls
 {
   top.pp = name ++ " <" ++ ty.pp ++ "> ::= " ++ d.pp;
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   d.moduleName = top.moduleName;
 

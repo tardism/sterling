@@ -114,7 +114,7 @@ top::Term ::= var::String
 {
   top.pp = var;
 
-  local prodElem::[(QName, Type, Location)] =
+  production prodElem::[(QName, Type, Location)] =
         lookupAll(var, top.productionElements);
   top.errors <-
       case prodElem of
