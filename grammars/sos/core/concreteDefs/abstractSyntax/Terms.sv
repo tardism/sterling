@@ -19,6 +19,13 @@ top::Term ::= name::QName
   name.constructorEnv = top.constructorEnv;
 
   top.errors <- name.constrErrors;
+  top.errors <-
+      if name.constrFound
+      then if name.constrTypeArgs.len == 0
+           then []
+           else [errorMessage("Too few arguments to constructor " ++
+                    name.pp, location=top.location)]
+      else [];
   top.type = if name.constrFound
              then name.constrType
              else errorType(location=top.location);
