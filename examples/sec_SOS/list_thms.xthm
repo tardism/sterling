@@ -162,13 +162,13 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
    %mem X DRest1
     apply mem_joinDomains2 to H7 MemOr. search.
 %null
- case Hyp2. case Hyp1. apply vars_unique to H1 H2. search.
+ case Hyp1. apply vars_unique to H1 Hyp2. search.
 %head
- case Hyp2. case Hyp1. apply vars_unique to H1 H2. search.
+ case Hyp1. apply vars_unique to H1 Hyp2. search.
 %tail
- case Hyp2. case Hyp1. apply vars_unique to H1 H2. search.
+ case Hyp1. apply vars_unique to H1 Hyp2. search.
 %index
- VI: case Hyp1. VT: case Hyp2. apply vars_unique to VI VT.
+ VI: case Hyp1. VT: case Hyp2. VT: case VT. apply vars_unique to VI VT.
  apply vars_unique to VI1 VT1. apply joinDomains_unique to VI2 VT2.
  search.
 %length
@@ -259,13 +259,17 @@ Prove_Constraint sec_SOS:host:trans_eval_e.
 %cons
  Ev: case Hyp1. search.
 %null
- skip. %This is also not true
+ case Hyp1.
+   %E-NullTrue
+    search.
+   %E-NullFalse
+    search.
 %head
- skip. %Not true
+ case Hyp1. search.
 %tail
- skip. %Not true
+ case Hyp1. search.
 %index
- Ev: case Hyp1. skip. %Not true
+ Ev: case Hyp1. skip.
 %length
  Ev: case Hyp1. search.
 

@@ -27,24 +27,24 @@ e ::= ...
          addRecFieldExprs("tail", E2, endRecFieldExprs))))
 
 
-------------------------------------------- [Trans-Null]
-|{e}- null(E) ~~> recFieldAccess(E, "null")
+------------------- [Trans-Null]
+|{e}- null(E) ~~> E
 
 
-------------------------------------------- [Trans-Head]
-|{e}- head(E) ~~> recFieldAccess(E, "head")
+------------------- [Trans-Head]
+|{e}- head(E) ~~> E
 
 
-------------------------------------------- [Trans-Tail]
-|{e}- tail(E) ~~> recFieldAccess(E, "tail")
+------------------- [Trans-Tail]
+|{e}- tail(E) ~~> E
 
 
 /*To actually compute the length or index from records would require
   conditionals, so we'll take advantage of the lax translation
   constraints and translate to something unrelated to the actual
   value.*/
--------------------------------------------- [Trans-Index]
-|{e}- index(Lst, Index) ~~> plus(Lst, Index)
+---------------------------------------------------- [Trans-Index]
+|{e}- index(Lst, Index) ~~> plus(length(Lst), Index)
 
 
 --------------------- [Trans-Length]
@@ -102,4 +102,3 @@ value ::= ...
                  addVal("tail", Tl,
                  addVal("null", falseVal,
                  emptyEval))))
-
