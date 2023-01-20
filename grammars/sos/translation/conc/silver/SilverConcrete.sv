@@ -1,5 +1,17 @@
 grammar sos:translation:conc:silver;
 
+
+imports sos:core:common:abstractSyntax;
+imports sos:core:concreteDefs:abstractSyntax;
+
+imports sos:core:modules;
+
+synthesized attribute silverConc<a>::a;
+
+
+
+
+
 nonterminal SilverConcDecl with pp;
 
 abstract production terminalSilverConcDecl
@@ -32,6 +44,13 @@ top::SilverConcDecl ::= name::String topName::String topTy::String
   top.pp = "concrete production " ++ name ++ "\n" ++
            topName ++ "::" ++ topTy ++ " ::= " ++ children.pp ++
            "\n{\n" ++ body.pp ++ "\n}";
+}
+
+
+abstract production importSilverConcDecl
+top::SilverConcDecl ::= g::String
+{
+  top.pp = "import " ++ g ++ ";";
 }
 
 
