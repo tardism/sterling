@@ -16,5 +16,7 @@ top::TerminalDecl ::= r::Regex
 aspect production useTerminal
 top::TerminalDecl ::= name::String r::Regex
 {
-  top.silverConc = terminalSilverConcDecl(name, r);
+  local silverName::String =
+      toQName(name, top.location).silverConcTerminal;
+  top.silverConc = terminalSilverConcDecl(silverName, r);
 }

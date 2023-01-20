@@ -23,15 +23,31 @@ IOVal<Integer> ::= m::ModuleList genLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken =
-      printT("Producing Silver output for concrete syntax", i);
+      printT("Producing Silver output for concrete syntax\n", i);
+  local silverGenLoc::String =
+      genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
+      "silverConc";
   local genGrammars::IOVal<Boolean> =
-      genSilverConcGrammars(m.silverConc, genLoc, message);
-  --continue from here to compile it
+      genSilverConcGrammars(m.silverConc, silverGenLoc, message);
+  local genGrammarsError::IOToken =
+      printT("Error producing Silver grammar files\n", genGrammars.io);
+  --compile it
+  local compileCmd::String =
+      "silver -I " ++ silverGenLoc ++ " " ++ a.generateModuleName;
+  local compile::IOVal<Integer> = systemT(compileCmd, genGrammars.io);
+  local printCompileError::IOToken =
+      printT("Error compiling Silver concrete translation\n" ++
+             "  (command: " ++ compileCmd ++ "; returned " ++
+             toString(compile.iovalue) ++ ")\n", compile.io);
 
   return
-      if !genGrammars.iovalue
-      then ioval(genGrammars.io, 2)
-      else error("Not done");
+      if !a.outputSilverConc
+      then ioval(i, 0)
+      else if !genGrammars.iovalue
+      then ioval(genGrammarsError, 2)
+      else if compile.iovalue != 0
+      then ioval(printCompileError, 2)
+      else compile;
 }
 
 
@@ -41,11 +57,20 @@ IOVal<Boolean> ::= mods::[(String, [SilverConcDecl])] genLoc::String
 {
   local decls::String = implode("\n", map((.pp), head(mods).2));
   local contents::String =
-      "grammar " ++ head(mods).1 ++ ";\n" ++ decls;
+      "grammar " ++ head(mods).1 ++ ";\n" ++
+      (if length(mods) == 1 --declare ast in first grammar
+       then "synthesized attribute ast::String;\n"
+       else "") ++
+      decls;
   local modSplit::[String] = explode(":", head(mods).1);
   local dir::String =
-      genLoc ++ "/silverConc/" ++ implode("/", modSplit);
-  local mkDirectory::IOVal<Boolean> = mkdirT(dir, i);
+      genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
+      implode("/", modSplit);
+  local mkDirectory::IOVal<Boolean> = --mkdirT(dir, i);
+      let run::IOVal<Integer> = systemT("mkdir -p " ++ dir, i)
+      in
+        ioval(run.io, run.iovalue == 0)
+      end;
   local filename::String = dir ++ "/Concrete.sv";
   local writeGrammarFile::IOToken =
       writeFileT(filename, contents, mkDirectory.io);
@@ -55,10 +80,9 @@ IOVal<Boolean> ::= mods::[(String, [SilverConcDecl])] genLoc::String
   return
       case mods of
       | [] -> ioval(i, true)
-      | _::_ ->
-        if mkDirectory.iovalue
-        then rest
-        else ioval(mkDirectory.io, false)
+      | _::_ -> if mkDirectory.iovalue
+                then rest
+                else ioval(mkDirectory.io, false)
       end;
 }
 

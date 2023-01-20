@@ -8,7 +8,10 @@ occurs on ConcreteSyntaxDecl;
 aspect production newConcreteNonterminal
 top::ConcreteSyntaxDecl ::= name::String ty::Type d::ConcreteProdDecls
 {
-  top.silverConc = nonterminalSilverConcDecl(name)::d.silverConc;
+  local silverName::String = toQName(name, top.location).silverConcNt;
+  top.silverConc =
+      nonterminalSilverConcDecl(silverName)::d.silverConc;
+  d.silverConcTopTy = fullName.silverConcNt;
 }
 
 
@@ -16,6 +19,7 @@ aspect production addConcreteNonterminal
 top::ConcreteSyntaxDecl ::= name::QName d::ConcreteProdDecls
 {
   top.silverConc = d.silverConc;
+  d.silverConcTopTy = name.fullConcreteName.silverConcNt;
 }
 
 
@@ -23,13 +27,17 @@ top::ConcreteSyntaxDecl ::= name::QName d::ConcreteProdDecls
 
 
 attribute
-   silverConc<[SilverConcDecl]>
+   silverConc<[SilverConcDecl]>, silverConcTopTy
 occurs on ConcreteProdDecls;
+
+inherited attribute silverConcTopTy::String;
 
 aspect production branchConcreteProdDecls
 top::ConcreteProdDecls ::= d1::ConcreteProdDecls d2::ConcreteProdDecls
 {
   top.silverConc = d1.silverConc ++ d2.silverConc;
+  d1.silverConcTopTy = top.silverConcTopTy;
+  d2.silverConcTopTy = top.silverConcTopTy;
 }
 
 
@@ -37,10 +45,9 @@ aspect production concreteProdDecl
 top::ConcreteProdDecls ::= p::ProductionElement t::Term
 {
   local prodName::String = "concreteProd" ++ toString(genInt());
-  local topName::String = error("concreteProdDecl.topName");
-  local topTy::String = error("concreteprodDecl.topTy");
+  local topName::String = "top" ++ toString(genInt());
   top.silverConc =
-      [productionSilverConcDecl(prodName, topName, topTy,
+      [productionSilverConcDecl(prodName, topName, top.silverConcTopTy,
           p.silverConc, silverConcAstEq(topName, t.silverConc))];
 }
 
@@ -64,7 +71,7 @@ top::ProductionElement ::= d1::ProductionElement d2::ProductionElement
 aspect production nameProductionElement
 top::ProductionElement ::= var::String n::QName
 {
-  top.silverConc = oneSilverConcProdChildren(var, n.pp);
+  top.silverConc = oneSilverConcProdChildren(var, n.silverConc);
 }
 
 
@@ -73,7 +80,7 @@ aspect production unnamedProductionElement
 top::ProductionElement ::= n::QName
 {
   local concName::String = "genName" ++ toString(genInt());
-  top.silverConc = oneSilverConcProdChildren(concName, n.pp);
+  top.silverConc = oneSilverConcProdChildren(concName, n.silverConc);
 }
 
 

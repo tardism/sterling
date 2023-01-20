@@ -47,6 +47,7 @@ aspect production prodIndex
 top::Term ::= var::String
 {
   local q::QName = head(prodElem).1;
+  q.concreteEnv = top.concreteEnv;
   top.silverConc =
       if q.isConcreteNt
       then astSilverConcTerm(var)

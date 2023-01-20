@@ -108,6 +108,7 @@ top::ConcreteProdDecls ::= p::ProductionElement t::Term
 
   t.tyEnv = top.tyEnv;
   t.constructorEnv = top.constructorEnv;
+  t.concreteEnv = top.concreteEnv;
 
   p.concreteEnv = top.concreteEnv;
 

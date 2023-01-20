@@ -5,11 +5,11 @@ nonterminal Term with
    pp,
    moduleName,
    type,
-   tyEnv, constructorEnv,
+   tyEnv, constructorEnv, concreteEnv,
    productionElements,
    errors,
    location;
-propagate errors on Term;
+propagate errors, concreteEnv on Term;
 
 abstract production nameTerm
 top::Term ::= name::QName
@@ -171,14 +171,14 @@ top::Term ::= t::Term i1::Maybe<Integer> i2::Maybe<Integer>
 nonterminal TermList with
    pp,
    moduleName,
-   tyEnv, constructorEnv,
+   tyEnv, constructorEnv, concreteEnv,
    productionElements,
    typeList,
    expectedTypes, remainingTypes, lastConstructor,
    argumentIndex, nextArgumentIndex,
    errors,
    location;
-propagate errors on TermList;
+propagate errors, concreteEnv on TermList;
 
 abstract production singleTermList
 top::TermList ::= t::Term

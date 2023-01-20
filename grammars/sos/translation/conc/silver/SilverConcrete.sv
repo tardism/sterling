@@ -17,14 +17,14 @@ nonterminal SilverConcDecl with pp;
 abstract production terminalSilverConcDecl
 top::SilverConcDecl ::= name::String regex::Regex
 {
-  top.pp = "terminal " ++ name ++ "   " ++ regex.pp ++ ";";
+  top.pp = "terminal " ++ name ++ "   /" ++ regex.pp ++ "/;";
 }
 
 
 abstract production ignoreTerminalSilverConcDecl
 top::SilverConcDecl ::= name::String contents::Regex
 {
-  top.pp = "ignore terminal " ++ name ++ "   " ++ contents.pp ++ ";";
+  top.pp = "ignore terminal " ++ name ++ "   /" ++ contents.pp ++ "/;";
 }
 
 
@@ -43,7 +43,7 @@ top::SilverConcDecl ::= name::String topName::String topTy::String
 {
   top.pp = "concrete production " ++ name ++ "\n" ++
            topName ++ "::" ++ topTy ++ " ::= " ++ children.pp ++
-           "\n{\n" ++ body.pp ++ "\n}";
+           "\n{\n" ++ body.pp ++ "}";
 }
 
 
@@ -136,7 +136,7 @@ top::SilverConcTerm ::= lit::Integer
 abstract production toIntSilverConcTerm
 top::SilverConcTerm ::= t::SilverConcTerm
 {
-  top.pp = "toInteger(" ++ t.pp ++ ")";
+  top.pp = "toString(toInteger(" ++ t.pp ++ "))";
 }
 
 

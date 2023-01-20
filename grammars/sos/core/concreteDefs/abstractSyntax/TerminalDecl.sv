@@ -26,7 +26,7 @@ top::TerminalDecl ::= name::String r::Regex
 {
   top.pp = name ++ " " ++ r.pp;
 
-  local fullName::QName = addQNameBase(top.moduleName, name);
+  production fullName::QName = addQNameBase(top.moduleName, name);
 
   r.moduleName = top.moduleName;
 

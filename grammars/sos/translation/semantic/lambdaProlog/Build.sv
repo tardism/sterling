@@ -24,7 +24,8 @@ function runLambdaProlog
 IOVal<Integer> ::= m::ModuleList genLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
-  local message::IOToken = printT("Producing Lambda Prolog output\n", i);
+  local message::IOToken =
+      printT("Producing Lambda Prolog output\n", i);
 
   local moduleName::String = makeLPModuleName(a.generateModuleName);
   local sigFile::String = moduleName ++ ".sig";

@@ -68,16 +68,32 @@ IOVal<Integer> ::= args::[String]
        | left(err) ->
          ioval(printT(err ++ "\n", modules.io), 1)
        | right(mods) ->
-         --run all actions in the order in which they occur
-         foldl(\ rest::IOVal<Integer>
-                 act::(IOVal<Integer> ::= ModuleList String
-                          Decorated CmdArgs IOToken) ->
-                 if rest.iovalue != 0 --error in a previous action
-                 then rest
-                 else act(mods, genLoc.iovalue, a, rest.io),
-               ioval(genLoc.io, 0), actions)
+         runActions(actions, mods, genLoc.iovalue, a, genLoc.io)
        end
      end;
+}
+
+
+--run all the actions in the order in which they occur
+function runActions
+IOVal<Integer> ::=
+    actions::[(IOVal<Integer> ::= ModuleList  String
+                                  Decorated CmdArgs  IOToken)]
+    mods::ModuleList genLoc::String a::Decorated CmdArgs ioin::IOToken
+{
+  local runAct::IOVal<Integer> = head(actions)(mods, genLoc, a, ioin);
+  local spacer::IOToken = printT("\n\n", runAct.io);
+  local rest::IOVal<Integer> =
+      runActions(tail(actions), mods, genLoc, a, spacer);
+
+  return
+      case actions of
+      | [] -> ioval(ioin, 0)
+      | [_] -> runAct --don't space after it
+      | _::_ -> if runAct.iovalue != 0 --error in this action
+                then runAct
+                else rest
+      end;
 }
 
 
@@ -133,7 +149,7 @@ Either<String  Decorated CmdArgs> ::= args::[String]
                flagParser=option(locationOption))];
 
   local usage::String = 
-        "Usage: <this program> [options] <module name>\n\n" ++
+        "Usage: sos-ext [options] <module name>\n\n" ++
         "Flag options:\n" ++ flagSpecsToHelpText(flags) ++ "\n";
 
   -- Parse the command line
