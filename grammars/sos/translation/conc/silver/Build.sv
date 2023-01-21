@@ -19,7 +19,7 @@ IOVal<Integer> ::= _ _ _ _
 
 
 function runSilverConc
-IOVal<Integer> ::= m::ModuleList genLoc::String
+IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken =
@@ -33,7 +33,10 @@ IOVal<Integer> ::= m::ModuleList genLoc::String
       printT("Error producing Silver grammar files\n", genGrammars.io);
   --compile it
   local compileCmd::String =
-      "silver -I " ++ silverGenLoc ++ " " ++ a.generateModuleName;
+      "silver -I " ++ genLoc ++ " " ++
+             "-I " ++ grmmrsLoc ++ " " ++
+             "-o " ++ silverGenLoc ++ "/test.jar " ++
+             "silverConc:" ++ a.generateModuleName;
   local compile::IOVal<Integer> = systemT(compileCmd, genGrammars.io);
   local printCompileError::IOToken =
       printT("Error compiling Silver concrete translation\n" ++
@@ -57,9 +60,11 @@ IOVal<Boolean> ::= mods::[(String, [SilverConcDecl])] genLoc::String
 {
   local decls::String = implode("\n", map((.pp), head(mods).2));
   local contents::String =
-      "grammar " ++ head(mods).1 ++ ";\n" ++
+      "grammar silverConc:" ++ head(mods).1 ++ ";\n" ++
+      "import sos:core:common:abstractSyntax;\n" ++
+      "import sos:core:semanticDefs:abstractSyntax;\n" ++
       (if length(mods) == 1 --declare ast in first grammar
-       then "synthesized attribute ast::String;\n"
+       then "synthesized attribute ast::Term;\n"
        else "") ++
       decls;
   local modSplit::[String] = explode(":", head(mods).1);

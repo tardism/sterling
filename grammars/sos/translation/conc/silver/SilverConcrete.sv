@@ -98,17 +98,31 @@ top::SilverConcAstEq ::= topName::String body::SilverConcTerm
 
 nonterminal SilverConcTerm with pp;
 
-abstract production appendSilverConcTerm
-top::SilverConcTerm ::= t1::SilverConcTerm t2::SilverConcTerm
+abstract production constSilverConcTerm
+top::SilverConcTerm ::= n::String
 {
-  top.pp = "(" ++ t1.pp ++ ") ++ (" ++ t2.pp ++ ")";
+  top.pp = "const(toQName(\"" ++ n ++ "\", bogusLoc()), " ++
+           "location=bogusLoc())";
+}
+
+
+abstract production applicationSilverConcTerm
+top::SilverConcTerm ::= constr::String args::[SilverConcTerm]
+{
+  top.pp = "appTerm(toQName(\"" ++ constr ++ "\", bogusLoc()), " ++
+           foldr(\ t::SilverConcTerm rest::String ->
+                   "consTermList(" ++ t.pp ++ ", " ++ rest ++
+                                 ", location=bogusLoc())",
+                 "nilTermList(location=bogusLoc())", args) ++
+           ", location=bogusLoc())";
 }
 
 
 abstract production lexemeSilverConcTerm
 top::SilverConcTerm ::= access::String
 {
-  top.pp = access ++ ".lexeme";
+  top.pp =
+      "stringConst(" ++ access ++ ".lexeme, location=bogusLoc())";
 }
 
 
@@ -122,21 +136,26 @@ top::SilverConcTerm ::= access::String
 abstract production stringLitSilverConcTerm
 top::SilverConcTerm ::= lit::String
 {
-  top.pp = "\"" ++ lit ++ "\"";
+  top.pp = "stringConst(\"" ++ lit ++ "\", location=bogusLoc())";
 }
 
 
 abstract production intLitSilverConcTerm
 top::SilverConcTerm ::= lit::Integer
 {
-  top.pp = toString(lit);
+  top.pp = "num(" ++ toString(lit) ++ ", location=bogusLoc())";
 }
 
 
 abstract production toIntSilverConcTerm
 top::SilverConcTerm ::= t::SilverConcTerm
 {
-  top.pp = "toString(toInteger(" ++ t.pp ++ "))";
+  top.pp =
+      "num(toInteger(" ++
+      case t of
+      | lexemeSilverConcTerm(access) -> access ++ ".lexeme"
+      | _ -> t.pp
+      end ++ "), location=bogusLoc())";
 }
 
 

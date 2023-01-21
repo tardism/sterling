@@ -31,7 +31,7 @@ aspect production module
 top::Module ::= name::String files::Files
 {
   local concImports::[SilverConcDecl] =
-      map(\ q::QName -> importSilverConcDecl(q.pp),
+      map(\ q::QName -> importSilverConcDecl("silverConc:" ++ q.pp),
           top.buildsOnDecls);
   top.silverConc = (name, concImports ++ files.silverConc);
 }

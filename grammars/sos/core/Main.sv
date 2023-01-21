@@ -36,12 +36,14 @@ IOVal<Integer> ::= args::[String]
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
    ioin::IOToken
 {
-  --String is location of generated directory
-  production attribute actions::[(IOVal<Integer> ::= ModuleList String
-                                  Decorated CmdArgs IOToken)] with ++;
+  --(result ::= compiled mods  gen loc  grammars loc  args  io)
+  production attribute
+     actions::[(IOVal<Integer> ::= ModuleList  String  String
+                     Decorated CmdArgs  IOToken)] with ++;
   actions :=
      [
-      \ m::ModuleList gen::String a::Decorated CmdArgs i::IOToken ->
+      \ m::ModuleList gen::String grmmrs::String
+        a::Decorated CmdArgs i::IOToken ->
         if m.errorString != ""
         then ioval(printT(m.errorString ++ "\n", i), 1)
         else ioval(printT("No errors found\n", i), 0)
@@ -57,6 +59,8 @@ IOVal<Integer> ::= args::[String]
                         abstractFileParse, concreteFileParse, ioin);
   local genLoc::IOVal<String> =
         envVarT("SOS_GENERATED", modules.io);
+  local grmmrsLoc::IOVal<String> =
+        envVarT("SOS_GRAMMARS", genLoc.io);
 
   return
      case e of
@@ -68,7 +72,7 @@ IOVal<Integer> ::= args::[String]
        | left(err) ->
          ioval(printT(err ++ "\n", modules.io), 1)
        | right(mods) ->
-         runActions(actions, mods, genLoc.iovalue, a, genLoc.io)
+         runActions(actions, mods, genLoc.iovalue, grmmrsLoc.iovalue, a, grmmrsLoc.io)
        end
      end;
 }
@@ -77,14 +81,14 @@ IOVal<Integer> ::= args::[String]
 --run all the actions in the order in which they occur
 function runActions
 IOVal<Integer> ::=
-    actions::[(IOVal<Integer> ::= ModuleList  String
+    actions::[(IOVal<Integer> ::= ModuleList  String  String
                                   Decorated CmdArgs  IOToken)]
-    mods::ModuleList genLoc::String a::Decorated CmdArgs ioin::IOToken
+    mods::ModuleList genLoc::String grmmrsLoc::String a::Decorated CmdArgs ioin::IOToken
 {
-  local runAct::IOVal<Integer> = head(actions)(mods, genLoc, a, ioin);
+  local runAct::IOVal<Integer> = head(actions)(mods, genLoc, grmmrsLoc, a, ioin);
   local spacer::IOToken = printT("\n\n", runAct.io);
   local rest::IOVal<Integer> =
-      runActions(tail(actions), mods, genLoc, a, spacer);
+      runActions(tail(actions), mods, genLoc, grmmrsLoc, a, spacer);
 
   return
       case actions of

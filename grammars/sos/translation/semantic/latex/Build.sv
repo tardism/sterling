@@ -21,7 +21,7 @@ IOVal<Integer> ::= _ _ _ _
 
 
 function runLaTeX
-IOVal<Integer> ::= m::ModuleList genLoc::String
+IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
   local latexString::String = m.ppLaTeX;

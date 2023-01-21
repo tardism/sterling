@@ -8,7 +8,7 @@ occurs on Term;
 aspect production nameTerm
 top::Term ::= name::QName
 {
-  top.silverConc = stringLitSilverConcTerm(name.fullConstrName.pp);
+  top.silverConc = constSilverConcTerm(name.fullConstrName.pp);
 }
 
 
@@ -16,9 +16,7 @@ aspect production applicationTerm
 top::Term ::= name::QName args::TermList
 {
   local n::String = name.fullConstrName.pp;
-  top.silverConc =
-      foldl(appendSilverConcTerm, stringLitSilverConcTerm(n),
-            args.silverConc);
+  top.silverConc = applicationSilverConcTerm(n, args.silverConc);
 }
 
 

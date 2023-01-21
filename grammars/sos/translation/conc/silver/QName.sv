@@ -10,8 +10,8 @@ synthesized attribute silverConcTerminal::String;
 aspect production baseName
 top::QName ::= name::String
 {
-  top.silverConcNt = "ConcNt_" ++ name;
-  top.silverConcTerminal = "Terimnal_" ++ name;
+  top.silverConcNt = "SilverConcNt_" ++ name ++ "_c";
+  top.silverConcTerminal = "SilverConcTerimnal_" ++ name ++ "_c";
   top.silverConc =
       if top.isConcreteNt
       then top.silverConcNt
@@ -23,11 +23,12 @@ aspect production moduleLayerName
 top::QName ::= name::String rest::QName
 {
   top.silverConcNt =
-      top.baselessName ++ ":" ++ "ConcNt_" ++ rest.base;
+      "silverConc:" ++ top.baselessName ++ ":" ++
+      "SilverConcNt_" ++ rest.base ++ "_c";
   top.silverConcTerminal =
-      top.baselessName ++ ":" ++ "Terminal_" ++ rest.base;
+      "silverConc:" ++ top.baselessName ++ ":" ++
+      "SilverConcTerminal_" ++ rest.base ++ "_c";
   top.silverConc =
-      top.baselessName ++ ":" ++
       if top.isConcreteNt
       then top.silverConcNt
       else top.silverConcTerminal;
