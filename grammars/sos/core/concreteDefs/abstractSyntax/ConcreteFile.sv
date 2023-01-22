@@ -16,6 +16,12 @@ top::ConcreteFile ::= moduleName::QName decls::ConcreteDecls
 
   decls.moduleName = moduleName;
 
+  top.errors <-
+      if moduleName.pp == top.moduleName.pp
+      then []
+      else [errorMessage("Module declaration is incorrect:  " ++
+                         moduleName.pp, location=top.location)];
+
   top.concreteDecls = decls.concreteDecls;
 
   decls.tyEnv = top.tyEnv;
