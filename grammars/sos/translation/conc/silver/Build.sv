@@ -15,7 +15,11 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [runSilverConc];
+  actions <-
+      [actionSpec(runFun = runSilverConc,
+                  shouldDoFun = \ a::Decorated CmdArgs ->
+                                  a.outputSilverConc,
+                  actionDesc = "Silver Concrete Syntax Translation")];
 }
 
 
@@ -45,9 +49,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
              toString(compile.iovalue) ++ ")\n", compile.io);
 
   return
-      if !a.outputSilverConc
-      then ioval(i, 0)
-      else if !genGrammars.iovalue
+      if !genGrammars.iovalue
       then ioval(genGrammarsError, 2)
       else if compile.iovalue != 0
       then ioval(printCompileError, 2)

@@ -17,7 +17,10 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [runExtensibella];
+  actions <- [actionSpec(runFun = runExtensibella,
+                         shouldDoFun = \ a::Decorated CmdArgs ->
+                                         a.outputExtensibella,
+                         actionDesc = "Extensibella Translation")];
 }
 
 
@@ -42,9 +45,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
       writeFileT(interfaceFilename, m.interfaceFileContents,
          outputDefFile);
 
-  return if a.outputExtensibella
-         then ioval(outputInterfaceFile, 0)
-         else ioval(i, 0);
+  return ioval(outputInterfaceFile, 0);
 }
 
 

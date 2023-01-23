@@ -17,7 +17,11 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [runLaTeX];
+  actions <-
+      [actionSpec(runFun = runLaTeX,
+                  shouldDoFun = \ a::Decorated CmdArgs ->
+                                  !null(a.latexLocation),
+                  actionDesc = "LaTeX Translation")];
 }
 
 
@@ -32,8 +36,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local fileLoc::String = head(a.latexLocation);
   local output::IOToken = writeFileT(fileLoc, latexString, message);
 
-  return if null(a.latexLocation) then ioval(i, 0)
-                                  else ioval(output, 0);
+  return ioval(output, 0);
 }
 
 

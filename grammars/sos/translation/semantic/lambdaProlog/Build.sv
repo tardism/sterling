@@ -17,7 +17,11 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [runLambdaProlog];
+  actions <-
+      [actionSpec(runFun = runLambdaProlog,
+                  shouldDoFun = \ a::Decorated CmdArgs ->
+                                  a.outputLambdaProlog,
+                  actionDesc = "Lambda Prolog Translation")];
 }
 
 
@@ -32,17 +36,15 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local sigFile::String = moduleName ++ ".sig";
   local modFile::String = moduleName ++ ".mod";
   local importedMods::[String] =
-        remove(a.generateModuleName, m.nameList);
+      remove(a.generateModuleName, m.nameList);
   local outputSig::IOToken =
-        writeFileT(sigFile, buildSig(moduleName, importedMods,
-                                     m.lpDecls), message);
+      writeFileT(sigFile, buildSig(moduleName, importedMods,
+                                   m.lpDecls), message);
   local outputMod::IOToken =
-        writeFileT(modFile, buildMod(moduleName, importedMods,
-                                     m.lpRules), outputSig);
+      writeFileT(modFile, buildMod(moduleName, importedMods,
+                                   m.lpRules), outputSig);
 
-  return if a.outputLambdaProlog
-         then ioval(outputMod, 0)
-         else ioval(i, 0);
+  return ioval(outputMod, 0);
 }
 
 

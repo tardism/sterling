@@ -47,19 +47,25 @@ IOVal<Integer> ::= args::[String]
    ioin::IOToken
 {
   --(result ::= compiled mods  gen loc  grammars loc  args  io)
-  production attribute
-     actions::[(IOVal<Integer> ::= ModuleList  String  String
-                     Decorated CmdArgs  IOToken)] with ++;
+  production attribute actions::[ActionSpec] with ++;
   actions :=
      [
-      \ m::ModuleList gen::String grmmrs::String
-        a::Decorated CmdArgs i::IOToken ->
-        if m.errorString != ""
-        then ioval(printT(m.errorString ++ "\n", i), 1)
-        else ioval(printT("No errors found\n", i), 0)
+      actionSpec(
+         runFun =
+            \ m::ModuleList gen::String grmmrs::String
+              a::Decorated CmdArgs i::IOToken ->
+              let message::IOToken =
+                  printT("Checking for errors\n", i)
+              in
+                if m.errorString != ""
+                then ioval(printT(m.errorString ++ "\n", message), 1)
+                else ioval(printT("No errors found\n", message), 0)
+              end,
+         shouldDoFun = \ a::Decorated CmdArgs -> true,
+         actionDesc = "Error Checking")
      ];
 
-  local e::Either<String Decorated CmdArgs> = parseArgs(args);
+  local e::Either<String  Decorated CmdArgs> = parseArgs(args);
   local a::Decorated CmdArgs = e.fromRight;
   local rootLoc::String =
         if null(a.rootLoc) then "" else head(a.rootLoc);
@@ -72,6 +78,12 @@ IOVal<Integer> ::= args::[String]
   local grmmrsLoc::IOVal<String> =
         envVarT("SOS_GRAMMARS", genLoc.io);
 
+  local startMessage::IOToken =
+        printT("\n********** SOS-Ext **********\n", grmmrsLoc.io);
+  local runs::IOVal<Integer> =
+        runActions(actions, modules.iovalue.fromRight, genLoc.iovalue,
+                   grmmrsLoc.iovalue, a, startMessage);
+
   return
      case e of
      | left(err) ->
@@ -81,8 +93,8 @@ IOVal<Integer> ::= args::[String]
        case modules.iovalue of
        | left(err) ->
          ioval(printT(err ++ "\n", modules.io), 1)
-       | right(mods) ->
-         runActions(actions, mods, genLoc.iovalue, grmmrsLoc.iovalue, a, grmmrsLoc.io)
+       | right(_) ->
+         ioval(printT("\n", runs.io), runs.iovalue)
        end
      end;
 }
@@ -91,24 +103,48 @@ IOVal<Integer> ::= args::[String]
 --run all the actions in the order in which they occur
 function runActions
 IOVal<Integer> ::=
-    actions::[(IOVal<Integer> ::= ModuleList  String  String
-                                  Decorated CmdArgs  IOToken)]
-    mods::ModuleList genLoc::String grmmrsLoc::String a::Decorated CmdArgs ioin::IOToken
+    actions::[ActionSpec] mods::ModuleList genLoc::String
+    grmmrsLoc::String a::Decorated CmdArgs ioin::IOToken
 {
-  local runAct::IOVal<Integer> = head(actions)(mods, genLoc, grmmrsLoc, a, ioin);
-  local spacer::IOToken = printT("\n\n", runAct.io);
-  local rest::IOVal<Integer> =
-      runActions(tail(actions), mods, genLoc, grmmrsLoc, a, spacer);
+  local act::ActionSpec = head(actions);
+  local pre::IOToken =
+      printT("\n-----------------------------\n\n", ioin);
+  local runAct::IOVal<Integer> =
+      act.runFun(mods, genLoc, grmmrsLoc, a, pre);
 
   return
       case actions of
       | [] -> ioval(ioin, 0)
-      | [_] -> runAct --don't space after it
-      | _::_ -> if runAct.iovalue != 0 --error in this action
-                then runAct
-                else rest
+      | _::tl when act.shouldDoFun(a) ->
+        if runAct.iovalue != 0 --error in this action
+        then runAct
+        else runActions(tl, mods, genLoc, grmmrsLoc, a, runAct.io)
+      | _::tl -> runActions(tl, mods, genLoc, grmmrsLoc, a, ioin)
       end;
 }
+
+
+
+
+
+
+nonterminal ActionSpec with runFun, shouldDoFun, actionDesc;
+--How to run the action (return 0 for success, non-zero for fail)
+--Any printed output should end with a single newline
+--   result ::= compiled mods  gen loc  grammars loc  args  io
+annotation runFun::(IOVal<Integer> ::= ModuleList  String  String
+                                       Decorated CmdArgs  IOToken);
+--Whether to run the action (true => run, false => skip)
+--Should not do any IO actions
+annotation shouldDoFun::(Boolean ::= Decorated CmdArgs);
+--A short name/description of the action, currently for debugging
+--May be made part of the standard output in the future
+annotation actionDesc::String;
+
+production actionSpec
+top::ActionSpec ::=
+{ }
+
 
 
 

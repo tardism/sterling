@@ -17,7 +17,10 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [runProlog];
+  actions <- [actionSpec(runFun = runProlog,
+                         shouldDoFun = \ a::Decorated CmdArgs ->
+                                         !null(a.prologLocation),
+                         actionDesc = "Prolog Translation")];
 }
 
 
@@ -34,8 +37,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local fileLoc::String = head(a.prologLocation);
   local output::IOToken = writeFileT(fileLoc, prologString, message);
 
-  return if null(a.prologLocation) then ioval(i, 0)
-                                   else ioval(output, 0);
+  return ioval(output, 0);
 }
 
 
