@@ -7,12 +7,13 @@ import sos:core;
 function main
 IOVal<Integer> ::= args::[String] ioin::IOToken
 {
-  return run(args, abstractSyntaxParser, concreteSyntaxParser, ioin);
+  return run(args, abstractSyntaxParser, concreteSyntaxParser,
+             mainFileParser, ioin);
 }
 
 
 aspect function run
-IOVal<Integer> ::= _ _ _ _
+IOVal<Integer> ::= _ _ _ _ _
 {
   actions <- [runSilverConc];
 }

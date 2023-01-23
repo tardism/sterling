@@ -3,6 +3,7 @@ grammar sos:translation:semantic:latex;
 
 import sos:core:modules;
 import sos:core:concreteDefs:abstractSyntax;
+import sos:core:main:abstractSyntax only MainFile;
 
 
 attribute ppLaTeX occurs on Module, ModuleList;
@@ -61,6 +62,14 @@ top::Files ::= filename::String f::File rest::Files
 
 aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
+{
+  top.latexRules = rest.latexRules;
+  top.latexSyntax = rest.latexSyntax;
+}
+
+
+aspect production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
 {
   top.latexRules = rest.latexRules;
   top.latexSyntax = rest.latexSyntax;

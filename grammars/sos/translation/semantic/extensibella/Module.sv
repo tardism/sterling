@@ -2,6 +2,7 @@ grammar sos:translation:semantic:extensibella;
 
 imports sos:core:modules;
 import sos:core:concreteDefs:abstractSyntax;
+import sos:core:main:abstractSyntax only MainFile;
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
@@ -181,6 +182,17 @@ top::Files ::= filename::String f::File rest::Files
 
 aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
+{
+  top.ebKinds = rest.ebKinds;
+  top.ebConstrs = rest.ebConstrs;
+  top.ebRules = rest.ebRules;
+  top.ebJudgments = rest.ebJudgments;
+  top.ebTranslationRules = rest.ebTranslationRules;
+}
+
+
+aspect production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
 {
   top.ebKinds = rest.ebKinds;
   top.ebConstrs = rest.ebConstrs;

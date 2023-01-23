@@ -8,7 +8,7 @@ imports sos:core:modules;
 
 imports sos:core:concreteDefs:concreteSyntax;
 
-imports sos:core:main:abstractSyntax;
+imports sos:core:main:concreteSyntax;
 
 
 import silver:util:cmdargs;
@@ -24,11 +24,18 @@ parser concreteSyntaxParser::ConcreteFile_c {
   sos:core:concreteDefs:concreteSyntax;
 }
 
+parser mainFileParser::MainFile_c {
+  sos:core:common:concreteSyntax;
+  sos:core:semanticDefs:concreteSyntax;
+  sos:core:main:concreteSyntax;
+}
+
 
 function main
 IOVal<Integer> ::= args::[String] ioin::IOToken
 {
-  return run(args, abstractSyntaxParser, concreteSyntaxParser, ioin);
+  return run(args, abstractSyntaxParser, concreteSyntaxParser,
+             mainFileParser, ioin);
 }
 
 
@@ -36,6 +43,7 @@ function run
 IOVal<Integer> ::= args::[String]
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioin::IOToken
 {
   --(result ::= compiled mods  gen loc  grammars loc  args  io)
@@ -58,7 +66,7 @@ IOVal<Integer> ::= args::[String]
 
   local modules::IOVal<Either<String ModuleList>> =
         buildModuleList(a.generateModuleName, rootLoc,
-                        abstractFileParse, concreteFileParse, ioin);
+           abstractFileParse, concreteFileParse, mainFileParse, ioin);
   local genLoc::IOVal<String> =
         envVarT("SOS_GENERATED", modules.io);
   local grmmrsLoc::IOVal<String> =

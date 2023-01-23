@@ -9,7 +9,7 @@ nonterminal Stmt with
    errors,
    location;
 propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
-          constructorEnv, funEnv on Stmt;
+          constructorEnv, funEnv, moduleName on Stmt;
 
 abstract production noop
 top::Stmt ::=
@@ -35,6 +35,9 @@ abstract production parseStmt
 top::Stmt ::= p::Parse
 {
   top.pp = p.pp;
+
+  p.downVarTypes = top.downVarTypes;
+  top.upVarTypes = p.upVarTypes;
 }
 
 
@@ -42,6 +45,9 @@ abstract production deriveRelStmt
 top::Stmt ::= d::DeriveRelation
 {
   top.pp = d.pp;
+
+  d.downVarTypes = top.downVarTypes;
+  top.upVarTypes = d.upVarTypes;
 }
 
 
@@ -97,6 +103,7 @@ top::Stmt ::= e::Expr
   top.pp = "Return " ++ e.pp ++ "\n";
 
   e.downVarTypes = top.downVarTypes;
+  top.upVarTypes = top.downVarTypes;
 }
 
 
@@ -138,7 +145,8 @@ top::Stmt ::= e::Expr var::String
   top.pp = "Read " ++ e.pp ++ " to " ++ var ++ "\n";
 
   e.downVarTypes = top.downVarTypes;
-  top.upVarTypes = top.downVarTypes;
+  top.upVarTypes =
+      (var, stringType(location=top.location))::top.downVarTypes;
 
   top.errors <-
       if e.type == stringType(location=bogusLoc())
@@ -154,11 +162,13 @@ top::Stmt ::= e::Expr var::String
 nonterminal Parse with
    pp,
    judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
+   funEnv,
+   downVarTypes, upVarTypes,
    moduleName,
-   type,
    errors,
    location;
-propagate errors on Parse;
+propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+          constructorEnv, funEnv on Parse;
 
 --nt is concrete nonterminal name
 --varName is name to which we assign the parse result
@@ -169,7 +179,6 @@ top::Parse ::= nt::QName varName::String parseString::Expr
   top.pp = "Parse " ++ nt.pp ++ " as " ++ varName ++ " from " ++
            parseString.pp ++ "\n";
 
-  nt.concreteEnv = top.concreteEnv;
   top.errors <-
       if !nt.concreteFound
       then [errorMessage("Unknown concrete nonterminal " ++ nt.pp,
@@ -178,7 +187,19 @@ top::Parse ::= nt::QName varName::String parseString::Expr
       then [errorMessage(nt.pp ++ " is not a concrete nonterminal " ++
                "but must be one to be parsed", location=nt.location)]
       else [];
-  top.type = nt.concreteType;
+  top.errors <-
+      if parseString.type == stringType(location=bogusLoc())
+      then []
+      else [errorMessage("Expression being parsed must be of type " ++
+               "string but found " ++ parseString.type.pp,
+               location=top.location)];
+
+  parseString.downVarTypes = top.downVarTypes;
+  top.upVarTypes =
+      (varName, if nt.concreteFound
+                then nt.concreteType
+                else errorType(location=top.location)
+      )::top.downVarTypes;
 }
 
 
@@ -188,15 +209,25 @@ top::Parse ::= nt::QName varName::String parseString::Expr
 nonterminal DeriveRelation with
    pp,
    judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
+   downVarTypes, upVarTypes,
    moduleName,
    errors,
    location;
-propagate errors on DeriveRelation;
+propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+          constructorEnv, moduleName on DeriveRelation;
 
 --resultVar is the variable into which we place the success/failure of
 --deriving the relation
 abstract production deriveRelation
 top::DeriveRelation ::= resultVar::String j::Judgment
 {
-  top.pp = resultVar ++ " := " ++ j.pp;
+  top.pp = resultVar ++ " := Derive " ++ j.pp;
+
+  j.isConclusion = false;
+  j.isExtensibleRule = false;
+  j.isTranslationRule = false;
+
+  j.downVarTypes = top.downVarTypes;
+  top.upVarTypes =
+      (resultVar, boolType(location=top.location))::j.upVarTypes;
 }

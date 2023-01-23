@@ -3,6 +3,7 @@ grammar sos:translation:semantic:prolog;
 
 import sos:core:modules;
 import sos:core:concreteDefs:abstractSyntax;
+import sos:core:main:abstractSyntax only MainFile;
 
 
 attribute
@@ -120,6 +121,15 @@ top::Files ::= filename::String f::File rest::Files
 
 aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
+{
+  top.prologTranslationRules = rest.prologTranslationRules;
+
+  top.prologRules = rest.prologRules;
+}
+
+
+aspect production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
 {
   top.prologTranslationRules = rest.prologTranslationRules;
 

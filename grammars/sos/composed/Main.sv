@@ -4,6 +4,7 @@ grammar sos:composed;
 imports sos:core;
 imports sos:core:semanticDefs:concreteSyntax;
 imports sos:core:concreteDefs:concreteSyntax;
+imports sos:core:main:concreteSyntax;
 
 imports sos:translation:semantic:prolog;
 imports sos:translation:semantic:latex;
@@ -27,11 +28,17 @@ parser c::ConcreteFile_c {
   sos:core:concreteDefs:concreteSyntax;
 }
 
+parser m::MainFile_c {
+  sos:core:common:concreteSyntax;
+  sos:core:semanticDefs:concreteSyntax;
+  sos:core:main:concreteSyntax;
+}
+
 
 
 function main
 IOVal<Integer> ::= args::[String] ioin::IOToken
 {
-  return run(args, p, c, ioin);
+  return run(args, p, c, m, ioin);
 }
 

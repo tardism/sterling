@@ -1,6 +1,7 @@
 grammar sos:translation:conc:silver;
 
 import sos:core:semanticDefs:abstractSyntax only buildsOnDecls, File;
+import sos:core:main:abstractSyntax only MainFile;
 
 attribute
    silverConc<[(String, [SilverConcDecl])]>
@@ -62,4 +63,11 @@ aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
 {
   top.silverConc = f.silverConc ++ rest.silverConc;
+}
+
+
+aspect production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
+{
+  top.silverConc = rest.silverConc;
 }

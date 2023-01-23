@@ -2,6 +2,7 @@ grammar sos:translation:semantic:lambdaProlog;
 
 imports sos:core:modules;
 import sos:core:concreteDefs:abstractSyntax;
+import sos:core:main:abstractSyntax only MainFile;
 
 attribute lpDecls, lpRules, lpTranslationRules occurs on ModuleList;
 
@@ -113,6 +114,16 @@ top::Files ::= filename::String f::File rest::Files
 
 aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
+{
+  top.lpDecls = rest.lpDecls;
+
+  top.lpRules = rest.lpRules;
+  top.lpTranslationRules = rest.lpTranslationRules;
+}
+
+
+aspect production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
 {
   top.lpDecls = rest.lpDecls;
 

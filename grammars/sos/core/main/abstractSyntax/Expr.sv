@@ -172,6 +172,22 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 
+abstract production eqExpr
+top::Expr ::= e1::Expr e2::Expr
+{
+  top.pp = "(" ++ e1.pp ++ ") = (" ++ e2.pp ++ ")";
+
+  top.type = boolType(location=top.location);
+
+  top.errors <-
+      if e1.type == e2.type
+      then []
+      else [errorMessage("Checking equality requires both sides " ++
+               "to have the same type; found " ++ e1.type.pp ++
+               " and " ++ e2.type.pp, location=top.location)];
+}
+
+
 abstract production plusExpr
 top::Expr ::= e1::Expr e2::Expr
 {
@@ -312,6 +328,34 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 
+abstract production appendExpr
+top::Expr ::= e1::Expr e2::Expr
+{
+  top.pp = "(" ++ e1.pp ++ ") ++ (" ++ e2.pp ++ ")";
+
+  top.type = stringType(location=bogusLoc());
+
+  top.errors <-
+      case e1.type of
+      | stringType() -> []
+      | errorType() -> []
+      | t ->
+        [errorMessage("Append (++) expected argument 1 to " ++
+            "have type string but found type " ++ t.pp,
+            location=top.location)]
+      end;
+  top.errors <-
+      case e2.type of
+      | stringType() -> []
+      | errorType() -> []
+      | t ->
+        [errorMessage("Append (++) expected argument 2 to " ++
+            "have type string but found type " ++ t.pp,
+            location=top.location)]
+      end;
+}
+
+
 abstract production varExpr
 top::Expr ::= name::String
 {
@@ -340,6 +384,15 @@ top::Expr ::= i::Integer
   top.pp = toString(i);
 
   top.type = intType(location=top.location);
+}
+
+
+abstract production stringExpr
+top::Expr ::= s::String
+{
+  top.pp = "\"" ++ s ++ "\"";
+
+  top.type = stringType(location=top.location);
 }
 
 
@@ -398,6 +451,33 @@ top::Expr ::=
 }
 
 
+abstract production listIndexExpr
+top::Expr ::= l::Expr i::Expr
+{
+  top.pp = "(" ++ l.pp  ++ ")[" ++ i.pp ++ "]";
+
+  top.type =
+      case l.type of
+      | listType(ty) -> ty
+      | _ -> errorType(location=top.location)
+      end;
+
+  top.errors <-
+      case l.type of
+      | listType(_) -> []
+      | errorType() -> []
+      | _ ->
+        [errorMessage("Can only index list, not " ++ l.type.pp,
+                      location=top.location)]
+      end;
+  top.errors <-
+      if i.type == intType(location=bogusLoc())
+      then []
+      else [errorMessage("Can only index list using int, not " ++
+                         i.type.pp, location=top.location)];
+}
+
+
 
 
 
@@ -407,7 +487,7 @@ nonterminal Args with
    funEnv, downVarTypes, expectedTypes, lastFun,
    errors,
    location;
-propagate errors, funEnv, downVarTypes on Args;
+propagate errors, funEnv, downVarTypes, lastFun on Args;
 
 abstract production nilArgs
 top::Args ::=

@@ -7,6 +7,7 @@ grammar sos:core:modules;
   - @param rootLoc  root location in the filesystem in which to find the modules
   - @param abstractFileParse  parser to use for parsing each .sos file
   - @param concreteFileParse  parser to use for parsing each .conc file
+  - @param mainFileParse  parser to use for parsing each .main file
   - @param ioIn  initial IO state
   - @return  list of module objects, where B comes later in the list than A if A builds on B, or an error message
 -}
@@ -15,16 +16,17 @@ IOVal<Either<String ModuleList>> ::=
    initialModule::String rootLoc::String
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioIn::IOToken
 {
   local firstModule::IOVal<Either<String Module>> =
         buildModule(initialModule, rootLoc, abstractFileParse,
-                    concreteFileParse, ioIn);
+                    concreteFileParse, mainFileParse, ioIn);
   local built::IOVal<Either<String ModuleList>> =
         buildModuleList_helper(
            firstModule.iovalue.fromRight.buildsOnDecls,
            rootLoc, abstractFileParse, concreteFileParse,
-           nilModuleList(), firstModule.io);
+           mainFileParse, nilModuleList(), firstModule.io);
 
   return case firstModule.iovalue of
          | left(err) -> ioval(firstModule.io, left(err))
@@ -41,25 +43,27 @@ IOVal<Either<String ModuleList>> ::=
    buildsOn::[QName] rootLoc::String
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
    thusFar::ModuleList ioIn::IOToken
 {
   --Build the first module from the list of buildsOn
   local buildNextModule::IOVal<Either<String Module>> =
         buildModule(head(buildsOn).pp, rootLoc, abstractFileParse,
-                    concreteFileParse, ioIn);
+                    concreteFileParse, mainFileParse, ioIn);
   local nextModule::Module = buildNextModule.iovalue.fromRight;
   --Build its list of modules it builds on
   local subcallNextModule::IOVal<Either<String ModuleList>> =
         buildModuleList_helper(nextModule.buildsOnDecls, rootLoc,
-           abstractFileParse, concreteFileParse, thusFar,
-           buildNextModule.io);
+           abstractFileParse, concreteFileParse, mainFileParse,
+           thusFar, buildNextModule.io);
   local nextModuleList::ModuleList =
         consModuleList(nextModule,
                        subcallNextModule.iovalue.fromRight);
   --Build the rest of the modules from buildsOn
   local subcallRestCurrent::IOVal<Either<String ModuleList>> =
         buildModuleList_helper(tail(buildsOn), rootLoc, abstractFileParse,
-           concreteFileParse, nextModuleList, subcallNextModule.io);
+           concreteFileParse, mainFileParse, nextModuleList,
+           subcallNextModule.io);
 
   return
      case buildsOn of
@@ -69,7 +73,7 @@ IOVal<Either<String ModuleList>> ::=
        --along with all the modules it builds on
        if contains(mod.pp, thusFar.nameList)
        then buildModuleList_helper(r, rootLoc, abstractFileParse,
-                                   concreteFileParse, thusFar, ioIn)
+               concreteFileParse, mainFileParse, thusFar, ioIn)
        else case buildNextModule.iovalue of
             | left(err) -> ioval(buildNextModule.io, left(err))
             | right(_) ->
@@ -88,6 +92,7 @@ IOVal<Either<String ModuleList>> ::=
   - @param rootLoc  root location in the filesystem in which to find the module
   - @param abstractFileParse  parser to use for parsing each .sos file
   - @param concreteFileParse  parser to use for parsing each .conc file
+  - @param mainFileParse  parser to use for parsing each .main file
   - @param ioIn  initial IO state
   - @return  produces the Module object for the named module or an error message
 -}
@@ -96,6 +101,7 @@ IOVal<Either<String Module>> ::=
    moduleName::String rootLoc::String
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioIn::IOToken
 {
   local moduleParts::[String] = explode(":", moduleName);
@@ -117,12 +123,23 @@ IOVal<Either<String Module>> ::=
   local concFiles::[String] =
         filter(\ s::String -> splitFileNameAndExtension(s).2 == "conc",
                dirContents.iovalue);
-  local finalFiles::IOVal<Either<String Files>> =
+  local stepFiles::IOVal<Either<String Files>> =
         case files.iovalue of
         | left(_) -> files
         | right(fs) ->
           buildFiles(dirLoc, concFiles, concreteFileParse,
                      consConcreteFiles, fs, files.io)
+        end;
+  --Main files
+  local mainFiles::[String] =
+        filter(\ s::String -> splitFileNameAndExtension(s).2 == "main",
+               dirContents.iovalue);
+  local finalFiles::IOVal<Either<String Files>> =
+        case stepFiles.iovalue of
+        | left(_) -> stepFiles
+        | right(fs) ->
+          buildFiles(dirLoc, mainFiles, mainFileParse,
+                     consMainFiles, fs, stepFiles.io)
         end;
   --Combine
   return

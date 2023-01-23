@@ -9,6 +9,9 @@ imports sos:core:semanticDefs:abstractSyntax;
 imports sos:core:concreteDefs:concreteSyntax only ConcreteFile_c;
 imports sos:core:concreteDefs:abstractSyntax;
 
+imports sos:core:main:concreteSyntax only MainFile_c;
+imports sos:core:main:abstractSyntax;
+
 import silver:util:graph as graph;
 
 
@@ -21,6 +24,7 @@ synthesized attribute moduleJudgmentDecls::[(String, [JudgmentEnvItem])];
 synthesized attribute moduleTranslationDecls::[(String, [TranslationEnvItem])];
 synthesized attribute moduleRuleDecls::[(String, [RuleEnvItem])];
 synthesized attribute moduleConcreteDecls::[(String, [ConcreteEnvItem])];
+synthesized attribute moduleFunctionDecls::[(String, [FunctionEnvItem])];
 
 --Sets of modules known to modules
 synthesized attribute buildsOns::[(String, [String])];
@@ -52,6 +56,7 @@ nonterminal ModuleList with
    nameList,
    moduleTyDecls, moduleConstructorDecls, moduleJudgmentDecls,
    moduleTranslationDecls, moduleRuleDecls, moduleConcreteDecls,
+   moduleFunctionDecls,
    buildsOns,
    errorString;
 
@@ -66,6 +71,7 @@ top::ModuleList ::=
   top.moduleTranslationDecls = [];
   top.moduleRuleDecls = [];
   top.moduleConcreteDecls = [];
+  top.moduleFunctionDecls = [];
 
   top.buildsOns = [];
 
@@ -111,6 +117,11 @@ top::ModuleList ::= m::Module rest::ModuleList
                 c1.name == c2.name,
            lookupAllModules(m.buildsOnDecls,
               rest.moduleConcreteDecls)) ++ m.concreteDecls;
+  local functions::[FunctionEnvItem] =
+        nubBy(\ f1::FunctionEnvItem f2::FunctionEnvItem ->
+                f1.name == f2.name,
+           lookupAllModules(m.buildsOnDecls,
+              rest.moduleFunctionDecls)) ++ m.funDecls;
   top.moduleTyDecls = (m.modName, tys)::rest.moduleTyDecls;
   top.moduleConstructorDecls =
       (m.modName, cons)::rest.moduleConstructorDecls;
@@ -122,6 +133,8 @@ top::ModuleList ::= m::Module rest::ModuleList
       (m.modName, rules)::rest.moduleRuleDecls;
   top.moduleConcreteDecls =
       (m.modName, concretes)::rest.moduleConcreteDecls;
+  top.moduleFunctionDecls =
+      (m.modName, functions)::rest.moduleFunctionDecls;
 
   top.buildsOns =
       (m.modName, map((.pp), m.buildsOnDecls))::rest.buildsOns;
@@ -138,6 +151,7 @@ top::ModuleList ::= m::Module rest::ModuleList
   m.translationEnv = buildEnv(trns);
   m.ruleEnv = buildEnv(rules);
   m.concreteEnv = buildEnv(concretes);
+  m.funEnv = buildEnv(functions);
   m.transRuleConstructors_down = m.transRuleConstructors;
 
   top.errorString =
@@ -245,9 +259,9 @@ function produceAllPairs
 
 nonterminal Module with
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   ruleDecls, buildsOnDecls, concreteDecls,
+   ruleDecls, buildsOnDecls, concreteDecls, funDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
-   concreteEnv,
+   concreteEnv, funEnv,
    transRuleConstructors, transRuleConstructors_down,
    modName,
    errorString;
@@ -266,6 +280,7 @@ top::Module ::= name::String files::Files
   top.ruleDecls = files.ruleDecls;
   top.buildsOnDecls = files.buildsOnDecls;
   top.concreteDecls = files.concreteDecls;
+  top.funDecls = files.funDecls;
   top.transRuleConstructors = files.transRuleConstructors;
 
   files.tyEnv = top.tyEnv;
@@ -274,6 +289,7 @@ top::Module ::= name::String files::Files
   files.translationEnv = top.translationEnv;
   files.ruleEnv = top.ruleEnv;
   files.concreteEnv = top.concreteEnv;
+  files.funEnv = top.funEnv;
   files.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =
@@ -298,11 +314,13 @@ instance Ord Module {
 nonterminal Files with
    moduleName,
    tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   ruleDecls, buildsOnDecls, concreteDecls,
+   ruleDecls, buildsOnDecls, concreteDecls, funDecls,
    tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
-   concreteEnv,
+   concreteEnv, funEnv,
    transRuleConstructors, transRuleConstructors_down,
    errorString;
+propagate tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+          concreteEnv, funEnv on Files;
 
 abstract production nilFiles
 top::Files ::=
@@ -314,6 +332,7 @@ top::Files ::=
   top.ruleDecls = [];
   top.buildsOnDecls = [];
   top.concreteDecls = [];
+  top.funDecls = [];
   top.transRuleConstructors = [];
 
   top.errorString = "";
@@ -333,21 +352,11 @@ top::Files ::= filename::String f::File rest::Files
   top.ruleDecls = f.ruleDecls ++ rest.ruleDecls;
   top.buildsOnDecls = f.buildsOnDecls ++ rest.buildsOnDecls;
   top.concreteDecls = rest.concreteDecls;
+  top.funDecls = rest.funDecls;
   top.transRuleConstructors =
       f.transRuleConstructors ++ rest.transRuleConstructors;
 
-  f.tyEnv = top.tyEnv;
-  f.constructorEnv = top.constructorEnv;
-  f.judgmentEnv = top.judgmentEnv;
-  f.translationEnv = top.translationEnv;
-  f.ruleEnv = top.ruleEnv;
   f.transRuleConstructors_down = top.transRuleConstructors_down;
-  rest.tyEnv = top.tyEnv;
-  rest.constructorEnv = top.constructorEnv;
-  rest.judgmentEnv = top.judgmentEnv;
-  rest.translationEnv = top.translationEnv;
-  rest.ruleEnv = top.ruleEnv;
-  rest.concreteEnv = top.concreteEnv;
   rest.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =
@@ -374,17 +383,38 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   top.ruleDecls = rest.ruleDecls;
   top.buildsOnDecls = rest.buildsOnDecls;
   top.concreteDecls = f.concreteDecls ++ rest.concreteDecls;
+  top.funDecls = rest.funDecls;
   top.transRuleConstructors = rest.transRuleConstructors;
 
-  f.tyEnv = top.tyEnv;
-  f.constructorEnv = top.constructorEnv;
-  f.concreteEnv = top.concreteEnv;
-  rest.tyEnv = top.tyEnv;
-  rest.constructorEnv = top.constructorEnv;
-  rest.judgmentEnv = top.judgmentEnv;
-  rest.translationEnv = top.translationEnv;
-  rest.ruleEnv = top.ruleEnv;
-  rest.concreteEnv = top.concreteEnv;
+  rest.transRuleConstructors_down = top.transRuleConstructors_down;
+
+  top.errorString =
+      if null(f.errors)
+      then rest.errorString
+      else "  [" ++ filename ++ "]\n" ++
+           implode("\n", map((.pp), f.errors)) ++
+           if rest.errorString == ""
+           then ""
+           else "\n" ++ rest.errorString;
+}
+
+
+abstract production consMainFiles
+top::Files ::= filename::String f::MainFile rest::Files
+{
+  f.moduleName = top.moduleName;
+  rest.moduleName = top.moduleName;
+
+  top.tyDecls = rest.tyDecls;
+  top.constructorDecls = rest.constructorDecls;
+  top.judgmentDecls = rest.judgmentDecls;
+  top.translationDecls = rest.translationDecls;
+  top.ruleDecls = rest.ruleDecls;
+  top.buildsOnDecls = rest.buildsOnDecls;
+  top.concreteDecls = rest.concreteDecls;
+  top.funDecls = f.funDecls ++ rest.funDecls;
+  top.transRuleConstructors = rest.transRuleConstructors;
+
   rest.transRuleConstructors_down = top.transRuleConstructors_down;
 
   top.errorString =

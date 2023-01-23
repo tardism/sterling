@@ -1,0 +1,14 @@
+Module stlc:host
+
+Function main : <Args : [string]> -> int {
+   Read Args[0] to Contents
+   Parse term_c as Tm from Contents
+   Success := Derive typeOf nil Tm Ty
+   If Success
+     Then Print "Type :"
+          Print Ty
+          Return 0
+     Else Print "No type"
+          Return 1
+     End
+}
