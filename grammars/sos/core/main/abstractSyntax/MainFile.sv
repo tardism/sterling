@@ -11,12 +11,13 @@ nonterminal MainFile with
    moduleName,
    errors,
    location;
-propagate errors on MainFile;
+propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+          constructorEnv on MainFile;
 
 abstract production mainFile
 top::MainFile ::= moduleName::QName contents::MainDecls
 {
-  top.pp = module.pp ++ "\n" ++ contents.pp;
+  top.pp = moduleName.pp ++ "\n" ++ contents.pp;
 
   contents.moduleName = top.moduleName;
 
@@ -25,15 +26,6 @@ top::MainFile ::= moduleName::QName contents::MainDecls
       then []
       else [errorMessage("Module declaration is incorrect:  " ++
                          moduleName.pp, location=top.location)];
-
-  contents.judgmentEnv = top.judgmentEnv;
-  contents.translationEnv = top.translationEnv;
-  contents.concreteEnv = top.concreteEnv;
-  contents.tyEnv = top.tyEnv;
-  contents.constructorEnv = top.constructorEnv;
-
-  --initially no vars known
-  contents.downVarTypes = [];
 }
 
 
@@ -43,116 +35,79 @@ top::MainFile ::= moduleName::QName contents::MainDecls
 nonterminal MainDecls with
    pp,
    judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
-   downVarTypes, upVarTypes,
    moduleName,
    errors,
    location;
-propagate errors on MainDecls;
+propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+          constructorEnv on MainDecls;
 
 abstract production emptyMainDecls
 top::MainDecls ::=
 {
   top.pp = "";
-
-  top.upVarTypes = top.downVarTypes;
 }
 
 
 abstract production branchMainDecls
 top::MainDecls ::= d1::MainDecls d2::MainDecls
 {
-  top.pp = d1.pp ++ d2.pp;
-
-  d1.judgmentEnv = top.judgmentEnv;
-  d1.translationEnv = top.translationEnv;
-  d1.concreteEnv = top.concreteEnv;
-  d1.tyEnv = top.tyEnv;
-  d1.constructorEnv = top.constructorEnv;
-  d2.judgmentEnv = top.judgmentEnv;
-  d2.translationEnv = top.translationEnv;
-  d2.concreteEnv = top.concreteEnv;
-  d2.tyEnv = top.tyEnv;
-  d2.constructorEnv = top.constructorEnv;
-
-  d1.downVarTypes = top.downVarTypes;
-  d2.downVarTypes = d1.upVarTypes;
-  top.upVarTypes = d2.upVarTypes;
+  top.pp = d1.pp ++ "\n" ++ d2.pp;
 }
 
 
-abstract production parseMainDecl
-top::MainDecls ::= p::ParseDecl
+abstract production funMainDecl
+top::MainDecls ::= f::FunDecl
 {
-  top.pp = p.pp;
-
-  p.judgmentEnv = top.judgmentEnv;
-  p.translationEnv = top.translationEnv;
-  p.concreteEnv = top.concreteEnv;
-  p.tyEnv = top.tyEnv;
-  p.constructorEnv = top.constructorEnv;
-}
-
-
-abstract production deriveMainDecl
-top::MainDecls ::= d::DeriveRelation
-{
-  top.pp = d.pp;
-
-  d.judgmentEnv = top.judgmentEnv;
-  d.translationEnv = top.translationEnv;
-  d.concreteEnv = top.concreteEnv;
-  d.tyEnv = top.tyEnv;
-  d.constructorEnv = top.constructorEnv;
+  top.pp = f.pp;
 }
 
 
 
 
 
-nonterminal Parse with
-   pp,
-   judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
-   moduleName,
-   type,
-   errors,
-   location;
-propagate errors on Parse;
-
---nt is concrete nonterminal name
---varName is name to which we assign the parse result
---parseString is an object-level string to parse
-abstract production parse
-top::ParseDecl ::= nt::QName varName::String parseString::MainExpr
-{
-  top.pp = "Parse " ++ nt.pp ++ " as " ++ varName ++ " from " ++
-           parseString ++ "\n";
-
-  nt.concreteEnv = top.concreteEnv;
-  top.errors <-
-      if !nt.concreteFound
-      then [errorMessage("Unknown concrete nonterminal " ++ nt.pp,
-            location=nt.location)]
-      else if !nt.isConcreteNt
-      then [errorMessage(nt.pp ++ " is not a concrete nonterminal " ++
-               "but must be one to be parsed", location=nt.location)]
-      else [];
-  top.type = nt.concreteType;
-}
-
-
-
-
-
-nonterminal DeriveRelation with
+nonterminal FunDecl with
    pp,
    judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
    moduleName,
    errors,
    location;
-propagate errors on DeriveRelation;
+propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+          constructorEnv on FunDecl;
 
-abstract production deriveRelation
-top::DeriveRelation ::= resultVar::String j::Judgment
+abstract production funDecl
+top::FunDecl ::= name::String params::Params retTy::Type body::Stmt
 {
-  top.pp = resultVar ++ " := " ++ j.pp;
+  top.pp = "Function " ++ name ++ " : " ++ params.pp ++ " -> " ++
+           retTy.pp ++ " {\n" ++ body.pp ++ "}";
+}
+
+
+
+
+
+nonterminal Params with
+   pp,
+   tyEnv,
+   errors,
+   location;
+propagate errors, tyEnv on Params;
+
+abstract production branchParams
+top::Params ::= p1::Params p2::Params
+{
+  top.pp = p1.pp ++ " " ++ p2.pp;
+}
+
+
+abstract production emptyParams
+top::Params ::=
+{
+  top.pp = "";
+}
+
+
+abstract production onParams
+top::Params ::= name::String ty::Type
+{
+  top.pp = "<" ++ name ++ " : " ++ ty.pp ++ ">";
 }

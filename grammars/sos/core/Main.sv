@@ -8,6 +8,8 @@ imports sos:core:modules;
 
 imports sos:core:concreteDefs:concreteSyntax;
 
+imports sos:core:main:abstractSyntax;
+
 
 import silver:util:cmdargs;
 
