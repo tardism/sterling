@@ -1,11 +1,15 @@
 grammar sos:translation:conc:silver;
 
 attribute
-   silverConc<String>, silverConcNt, silverConcTerminal
+   silverConc<String>, silverConcNt, silverConcTerminal,
+   parserName, joinParserName
 occurs on QName;
 
 synthesized attribute silverConcNt::String;
 synthesized attribute silverConcTerminal::String;
+
+synthesized attribute parserName::String;
+synthesized attribute joinParserName::String;
 
 aspect production baseName
 top::QName ::= name::String
@@ -16,6 +20,9 @@ top::QName ::= name::String
       if top.isConcreteNt
       then top.silverConcNt
       else top.silverConcTerminal;
+
+  top.parserName = error("Must have a qualified name");
+  top.joinParserName = name;
 }
 
 
@@ -32,4 +39,7 @@ top::QName ::= name::String rest::QName
       if top.isConcreteNt
       then top.silverConcNt
       else top.silverConcTerminal;
+
+  top.parserName = "parse_" ++ top.joinParserName;
+  top.joinParserName = name ++ "___" ++ rest.joinParserName;
 }

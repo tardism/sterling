@@ -79,7 +79,8 @@ IOVal<Integer> ::= args::[String]
         envVarT("SOS_GRAMMARS", genLoc.io);
 
   local startMessage::IOToken =
-        printT("\n********** SOS-Ext **********\n", grmmrsLoc.io);
+        printT("\n*************** SOS-Ext ***************\n",
+               grmmrsLoc.io);
   local runs::IOVal<Integer> =
         runActions(actions, modules.iovalue.fromRight, genLoc.iovalue,
                    grmmrsLoc.iovalue, a, startMessage);
@@ -108,7 +109,7 @@ IOVal<Integer> ::=
 {
   local act::ActionSpec = head(actions);
   local pre::IOToken =
-      printT("\n-----------------------------\n\n", ioin);
+      printT("\n---------------------------------------\n\n", ioin);
   local runAct::IOVal<Integer> =
       act.runFun(mods, genLoc, grmmrsLoc, a, pre);
 
@@ -121,6 +122,16 @@ IOVal<Integer> ::=
         else runActions(tl, mods, genLoc, grmmrsLoc, a, runAct.io)
       | _::tl -> runActions(tl, mods, genLoc, grmmrsLoc, a, ioin)
       end;
+}
+
+
+--location and grammar name of final, runnable Silver grammar
+function buildFinalGrammar
+(String, String) ::= module::String genLoc::String
+{
+  return (genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
+             "main/" ++ implode("/", explode(":", module)),
+          "main:" ++ module);
 }
 
 
