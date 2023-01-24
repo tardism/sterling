@@ -19,7 +19,7 @@ IOVal<Integer> ::= _ _ _ _ _
 {
   actions <- [actionSpec(runFun = runProlog,
                          shouldDoFun = \ a::Decorated CmdArgs ->
-                                         !null(a.prologLocation),
+                                         a.outputProlog,
                          actionDesc = "Prolog Translation")];
 }
 
@@ -28,32 +28,104 @@ function runProlog
 IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
+  local message::IOToken = printT("Producing Prolog output\n", i);
+
   local prologProgram::PrologProgram =
         buildPrologProgram(m.prologRules ++ m.instanTransPrologRules);
   local prologString::String = prologProgram.pp;
 
-  local message::IOToken = printT("Producing Prolog output\n", i);
+  --write Prolog specification
+  local dir::String =
+      genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
+      "prolog/";
+  local fileLoc::String = dir ++ a.generateModuleName ++ ".pl";
+  local mkDirectory::IOVal<Integer> =
+      systemT("mkdir -p " ++ dir, message);
+  local output::IOToken =
+      writeFileT(fileLoc, prologString, mkDirectory.io);
 
-  local fileLoc::String = head(a.prologLocation);
-  local output::IOToken = writeFileT(fileLoc, prologString, message);
+  --write Silver pieces for running
+  local genDerive::IOVal<Integer> =
+      genSilverFunctions(genLoc, a.generateModuleName, fileLoc,
+                         output);
 
-  return ioval(output, 0);
+  return
+      if mkDirectory.iovalue != 0
+      then mkDirectory
+      else genDerive;
+}
+
+
+--Generate the pieces for running a language using this
+function genSilverFunctions
+IOVal<Integer> ::= genLoc::String module::String prologFile::String
+                   ioin::IOToken
+{
+  --init function for Prolog interaction, starting Prolog process
+  local initFunction::String =
+      "function init_derive\nIOVal<DeriveConfig> ::= " ++
+                       "a::Decorated CmdArgs ioin::IOToken\n{\n" ++
+      "   return spawnProcess(\"swipl\", [\"" ++ prologFile ++
+                                           "\"], ioin);\n}";
+
+  --derive function
+  local deriveFunction::String =
+      "function derive\nIOVal<Maybe<[(String, Term)]>> ::= " ++
+           "d::DeriveConfig j::Judgment ioin::IOToken\n{\n" ++
+      "   local s::IOToken = sendToProcess(d, " ++
+                               "j.prolog ++ \". .\\n\");\n" ++
+                     --end with ". ." so we get the next prompt always
+      "   local output::IOVal<String> = " ++
+             "readUntilFromProcess(d, \"?-\", s);\n" ++
+      "   return ioval(output.io, nothing());\n}"; --TODO
+
+  --end function for Prolog interaction, killing background process
+  local endFunction::String =
+      "function end_derive\nIOToken ::= d::DeriveConfig " ++
+                                       "ioin::IOToken\n{\n" ++
+      "   return waitForProcess(d, sendToProcess(\"halt.\\n\", " ++
+                                                 "d, ioin));\n}";
+
+  local grammarInfo::(String, String) =
+      buildFinalGrammar(module, genLoc);
+
+  --contents of the Derive.sv file
+  local completeContents::String =
+      "grammar " ++ grammarInfo.2 ++ ";\n" ++
+      "import silver:util:subprocess;\n" ++
+      "import sos:translation:semantic:prolog;\n" ++
+      "type DeriveConfig = ProcessHandle;\n" ++
+      initFunction ++ "\n" ++
+      deriveFunction ++ "\n" ++
+      endFunction ++ "\n";
+
+  --write it out
+  local filename::String = grammarInfo.1 ++ "/Derive.sv";
+  local mkDirectory::IOVal<Integer> =
+      systemT("mkdir -p " ++ grammarInfo.1, ioin);
+  local written::IOToken =
+      writeFileT(filename, completeContents, mkDirectory.io);
+
+  return
+      if mkDirectory.iovalue == 0
+      then ioval(written, 0)
+      else mkDirectory;
 }
 
 
 
 
-synthesized attribute prologLocation::[String] occurs on CmdArgs;
+synthesized attribute outputProlog::Boolean occurs on CmdArgs;
 
 aspect production endCmdArgs
 top::CmdArgs ::= l::[String]
 {
-  top.prologLocation = [];
+  top.outputProlog = false;
 }
 
 
-abstract production prologOption
-top::CmdArgs ::= filename::String rest::CmdArgs
+abstract production prologFlag
+top::CmdArgs ::= rest::CmdArgs
 {
   top.errors = rest.errors;
 
@@ -61,7 +133,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 
   top.rootLoc = rest.rootLoc;
 
-  top.prologLocation = filename::rest.prologLocation;
+  top.outputProlog = true;
 
   forwards to rest;
 }
@@ -72,14 +144,8 @@ Either<String  Decorated CmdArgs> ::= args::[String]
 {
   flags <-
      [flagSpec(name="--prolog",
-               paramString=just("<filename>"),
-               help="filename for Prolog output",
-               flagParser=option(prologOption))];
-
-  errors <-
-     if length(a.prologLocation) > 1
-     then ["Can only give one location for Prolog output; found " ++
-           toString(length(a.prologLocation))]
-     else [];
+               paramString=nothing(),
+               help="output Prolog translation of semantics",
+               flagParser=flag(prologFlag))];
 }
 

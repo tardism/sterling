@@ -108,7 +108,8 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
 {
   --Silver imports
   local importGrammars::[String] =
-      map(\ s::String -> "imports " ++ s ++ ";\n", allGrmmrs);
+      map(\ s::String -> "import silverConc:" ++ s ++ ";\n",
+          allGrmmrs);
 
   --parsers
   local reducedParseNTs::[QName] = nub(parsedNTs);
@@ -151,7 +152,7 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
 
   --end function for parser---does nothing
   local endFunction::String =
-      "function end_parse\nParserConfig ::= p::ParserConfig " ++
+      "function end_parse\nIOToken ::= p::ParserConfig " ++
       "ioin::IOToken\n{\n   return ioin\n}";
 
   local grammarInfo::(String, String) =
