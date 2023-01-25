@@ -37,10 +37,6 @@ terminal Assign_t   ':=';
 terminal Or_t    '||';
 terminal And_t   '&&';
 
-terminal Result_t    '?result'    lexer classes {KEYWORD};
-terminal Success_t   '?success'   lexer classes {KEYWORD};
-terminal Fail_t      '?failure'   lexer classes {KEYWORD};
-
 terminal Bool_t    'bool'    lexer classes {KEYWORD};
 terminal True_t    'true'    lexer classes {KEYWORD};
 terminal False_t   'false'   lexer classes {KEYWORD};

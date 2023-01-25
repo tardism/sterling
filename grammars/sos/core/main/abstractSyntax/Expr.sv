@@ -415,24 +415,6 @@ top::Expr ::= fun::QName args::Args
 }
 
 
-abstract production successExpr
-top::Expr ::=
-{
-  top.pp = "?success";
-
-  top.type = resultType(location=top.location);
-}
-
-
-abstract production failureExpr
-top::Expr ::=
-{
-  top.pp = "?failure";
-
-  top.type = resultType(location=top.location);
-}
-
-
 abstract production trueExpr
 top::Expr ::=
 {

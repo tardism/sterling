@@ -6,10 +6,12 @@ nonterminal Stmt with
    funEnv,
    downVarTypes, upVarTypes,
    moduleName,
+   expectedReturnType,
    errors,
    location;
 propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
-          constructorEnv, funEnv, moduleName on Stmt;
+          constructorEnv, funEnv, moduleName, expectedReturnType
+          on Stmt;
 
 abstract production noop
 top::Stmt ::=
@@ -104,6 +106,13 @@ top::Stmt ::= e::Expr
 
   e.downVarTypes = top.downVarTypes;
   top.upVarTypes = top.downVarTypes;
+
+  top.errors <-
+      if e.type == top.expectedReturnType
+      then []
+      else [errorMessage("Expected return type is " ++
+               top.expectedReturnType.pp ++ " but found " ++
+               e.type.pp, location=top.location)];
 }
 
 

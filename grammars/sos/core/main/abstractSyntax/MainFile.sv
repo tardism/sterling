@@ -92,6 +92,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Stmt
            retTy.pp ++ " {\n" ++ body.pp ++ "}";
 
   body.downVarTypes = params.upVarTypes;
+  body.expectedReturnType = retTy;
 
   production fullName::QName = addQNameBase(top.moduleName, name);
   top.funDecls = [functionEnvItem(fullName, params.types, retTy)];

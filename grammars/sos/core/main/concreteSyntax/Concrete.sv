@@ -55,8 +55,6 @@ concrete productions top::Type_c
   { top.ast = listType(ty.ast, location=top.location); }
 | 'bool'
   { top.ast = boolType(location=top.location); }
-| '?result'
-  { top.ast = resultType(location=top.location); }
 
 
 
@@ -213,10 +211,6 @@ concrete productions top::FactorExpr_c
 | s::String_t
   { top.ast = stringExpr(substring(1, length(s.lexeme) - 1, s.lexeme),
                          location=top.location); }
-| '?success'
-  { top.ast = successExpr(location=top.location); }
-| '?failure'
-  { top.ast = failureExpr(location=top.location); }
 | 'true'
   { top.ast = trueExpr(location=top.location); }
 | 'false'
