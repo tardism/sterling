@@ -204,6 +204,9 @@ top::CmdArgs ::= rest::CmdArgs
 
   top.outputSilverConc = true;
 
+  top.concTranslations = "Silver"::rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
   forwards to rest;
 }
 

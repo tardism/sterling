@@ -71,6 +71,9 @@ top::CmdArgs ::= rest::CmdArgs
 
   top.outputExtensibella = true;
 
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
   forwards to rest;
 }
 

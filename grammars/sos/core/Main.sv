@@ -160,11 +160,20 @@ top::ActionSpec ::=
 
 
 
-attribute errors, generateModuleName, rootLoc occurs on CmdArgs;
+attribute
+   errors, generateModuleName, rootLoc, outputName,
+   concTranslations, semTranslations
+occurs on CmdArgs;
 
 synthesized attribute errors::[String];
 synthesized attribute generateModuleName::String;
 synthesized attribute rootLoc::[String];
+synthesized attribute outputName::[String];
+
+--lists of given runnable translations
+--should contain names that can easily be traced to flags
+synthesized attribute concTranslations::[String];
+synthesized attribute semTranslations::[String];
 
 aspect production endCmdArgs
 top::CmdArgs ::= l::[String]
@@ -180,6 +189,10 @@ top::CmdArgs ::= l::[String]
   top.generateModuleName = head(l);
 
   top.rootLoc = [];
+  top.outputName = [];
+
+  top.concTranslations = [];
+  top.semTranslations = [];
 }
 
 
@@ -191,6 +204,27 @@ top::CmdArgs ::= loc::String rest::CmdArgs
   top.generateModuleName = rest.generateModuleName;
 
   top.rootLoc = loc::rest.rootLoc;
+  top.outputName = rest.outputName;
+
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
+  forwards to rest;
+}
+
+
+abstract production outputNameOption
+top::CmdArgs ::= filename::String rest::CmdArgs
+{
+  top.errors = rest.errors;
+
+  top.generateModuleName = rest.generateModuleName;
+
+  top.rootLoc = rest.rootLoc;
+  top.outputName = filename::rest.outputName;
+
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
 
   forwards to rest;
 }
@@ -207,7 +241,11 @@ Either<String  Decorated CmdArgs> ::= args::[String]
      [flagSpec(name="-I",
                paramString=just("<path>"),
                help="path to modules",
-               flagParser=option(locationOption))];
+               flagParser=option(locationOption)),
+      flagSpec(name="-o",
+               paramString=just("<filename>"),
+               help="runnable file to produce",
+               flagParser=option(outputNameOption))];
 
   local usage::String = 
         "Usage: sos-ext [options] <module name>\n\n" ++
@@ -223,8 +261,33 @@ Either<String  Decorated CmdArgs> ::= args::[String]
      then ["Can only give one location; found " ++
            toString(length(a.rootLoc))]
      else [];
+  errors <-
+     case a.outputName of
+     | [] -> []
+     | [_] ->
+       if length(a.concTranslations) < 1 ||
+          length(a.semTranslations) < 1
+       then ["Must give both runnable concrete and semantic " ++
+             "translations when giving output filename"]
+       else []
+     | _::_::l -> ["Can only give one output filename; found " ++
+                   toString(length(l) + 2)]
+     end;
+  --only allowed AT MOST one conc translation and one sem translation
+  errors <-
+     if length(a.concTranslations) <= 1
+     then []
+     else ["Can give at most one runnable translation of " ++
+           "concrete syntax; found " ++
+           implode(", ", a.concTranslations)];
+  errors <-
+     if length(a.semTranslations) <= 1
+     then []
+     else ["Can give at most one runnable translation of " ++
+           "semantics; found " ++
+           implode(", ", a.semTranslations)];
 
-  return if !null(a.errors)
+  return if !null(errors)
          then left(implode("\n", errors) ++ "\n\n" ++ usage)
          else right(a);
 }

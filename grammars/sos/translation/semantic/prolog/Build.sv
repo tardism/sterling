@@ -135,6 +135,9 @@ top::CmdArgs ::= rest::CmdArgs
 
   top.outputProlog = true;
 
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = "Prolog"::rest.semTranslations;
+
   forwards to rest;
 }
 

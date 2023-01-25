@@ -62,6 +62,9 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 
   top.latexLocation = filename::rest.latexLocation;
 
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
   forwards to rest;
 }
 
