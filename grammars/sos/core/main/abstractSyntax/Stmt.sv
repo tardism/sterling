@@ -174,10 +174,11 @@ propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
 --varName is name to which we assign the parse result
 --parseString is an object-level string to parse
 abstract production parse
-top::Parse ::= nt::QName varName::String parseString::Expr
+top::Parse ::= resultVar::String nt::QName varName::String
+               parseString::Expr
 {
-  top.pp = "Parse " ++ nt.pp ++ " as " ++ varName ++ " from " ++
-           parseString.pp ++ "\n";
+  top.pp = resultVar ++ " := Parse " ++ nt.pp ++ " as " ++ varName ++
+           " from " ++ parseString.pp ++ "\n";
 
   top.errors <-
       if !nt.concreteFound
@@ -196,6 +197,7 @@ top::Parse ::= nt::QName varName::String parseString::Expr
 
   parseString.downVarTypes = top.downVarTypes;
   top.upVarTypes =
+      (resultVar, boolType(location=top.location))::
       (varName, if nt.concreteFound
                 then nt.concreteType
                 else errorType(location=top.location)

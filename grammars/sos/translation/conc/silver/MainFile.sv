@@ -132,7 +132,8 @@ top::Stmt ::= e::Expr var::String
 
 
 aspect production parse
-top::Parse ::= nt::QName varName::String parseString::Expr
+top::Parse ::= result::String nt::QName varName::String
+               parseString::Expr
 {
   top.parsedTypes =
       if nt.concreteFound

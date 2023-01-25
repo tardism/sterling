@@ -105,16 +105,16 @@ closed nonterminal Parse_c layout {Spacing_t, Comment_t}
    with ast<Parse>, location;
 
 concrete productions top::Parse_c
-| 'Parse' x1::EmptyNewlines nt::LowerQName_t x2::EmptyNewlines 'as'
-  x3::EmptyNewlines var::UpperId_t x4::EmptyNewlines
-  'from' x5::EmptyNewlines e::MainExpr_c
-  { top.ast = parse(toQName(nt.lexeme, nt.location), var.lexeme,
-                    e.ast, location=top.location); }
-| 'Parse' x1::EmptyNewlines nt::LowerId_t x2::EmptyNewlines 'as'
-  x3::EmptyNewlines var::UpperId_t x4::EmptyNewlines
-  'from' x5::EmptyNewlines e::MainExpr_c
-  { top.ast = parse(toQName(nt.lexeme, nt.location), var.lexeme,
-                    e.ast, location=top.location); }
+| result::UpperId_t ':=' 'Parse' x1::EmptyNewlines nt::LowerQName_t
+  x2::EmptyNewlines 'as' x3::EmptyNewlines var::UpperId_t
+  x4::EmptyNewlines 'from' x5::EmptyNewlines e::MainExpr_c
+  { top.ast = parse(result.lexeme, toQName(nt.lexeme, nt.location),
+                    var.lexeme, e.ast, location=top.location); }
+| result::UpperId_t ':=' 'Parse' x1::EmptyNewlines nt::LowerId_t
+  x2::EmptyNewlines 'as' x3::EmptyNewlines var::UpperId_t
+  x4::EmptyNewlines 'from' x5::EmptyNewlines e::MainExpr_c
+  { top.ast = parse(result.lexeme, toQName(nt.lexeme, nt.location),
+                    var.lexeme, e.ast, location=top.location); }
 
 
 
