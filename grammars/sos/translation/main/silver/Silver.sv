@@ -22,14 +22,16 @@ nonterminal StmtDef with pp;
 abstract production stmtDef
 top::StmtDef ::= name::String body::String
 {
-  forwards to stmtTypedDef(name, "IOVal<[(String, Value)]>", body);
+  forwards to  --IOVal<(outgoing ctx, return val or not)>
+      stmtTypedDef(name, "IOVal<([(String, Value)], Maybe<Value>)>",
+                   body);
 }
 
 
 abstract production stmtTypedDef
 top::StmtDef ::= name::String type::String body::String
 {
-  top.pp = "local " ++ name ++ "::" ++ type ++ " = " ++ body ++ ";";
+
 }
 
 

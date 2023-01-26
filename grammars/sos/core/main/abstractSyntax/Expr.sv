@@ -3,10 +3,236 @@ grammar sos:core:main:abstractSyntax;
 nonterminal Expr with
    pp,
    type,
-   funEnv, downVarTypes,
+   tyEnv, constructorEnv, judgmentEnv, concreteEnv, funEnv,
+   translationEnv, moduleName,
+   downVarTypes,
    errors,
    location;
-propagate errors, funEnv, downVarTypes on Expr;
+propagate errors, funEnv, tyEnv, constructorEnv, judgmentEnv,
+          concreteEnv, translationEnv, moduleName on Expr;
+
+abstract production letExpr
+top::Expr ::= names::[String] e1::Expr e2::Expr
+{
+  top.pp = "Let " ++ implode(", ", names) ++ " := " ++ e1.pp ++
+           " In " ++ e2.pp;
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes =
+     case e1.type, names of
+     | tupleType(tys), _ ->
+       zipWith(pair, names, tys.toList) ++ top.downVarTypes
+     | _, h::_ -> (h, e1.type)::top.downVarTypes
+     | _, _ -> top.downVarTypes
+     end;
+
+  top.type = e2.type;
+
+  top.errors <-
+      case e1.type of
+      | tupleType(tys) ->
+        if tys.len == length(names)
+        then []
+        else [errorMessage("Expected " ++ toString(tys.len) ++
+                 " name but found " ++ toString(length(names)),
+                 location=top.location)]
+      | _ ->
+        if length(names) > 1
+        then [errorMessage("Can only have one name for result of " ++
+                 "type " ++ e1.type.pp ++ " but found " ++
+                 toString(length(names)), location=top.location)]
+        else []
+      end;
+}
+
+
+abstract production seqExpr
+top::Expr ::= a::Expr b::Expr
+{
+  top.pp = "(" ++ a.pp ++ ") Before (" ++ b.pp ++ ")";
+
+  a.downVarTypes = top.downVarTypes;
+  b.downVarTypes = top.downVarTypes;
+
+  top.type = b.type;
+
+  top.errors <-
+      if a.type == unitType(location=bogusLoc())
+      then []
+      else [errorMessage("Before expected first expression to have" ++
+               " type " ++ unitType(location=bogusLoc()).pp ++
+               " but found " ++ a.type.pp, location=top.location)];
+}
+
+
+abstract production ifExpr
+top::Expr ::= cond::Expr th::Expr el::Expr
+{
+  top.pp = "If " ++ cond.pp ++ " Then " ++ th.pp ++ " Else " ++ el.pp;
+
+  cond.downVarTypes = top.downVarTypes;
+  th.downVarTypes = top.downVarTypes;
+  el.downVarTypes = top.downVarTypes;
+
+  top.type = if th.type == el.type
+             then th.type
+             else errorType(location=top.location);
+
+  top.errors <-
+      if cond.type == boolType(location=bogusLoc())
+      then []
+      else [errorMessage("Condition must have type bool; found " ++
+                         cond.type.pp, location=top.location)];
+  top.errors <-
+      if th.type == el.type
+      then []
+      else [errorMessage("Then and else branches must have same " ++
+               "type; found " ++ th.type.pp ++ " and " ++ el.type.pp,
+               location=top.location)];
+}
+
+
+abstract production printExpr
+top::Expr ::= e::Expr
+{
+  top.pp = "Print " ++ e.pp;
+
+  e.downVarTypes = top.downVarTypes;
+
+  top.type = unitType(location=top.location);
+}
+
+
+abstract production writeExpr
+top::Expr ::= e::Expr file::Expr
+{
+  top.pp = "Write " ++ e.pp ++ " to " ++ file.pp;
+
+  e.downVarTypes = top.downVarTypes;
+  file.downVarTypes = top.downVarTypes;
+
+  top.type = unitType(location=top.location);
+
+  top.errors <-
+      if e.type == stringType(location=bogusLoc())
+      then []
+      else [errorMessage("Can only write strings to files, not " ++
+                         e.type.pp, location=top.location)];
+  top.errors <-
+      if file.type == stringType(location=bogusLoc())
+      then []
+      else [errorMessage("Filenames being written must be strings," ++
+               " not " ++ file.type.pp, location=top.location)];
+}
+
+
+abstract production readExpr
+top::Expr ::= file::Expr
+{
+  top.pp = "Read " ++ file.pp;
+
+  file.downVarTypes = top.downVarTypes;
+
+  top.type = stringType(location=top.location);
+
+  top.errors <-
+      if file.type == stringType(location=bogusLoc())
+      then []
+      else [errorMessage("Filenames being read must be strings but" ++
+               " found " ++ file.type.pp, location=top.location)];
+}
+
+
+--vars are the bindings we want out of the judgment
+abstract production deriveExpr
+top::Expr ::= j::Judgment vars::[String]
+{
+  top.pp = "Derive " ++ j.pp ++
+           if null(vars)
+           then ""
+           else " Assigning [" ++ implode(", ", vars) ++ "]";
+
+  j.isConclusion = false;
+  j.isExtensibleRule = false;
+  j.isTranslationRule = false;
+
+  j.downVarTypes = top.downVarTypes;
+
+  local lkpVarsTys::[(String, Maybe<Type>)] =
+      map(\ v::String -> (v, lookup(v, j.upVarTypes)), vars);
+  local varsTys::[Type] =
+      map(\ p::(String, Maybe<Type>) ->
+            case p.2 of
+            | nothing() -> errorType(location=top.location)
+            | just(t) -> t
+            end,
+          lkpVarsTys);
+  top.type =
+      tupleType(foldr(consTypeList(_, _, location=top.location),
+                      nilTypeList(location=top.location),
+                      boolType(location=top.location)::varsTys),
+                location=top.location);
+
+  --check for duplicate var names
+  top.errors <-
+      flatMap(\ g::[String] ->
+                if length(g) > 1
+                then [errorMessage("Multiple declarations of " ++
+                         "variable " ++ head(g) ++ " in Derive",
+                         location=top.location)]
+                else [],
+              group(sort(vars)));
+  --check for vars being defined by the judgment
+  top.errors <-
+      flatMap(\ p::(String, Maybe<Type>) ->
+                case p.2 of
+                | just(_) -> []
+                | nothing() ->
+                  [errorMessage("Variable " ++ p.1 ++ " does not " ++
+                                "occur in the derived judgment",
+                                location=top.location)]
+                end,
+              lkpVarsTys);
+}
+
+
+--nt is concrete nonterminal name
+--varName is name to which we assign the parse result
+--parseString is an object-level string to parse
+abstract production parseExpr
+top::Expr ::= nt::QName parseString::Expr
+{
+  top.pp = "Parse " ++ nt.pp ++ " from " ++ parseString.pp ++ "\n";
+
+  parseString.downVarTypes = top.downVarTypes;
+
+  top.type =
+      tupleType(
+         consTypeList(boolType(location=top.location),
+         consTypeList(if nt.concreteFound
+                      then nt.concreteType
+                      else errorType(location=top.location),
+         nilTypeList(location=top.location),
+                     location=top.location),
+                     location=top.location),
+         location=top.location);
+
+  top.errors <-
+      if !nt.concreteFound
+      then [errorMessage("Unknown concrete nonterminal " ++ nt.pp,
+            location=nt.location)]
+      else if !nt.isConcreteNt
+      then [errorMessage(nt.pp ++ " is not a concrete nonterminal " ++
+               "but must be one to be parsed", location=nt.location)]
+      else [];
+  top.errors <-
+      if parseString.type == stringType(location=bogusLoc())
+      then []
+      else [errorMessage("Expression being parsed must be of type " ++
+               "string but found " ++ parseString.type.pp,
+               location=top.location)];
+}
+
 
 abstract production orExpr
 top::Expr ::= e1::Expr e2::Expr
@@ -14,6 +240,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") || (" ++ e2.pp ++ ")";
 
   top.type = boolType(location=top.location);
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -41,6 +270,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = boolType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | boolType() -> []
@@ -66,6 +298,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") < (" ++ e2.pp ++ ")";
 
   top.type = boolType(location=top.location);
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -95,6 +330,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = boolType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | intType() -> []
@@ -122,6 +360,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") <= (" ++ e2.pp ++ ")";
 
   top.type = boolType(location=top.location);
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -151,6 +392,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = boolType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | intType() -> []
@@ -179,6 +423,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = boolType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       if e1.type == e2.type
       then []
@@ -194,6 +441,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") + (" ++ e2.pp ++ ")";
 
   top.type = intType(location=top.location);
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -223,6 +473,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = intType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | intType() -> []
@@ -250,6 +503,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") * (" ++ e2.pp ++ ")";
 
   top.type = intType(location=top.location);
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -279,6 +535,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = intType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | intType() -> []
@@ -307,6 +566,9 @@ top::Expr ::= e1::Expr e2::Expr
 
   top.type = intType(location=top.location);
 
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case e1.type of
       | intType() -> []
@@ -334,6 +596,9 @@ top::Expr ::= e1::Expr e2::Expr
   top.pp = "(" ++ e1.pp ++ ") ++ (" ++ e2.pp ++ ")";
 
   top.type = stringType(location=bogusLoc());
+
+  e1.downVarTypes = top.downVarTypes;
+  e2.downVarTypes = top.downVarTypes;
 
   top.errors <-
       case e1.type of
@@ -410,6 +675,7 @@ top::Expr ::= fun::QName args::Args
       then just(fun.functionArgTypes)
       else nothing();
   args.lastFun = fun;
+  args.downVarTypes = top.downVarTypes;
 
   top.errors <- fun.functionErrors;
 }
@@ -444,6 +710,9 @@ top::Expr ::= l::Expr i::Expr
       | _ -> errorType(location=top.location)
       end;
 
+  l.downVarTypes = top.downVarTypes;
+  i.downVarTypes = top.downVarTypes;
+
   top.errors <-
       case l.type of
       | listType(_) -> []
@@ -466,10 +735,14 @@ top::Expr ::= l::Expr i::Expr
 nonterminal Args with
    pp,
    types,
+   tyEnv, constructorEnv, judgmentEnv, concreteEnv, translationEnv,
+   moduleName,
    funEnv, downVarTypes, expectedTypes, lastFun,
    errors,
    location;
-propagate errors, funEnv, downVarTypes, lastFun on Args;
+propagate errors, tyEnv, constructorEnv, judgmentEnv, concreteEnv,
+          translationEnv, funEnv, downVarTypes, lastFun, moduleName
+   on Args;
 
 abstract production nilArgs
 top::Args ::=

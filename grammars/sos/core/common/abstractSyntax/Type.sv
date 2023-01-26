@@ -90,7 +90,7 @@ top::Type ::=
 
 nonterminal TypeList with
    pp_comma, pp_space,
-   tyEnv, errors,
+   tyEnv, errors, isError,
    toList<Type>, len,
    types, --full types using Type.type
    location;
@@ -114,6 +114,8 @@ top::TypeList ::=
       | nilTypeList() -> true
       | _ -> false
       end;
+
+  top.isError = false;
 }
 
 
@@ -148,5 +150,7 @@ top::TypeList ::= t::Type rest::TypeList
       | consTypeList(x, _) -> t.isEqual && rest.isEqual
       | _ -> false
       end;
+
+  top.isError = t.isError || rest.isError;
 }
 

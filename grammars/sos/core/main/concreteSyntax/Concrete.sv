@@ -33,7 +33,7 @@ concrete productions top::FunDecl_c
 | 'Function' x1::EmptyNewlines name::LowerId_t x2::EmptyNewlines ':'
   x3::EmptyNewlines p::Params_c '->'
   x5::EmptyNewlines ty::Type_c x6::EmptyNewlines '{'
-  x7::EmptyNewlines body::StmtList_c '}'
+  x7::EmptyNewlines body::MainExpr_c '}'
   { top.ast = funDecl(name.lexeme, p.ast, ty.ast, body.ast,
                       location=top.location); }
 
@@ -58,74 +58,6 @@ concrete productions top::Type_c
 
 
 
-closed nonterminal StmtList_c layout {Spacing_t, Comment_t}
-   with ast<Stmt>, location;
-closed nonterminal Stmt_c layout {Spacing_t, Comment_t}
-   with ast<Stmt>, location;
-
-concrete productions top::StmtList_c
-|
-  { top.ast = noop(location=top.location); }
-| s::Stmt_c Newline_t --at least one to separate
-  x::EmptyNewlines rest::StmtList_c
-  { top.ast = branchStmt(s.ast, rest.ast, location=top.location); }
-
-concrete productions top::Stmt_c
-| p::Parse_c
-  { top.ast = parseStmt(p.ast, location=top.location); }
-| r::DeriveRelation_c
-  { top.ast = deriveRelStmt(r.ast, location=top.location); }
-| name::UpperId_t ':=' x2::EmptyNewlines e::MainExpr_c
-  { top.ast = assignStmt(name.lexeme, e.ast, location=top.location); }
-| 'While' x1::EmptyNewlines e::MainExpr_c x2::EmptyNewlines 'Do'
-  x3::EmptyNewlines body::StmtList_c 'End'
-  { top.ast = whileStmt(e.ast, body.ast, location=top.location); }
-| 'If' x1::EmptyNewlines e::MainExpr_c x2::EmptyNewlines
-  'Then' x3::EmptyNewlines th::StmtList_c
-  'Else' x5::EmptyNewlines el::StmtList_c 'End'
-  { top.ast = ifStmt(e.ast, th.ast, el.ast, location=top.location); }
-| 'If' x1::EmptyNewlines e::MainExpr_c x2::EmptyNewlines
-  'Then' x3::EmptyNewlines th::StmtList_c 'End'
-  { top.ast = ifStmt(e.ast, th.ast, noop(location=top.location),
-                     location=top.location); }
-| 'Return' e::MainExpr_c
-  { top.ast = returnStmt(e.ast, location=top.location); }
-| 'Print' e::MainExpr_c
-  { top.ast = printStmt(e.ast, location=top.location); }
-| 'Write' e::MainExpr_c 'to' file::MainExpr_c
-  { top.ast = writeStmt(e.ast, file.ast, location=top.location); }
-| 'Read' e::MainExpr_c 'to' var::UpperId_t
-  { top.ast = readStmt(e.ast, var.lexeme, location=top.location); }
-
-
-
-closed nonterminal Parse_c layout {Spacing_t, Comment_t}
-   with ast<Parse>, location;
-
-concrete productions top::Parse_c
-| result::UpperId_t ':=' 'Parse' x1::EmptyNewlines nt::LowerQName_t
-  x2::EmptyNewlines 'as' x3::EmptyNewlines var::UpperId_t
-  x4::EmptyNewlines 'from' x5::EmptyNewlines e::MainExpr_c
-  { top.ast = parse(result.lexeme, toQName(nt.lexeme, nt.location),
-                    var.lexeme, e.ast, location=top.location); }
-| result::UpperId_t ':=' 'Parse' x1::EmptyNewlines nt::LowerId_t
-  x2::EmptyNewlines 'as' x3::EmptyNewlines var::UpperId_t
-  x4::EmptyNewlines 'from' x5::EmptyNewlines e::MainExpr_c
-  { top.ast = parse(result.lexeme, toQName(nt.lexeme, nt.location),
-                    var.lexeme, e.ast, location=top.location); }
-
-
-
-closed nonterminal DeriveRelation_c layout {Spacing_t, Comment_t}
-   with ast<DeriveRelation>, location;
-
-concrete productions top::DeriveRelation_c
-| result::UpperId_t ':=' 'Derive' j::Judgment_c
-  { top.ast = deriveRelation(result.lexeme, j.ast,
-                             location=top.location); }
-
-
-
 closed nonterminal MainExpr_c layout {Spacing_t, Comment_t}
    with ast<Expr>, location;
 closed nonterminal AndExpr_c layout {Spacing_t, Comment_t}
@@ -140,6 +72,8 @@ closed nonterminal FactorExpr_c layout {Spacing_t, Comment_t}
    with ast<Expr>, location;
 closed nonterminal Args_c layout {Spacing_t, Comment_t}
    with ast<Args>, location;
+closed nonterminal Vars_c layout {Spacing_t, Comment_t}
+   with ast<[String]>, location;
 
 concrete productions top::MainExpr_c
 | e1::MainExpr_c '||' e2::AndExpr_c
@@ -190,6 +124,18 @@ concrete productions top::MultExpr_c
   { top.ast = e.ast; }
 
 concrete productions top::FactorExpr_c
+| 'Derive' j::Judgment_c 'Assigning' '[' vars::Vars_c ']'
+  { top.ast = deriveExpr(j.ast, vars.ast, location=top.location); }
+| 'Derive' j::Judgment_c 'Assigning' '[' ']'
+  { top.ast = deriveExpr(j.ast, [], location=top.location); }
+| 'Parse' x1::EmptyNewlines nt::LowerQName_t
+  x2::EmptyNewlines 'from' x5::EmptyNewlines e::FactorExpr_c
+  { top.ast = parseExpr(toQName(nt.lexeme, nt.location), e.ast,
+                        location=top.location); }
+| 'Parse' x1::EmptyNewlines nt::LowerId_t
+  x2::EmptyNewlines 'from' x5::EmptyNewlines e::FactorExpr_c
+  { top.ast = parseExpr(toQName(nt.lexeme, nt.location), e.ast,
+                        location=top.location); }
 | name::UpperId_t
   { top.ast = varExpr(name.lexeme, location=top.location); }
 | num::Integer_t
@@ -224,3 +170,9 @@ concrete productions top::Args_c
                        location=top.location); }
 | e::MainExpr_c ',' rest::Args_c
   { top.ast = consArgs(e.ast, rest.ast, location=top.location); }
+
+concrete productions top::Vars_c
+| v::UpperId_t
+  { top.ast = [v.lexeme]; }
+| v::UpperId_t ',' rest::Vars_c
+  { top.ast = v.lexeme::rest.ast; }

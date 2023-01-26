@@ -179,6 +179,7 @@ top::Type ::= t::Type
 
 attribute
    subst, substituted<TypeList>,
+   unifyWith<TypeList>, unifyLoc, downSubst, upSubst,
    freshen<TypeList>, freshenSubst,
    pcIndex, foundPC,
    containsVars
@@ -196,6 +197,14 @@ top::TypeList ::=
   top.foundPC = false;
 
   top.containsVars = false;
+
+  top.upSubst =
+      case top.unifyWith of
+      | nilTypeList() -> top.downSubst
+      | consTypeList(_, _) ->
+        addErrSubst("Cannot unify [" ++ top.pp_comma ++ "] and [" ++
+           top.unifyWith.pp_comma ++ "]", top.unifyLoc, top.downSubst)
+      end;
 }
 
 
@@ -231,6 +240,28 @@ top::TypeList ::= t::Type rest::TypeList
       else [];
 
   top.containsVars = t.containsVars || rest.containsVars;
+
+  t.downSubst = top.downSubst;
+  t.unifyLoc = top.unifyLoc;
+  t.unifyWith =
+      case top.unifyWith of
+      | consTypeList(x, _) -> x
+      | _ -> error("Should not access")
+      end;
+  rest.downSubst = t.upSubst;
+  rest.unifyLoc = top.unifyLoc;
+  rest.unifyWith =
+      case top.unifyWith of
+      | consTypeList(_, x) -> x
+      | _ -> error("Sholud not access")
+      end;
+  top.upSubst =
+      case top.unifyWith of
+      | consTypeList(_, _) -> rest.upSubst
+      | nilTypeList() ->
+        addErrSubst("Cannot unify [" ++ top.pp_comma ++ "] and [" ++
+           top.unifyWith.pp_comma ++ "]", top.unifyLoc, top.downSubst)
+      end;
 }
 
 

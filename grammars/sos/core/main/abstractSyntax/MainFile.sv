@@ -86,13 +86,12 @@ propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
           constructorEnv, funEnv, moduleName on FunDecl;
 
 abstract production funDecl
-top::FunDecl ::= name::String params::Params retTy::Type body::Stmt
+top::FunDecl ::= name::String params::Params retTy::Type body::Expr
 {
   top.pp = "Function " ++ name ++ " : " ++ params.pp ++ " -> " ++
            retTy.pp ++ " {\n" ++ body.pp ++ "}";
 
   body.downVarTypes = params.upVarTypes;
-  body.expectedReturnType = retTy;
 
   production fullName::QName = addQNameBase(top.moduleName, name);
   top.funDecls = [functionEnvItem(fullName, params.types, retTy)];
@@ -109,6 +108,13 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Stmt
         [errorMessage("Found multiple declarations for function " ++
                       fullName.pp, location=top.location)]
       end;
+  --Check the return type
+  top.errors <-
+      if body.type == retTy
+      then []
+      else [errorMessage("Expected function body to have type " ++
+               retTy.pp ++ " but found " ++ body.type.pp,
+               location=top.location)];
 }
 
 
