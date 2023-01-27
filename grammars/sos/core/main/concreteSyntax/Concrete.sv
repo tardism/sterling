@@ -51,32 +51,54 @@ concrete productions top::Params_c
 
 --Add to existing types
 concrete productions top::Type_c
-| '[' ty::Type_c ']'
+| '[' x1::EmptyNewlines ty::Type_c x2::EmptyNewlines ']'
   { top.ast = listType(ty.ast, location=top.location); }
 | 'bool'
   { top.ast = boolType(location=top.location); }
 
 
 
-closed nonterminal MainExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal MainExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal AndExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal SeqExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal CompExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal OrExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal AddExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal AndExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal MultExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal CompExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal FactorExpr_c layout {Spacing_t, Comment_t}
+closed nonterminal AddExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
-closed nonterminal Args_c layout {Spacing_t, Comment_t}
+closed nonterminal MultExpr_c layout {Spacing_t, Comment_t, Newline_t}
+   with ast<Expr>, location;
+closed nonterminal IOExpr_c layout {Spacing_t, Comment_t, Newline_t}
+   with ast<Expr>, location;
+closed nonterminal IndexExpr_c layout {Spacing_t, Comment_t, Newline_t}
+   with ast<Expr>, location;
+closed nonterminal FactorExpr_c layout {Spacing_t, Comment_t, Newline_t}
+   with ast<Expr>, location;
+closed nonterminal Args_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Args>, location;
-closed nonterminal Vars_c layout {Spacing_t, Comment_t}
+closed nonterminal Vars_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<[String]>, location;
 
 concrete productions top::MainExpr_c
-| e1::MainExpr_c '||' e2::AndExpr_c
+| 'Let' v::Vars_c ':=' e1::MainExpr_c 'in' e2::MainExpr_c
+  { top.ast = letExpr(v.ast, e1.ast, e2.ast, location=top.location); }
+| 'If' c::MainExpr_c 'Then' th::MainExpr_c 'Else' el::MainExpr_c
+  { top.ast = ifExpr(c.ast, th.ast, el.ast, location=top.location); }
+| e::SeqExpr_c
+  { top.ast = e.ast; }
+
+concrete productions top::SeqExpr_c
+| e1::OrExpr_c 'Before' e2::SeqExpr_c
+  { top.ast = seqExpr(e1.ast, e2.ast, location=top.location); }
+| e::OrExpr_c
+  { top.ast = e.ast; }
+
+concrete productions top::OrExpr_c
+| e1::OrExpr_c '||' e2::AndExpr_c
   { top.ast = orExpr(e1.ast, e2.ast, location=top.location); }
 | e::AndExpr_c
   { top.ast = e.ast; }
@@ -118,22 +140,34 @@ concrete productions top::MultExpr_c
   { top.ast = divExpr(e1.ast, e2.ast, location=top.location); }
 | e1::MultExpr_c '%' e2::FactorExpr_c
   { top.ast = modExpr(e1.ast, e2.ast, location=top.location); }
-| e::FactorExpr_c '[' ind::MainExpr_c ']'
+| e::IOExpr_c
+  { top.ast = e.ast; }
+
+concrete productions top::IOExpr_c
+| 'Read' e::IOExpr_c
+  { top.ast = readExpr(e.ast, location=top.location); }
+| 'Print' e::IOExpr_c
+  { top.ast = printExpr(e.ast, location=top.location); }
+| 'Write' e::MainExpr_c 'to' f::IOExpr_c
+  { top.ast = writeExpr(e.ast, f.ast, location=top.location); }
+| e::IndexExpr_c
+  { top.ast = e.ast; }
+
+concrete productions top::IndexExpr_c
+| e::IndexExpr_c '[' ind::MainExpr_c ']'
   { top.ast = listIndexExpr(e.ast, ind.ast, location=top.location); }
 | e::FactorExpr_c
   { top.ast = e.ast; }
 
 concrete productions top::FactorExpr_c
-| 'Derive' j::Judgment_c 'Assigning' '[' vars::Vars_c ']'
+| 'Derive' j::Judgment_c 'assigning' '[' vars::Vars_c ']'
   { top.ast = deriveExpr(j.ast, vars.ast, location=top.location); }
-| 'Derive' j::Judgment_c 'Assigning' '[' ']'
+| 'Derive' j::Judgment_c 'assigning' '[' ']'
   { top.ast = deriveExpr(j.ast, [], location=top.location); }
-| 'Parse' x1::EmptyNewlines nt::LowerQName_t
-  x2::EmptyNewlines 'from' x5::EmptyNewlines e::FactorExpr_c
+| 'Parse' nt::LowerQName_t 'from' e::FactorExpr_c
   { top.ast = parseExpr(toQName(nt.lexeme, nt.location), e.ast,
                         location=top.location); }
-| 'Parse' x1::EmptyNewlines nt::LowerId_t
-  x2::EmptyNewlines 'from' x5::EmptyNewlines e::FactorExpr_c
+| 'Parse' nt::LowerId_t 'from' e::FactorExpr_c
   { top.ast = parseExpr(toQName(nt.lexeme, nt.location), e.ast,
                         location=top.location); }
 | name::UpperId_t

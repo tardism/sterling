@@ -13,20 +13,19 @@ terminal As_t      'as'      lexer classes {KEYWORD};
 terminal From_t    'from'    lexer classes {KEYWORD};
 
 terminal Derive_t      'Derive'      lexer classes {KEYWORD};
-terminal Assigning_t   'Assigning'   lexer classes {KEYWORD};
+terminal Assigning_t   'assigning'   lexer classes {KEYWORD};
 
 terminal Fun_t      'Function'   lexer classes {KEYWORD};
 terminal Arrow_t    '->';
 terminal LCurly_t   '{';
 terminal RCurly_t   '}';
-terminal Return_t   'Return'     lexer classes {KEYWORD};
 
-terminal If_t      'If'      lexer classes {KEYWORD};
-terminal Then_t    'Then'    lexer classes {KEYWORD};
-terminal Else_t    'Else'    lexer classes {KEYWORD};
-terminal While_t   'While'   lexer classes {KEYWORD};
-terminal Do_t      'Do'      lexer classes {KEYWORD};
-terminal End_t     'End'     lexer classes {KEYWORD};
+terminal If_t       'If'       lexer classes {KEYWORD};
+terminal Then_t     'Then'     lexer classes {KEYWORD};
+terminal Else_t     'Else'     lexer classes {KEYWORD};
+terminal Let_t      'Let'      lexer classes {KEYWORD};
+terminal In_t       'in'       lexer classes {KEYWORD};
+terminal Before_t   'Before'   lexer classes {KEYWORD};
 
 terminal Print_t   'Print'   lexer classes {KEYWORD};
 terminal Read_t    'Read'    lexer classes {KEYWORD};

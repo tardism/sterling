@@ -15,7 +15,7 @@ abstract production letExpr
 top::Expr ::= names::[String] e1::Expr e2::Expr
 {
   top.pp = "Let " ++ implode(", ", names) ++ " := " ++ e1.pp ++
-           " In " ++ e2.pp;
+           " in " ++ e2.pp;
 
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes =
@@ -100,6 +100,17 @@ top::Expr ::= e::Expr
   e.downVarTypes = top.downVarTypes;
 
   top.type = unitType(location=top.location);
+
+  top.errors <-
+      case e.type of
+      | listType(_) ->
+        [errorMessage("Cannot print lists", location=top.location)]
+      | tupleType(_) ->
+        [errorMessage("Cannot print tuples", location=top.location)]
+      | unitType() -> [errorMessage("Cannot print " ++ e.type.pp,
+                                    location=top.location)]
+      | _ -> []
+      end;
 }
 
 
@@ -148,9 +159,7 @@ abstract production deriveExpr
 top::Expr ::= j::Judgment vars::[String]
 {
   top.pp = "Derive " ++ j.pp ++
-           if null(vars)
-           then ""
-           else " Assigning [" ++ implode(", ", vars) ++ "]";
+           " assigning [" ++ implode(", ", vars) ++ "]";
 
   j.isConclusion = false;
   j.isExtensibleRule = false;

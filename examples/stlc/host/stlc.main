@@ -2,13 +2,13 @@ Module stlc:host
 
 Function main : <Args : [string]> -> int {
    Let Contents := Read Args[0]
-   In
+   in
    Let ParseSuccess, Tm := Parse term_c from Contents
-   In
+   in
      If ParseSuccess
      Then
-       Let Success, Ty := Derive typeOf nil Tm Ty Assigning Ty
-       In
+       Let Success, Ty := Derive typeOf nil Tm Ty assigning [Ty]
+       in
          If Success
          Then
            Print "Type: " Before

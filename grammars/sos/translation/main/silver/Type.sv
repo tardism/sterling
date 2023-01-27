@@ -51,7 +51,7 @@ top::Type ::=
 aspect production unitType
 top::Type ::=
 {
-  top.silverType = error("unityType.silverType");
+  top.silverType = error("unitType.silverType");
 }
 
 
