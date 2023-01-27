@@ -1,167 +1,121 @@
 grammar sos:translation:main:silver;
 
 attribute
-   ctxExpr,
-   --name for accessing IO coming in
-   precedingName,
-   --name for accessing IO coming out
-   thisName,
-   stmtDefs,
-   silverExpr, containsIO
+   precedingIO, silverExpr
 occurs on Expr;
-propagate ctxExpr on Expr;
-
---how to access the current eval ctx for the expr
-inherited attribute ctxExpr::String;
 
 --text of an equivalent Silver expression
+--always has type IOVal<_>
 synthesized attribute silverExpr::String;
 
---contains a call to a function with an IO type
-synthesized attribute containsIO::Boolean;
-
---name of previous action to access .io/.iovalue
-inherited attribute precedingName::String;
---name of the current action being produced
-synthesized attribute thisName::String;
---actual definitions
-synthesized attribute stmtDefs::[StmtDef];
+--Silver expression for the last IO done before this
+inherited attribute precedingIO::String;
 
 aspect production letExpr
 top::Expr ::= names::[String] e1::Expr e2::Expr
 {
+  local letName::String =
+      if length(names) > 1
+      then "_let_" ++ toString(genInt())
+      else head(names);
   top.silverExpr =
-      case e1.type, names of
-      | tupleType(tys), _::_::_ ->
-        foldr(\ p::(String, Integer, Type) rest::String ->
-                buildLet(p.1, p.3.silverType,
-                         letName ++ "." ++ toString(p.2), rest),
-              e2.silverExpr,
-              zip(names, zip(range(1, tys.len + 1), tys.toList)))
-      | _ ->
-        buildLet(head(names), e1.type.silverType, e1.silverExpr,
-                 e2.silverExpr)
-      end;
-
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.thisName;
-
-  top.stmtDefs =
-      stmtTypedDef(letName, e1.silverType,
-                   e1.silverExpr)::(e1.stmtDefs ++ e2.stmtDefs;
+      buildLet(letName, "IOVal<" ++ e1.type.silverType ++ ">",
+         e1.silverExpr,
+         case e1.type, names of
+         | tupleType(tys), _::_::_ ->
+           foldr(\ p::(String, Integer, Type) rest::String ->
+                   buildLet(p.1, p.3.silverType,
+                      letName ++ ".iovalue." ++ toString(p.2), rest),
+                 e2.silverExpr,
+                 zipWith(pair, names,
+                    zipWith(pair, range(1, tys.len + 1), tys.toList)))
+         | _, _ -> e2.silverExpr
+         end);
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = letName ++ ".io";
 }
 
 
 aspect production seqExpr
 top::Expr ::= a::Expr b::Expr
 {
-  --a must be unit type, so nothing to do in it
-  top.silverExpr = b.silverExpr;
-
-  top.containsIO = a.containsIO || b.containsIO;
-
-  a.precedingName = top.precedingName;
-  b.precedingName = a.thisName;
-  top.thisName = b.thisName;
-
-  top.stmtDefs = a.stmtDefs ++ b.stmtDefs;
+  top.silverExpr =
+      buildLet(seqName, "IOVal<Unit>", a.silverExpr, b.silverExpr);
+  local seqName::String = "_seq_" ++ toString(genInt());
+  a.precedingIO = top.precedingIO;
+  b.precedingIO = seqName ++ ".io";
 }
 
 
 aspect production ifExpr
 top::Expr ::= cond::Expr th::Expr el::Expr
 {
-  top.silverExpr = if isUnit then "unit()" else ifName ++ ".iovalue";
-
-  top.containsIO = cond.containsIO || th.containsIO || el.containsIO;
-
-  cond.precedingName = top.precedingName;
-  th.precedingName = cond.thisName;
-  el.precedingName = cond.thisName;
-  top.thisName = ifName ++ ".io";
-  local ifName::String = "if_" ++ toString(genInt());
-
-  local isUnit::Boolean = th.type == unitType(location=bogusLoc());
+  top.silverExpr =
+      buildLet(condName, "IOVal<Boolean>", cond.silverExpr, ifBody);
+  local condName::String = "_cond_" ++ toString(genInt());
   local ifBody::String =
-      "if " ++ cond.silverExpr ++
-      if isUnit
-      then " then " ++ th.thisName ++ " else " ++ el.thisName
-      else " then " ++ buildIOVal(th.thisName, th.silverExpr) ++
-           " else " ++ buildIOVal(el.thisName, el.silverExpr);
-  top.stmtDefs =
-      stmtTypedDef(top.thisName,
-         if isUnit then "IOToken"
-                   else "IOVal<" ++ th.type.silverType ++ ">",
-         ifBody)::
-      (cond.stmtDefs ++ th.stmtDefs ++ el.stmtDefs);
+      "if " ++ condName ++ ".iovalue" ++ " then " ++ th.silverExpr ++
+      " else " ++ el.silverExpr;
+
+  cond.precedingIO = top.precedingIO;
+  th.precedingIO = condName ++ ".io";
+  el.precedingIO = condName ++ ".io";
 }
 
 
 aspect production printExpr
 top::Expr ::= e::Expr
 {
-  --no actual value
-  top.silverExpr = "unit()";
-
-  top.containsIO = true;
-
-  e.precedingName = top.precedingName;
-  top.thisName = "print_" ++ toString(genInt());
-
+  top.silverExpr =
+      buildLet(eName, "IOVal<" ++ e.type.silverType ++ ">",
+               e.silverExpr, buildIOVal(printBody, "unit()"));
+  local eName::String = "_print_e_" ++ toString(genInt());
   local printBody::String =
       "printT(" ++
       case e.type of
-      | intType() -> "toInteger(" ++ e.silverExpr ++ ")"
-      | stringType() -> e.silverExpr
-      | nameType(_) -> "(" ++ e.silverExpr ++ ").pp" --Term
+      | intType() -> "toInteger(" ++ eName ++ ".iovalue)"
+      | stringType() -> eName ++ ".iovalue"
+      | nameType(_) -> eName ++ ".iovalue.pp" --Term
       | _ -> error("printExpr.printBody for " ++ e.type.pp)
-      end ++ ", " ++ e.thisName ++ ")";
-  top.stmtDefs =
-      stmtTypedDef(top.thisName, "IOToken", printBody)::e.stmtDefs;
+      end ++ ", " ++ eName ++ ".io)";
+
+  e.precedingIO = top.precedingIO;
 }
 
 
 aspect production writeExpr
 top::Expr ::= e::Expr file::Expr
 {
-  top.silverExpr = "unit()";
-
-  top.containsIO = true;
-
-  e.precedingName = top.precedingName;
-  file.precedingName = e.thisName;
-  top.thisName = "write_" ++ toString(genInt());
-
+  top.silverExpr =
+      buildLet(eName, "IOVal<String>", e.silverExpr,
+         buildLet(fileName, "IOVal<String>", file.silverExpr,
+            buildIOVal(writeBody, "unit()")));
+  local eName::String = "_write_e_" ++ toString(genInt());
+  local fileName::String = "_write_file_" ++ toString(genInt());
   local writeBody::String =
-      "writeFileT(" ++ file.silverExpr ++ ", " ++
+      "writeFileT(" ++ fileName ++ ".iovalue, " ++
       case e.type of
-      | intType() -> "toInteger(" ++ e.silverExpr ++ ")"
-      | stringType() -> e.silverExpr
-      | nameType(_) -> "(" ++ e.silverExpr ++ ").pp" --Term
+      | intType() -> "toInteger(" ++ eName ++ ".iovalue)"
+      | stringType() -> eName ++ ".iovalue"
+      | nameType(_) -> eName ++ ".iovalue.pp" --Term
       | _ -> error("writeExpr.writeBody for " ++ e.type.pp)
-      end ++ ", " ++ file.thisName ++ ")";
-  top.stmtDefs =
-      stmtTypedDef(top.thisName, "IOToken", writeBody)::e.stmtDefs;
+      end ++ ", " ++ fileName ++ ".io)";
+
+  e.precedingIO = top.precedingIO;
+  file.precedingIO = eName ++ ".io";
 }
 
 
 aspect production readExpr
 top::Expr ::= file::Expr
 {
-  top.silverExpr = top.thisName ++ ".iovalue";
-
-  top.containsIO = true;
-
-  file.precedingName = top.precedingName;
-  top.thisName = "read_" ++ toString(genInt());
-
+  top.silverExpr =
+      buildLet(fileName, "IOVal<String>", file.silverExpr, readBody);
+  local fileName::String = "_read_" ++ toString(genInt());
   local readBody::String =
-      "readFileT(" ++ file.silverExpr ++ ", " ++ file.thisName ++ ")";
-  top.stmtDefs = stmtTypedDef(top.thisName, "IOVal<String>",
-                              readBody)::file.stmtDefs;
+      "readFileT(" ++ fileName ++ ".iovalue, " ++ fileName ++ ".io)";
+
+  file.precedingIO = top.precedingIO;
 }
 
 
@@ -170,12 +124,6 @@ aspect production deriveExpr
 top::Expr ::= j::Judgment vars::[String]
 {
   top.silverExpr = error("deriveExpr.silverExpr");
-
-  top.containsIO = true;
-
-  top.thisName = error("deriveExpr.thisName");
-
-  top.stmtDefs = error("deriveExpr.stmtDefs");
 }
 
 
@@ -186,28 +134,20 @@ aspect production parseExpr
 top::Expr ::= nt::QName parseString::Expr
 {
   top.silverExpr = error("parseExpr.silverExpr");
-
-  top.containsIO = true;
-
-  parseString.precedingName = top.precedingName;
-  top.thisName = error("parseExpr.thisName");
-
-  top.stmtDefs = error("parseExpr.stmtDefs");
 }
 
 aspect production orExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") || (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Boolean>", e1.silverExpr,
+         "if " ++ e1Name ++ ".iovalue " ++
+         "then " ++ buildIOVal(e1Name ++ ".io", "true") ++
+        " else " ++ e2.silverExpr);
+  local e1Name::String = "_or1_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -215,15 +155,14 @@ aspect production andExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") && (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Boolean>", e1.silverExpr,
+         "if " ++ e1Name ++ ".iovalue " ++
+         "then " ++ e2.silverExpr ++
+        " else " ++ buildIOVal(e1Name ++ ".io", "true"));
+  local e1Name::String = "_and1_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -231,15 +170,15 @@ aspect production ltExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") < (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue < " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_lt1_" ++ toString(genInt());
+  local e2Name::String = "_lt2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -247,15 +186,15 @@ aspect production gtExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") > (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue > " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_gt1_" ++ toString(genInt());
+  local e2Name::String = "_gt2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -263,15 +202,15 @@ aspect production leExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") <= (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue <= " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_le1_" ++ toString(genInt());
+  local e2Name::String = "_le2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -279,15 +218,15 @@ aspect production geExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") >= (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue >= " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_ge1_" ++ toString(genInt());
+  local e2Name::String = "_ge2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -295,15 +234,17 @@ aspect production eqExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") == (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<" ++ e1.type.silverType ++ ">",
+               e1.silverExpr,
+         buildLet(e2Name, "IOVal<" ++ e2.type.silverType ++ ">",
+                  e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue == " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_eq1_" ++ toString(genInt());
+  local e2Name::String = "_eq2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -311,15 +252,15 @@ aspect production plusExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") + (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue + " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_plus1_" ++ toString(genInt());
+  local e2Name::String = "_plus2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -327,15 +268,15 @@ aspect production minusExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") - (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue - " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_minus1_" ++ toString(genInt());
+  local e2Name::String = "_minus2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -343,15 +284,15 @@ aspect production multExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") * (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue * " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_mult1_" ++ toString(genInt());
+  local e2Name::String = "_mult2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -359,15 +300,15 @@ aspect production divExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") / (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue / " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_div1_" ++ toString(genInt());
+  local e2Name::String = "_div2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -375,15 +316,15 @@ aspect production modExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") % (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<Integer>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue % " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_mod1_" ++ toString(genInt());
+  local e2Name::String = "_mod2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
@@ -391,112 +332,87 @@ aspect production appendExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      "(" ++ e1.silverExpr ++ ") ++ (" ++ e2.silverExpr ++ ")";
+      buildLet(e1Name, "IOVal<String>", e1.silverExpr,
+         buildLet(e2Name, "IOVal<String>", e2.silverExpr,
+            buildIOVal(e2Name ++ ".io",
+               e1Name ++ ".iovalue ++ " ++ e2Name ++ ".iovalue")));
+  local e1Name::String = "_append1_" ++ toString(genInt());
+  local e2Name::String = "_append2_" ++ toString(genInt());
 
-  top.containsIO = e1.containsIO || e2.containsIO;
-
-  e1.precedingName = top.precedingName;
-  e2.precedingName = e1.thisName;
-  top.thisName = e2.precedingName;
-
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  e1.precedingIO = top.precedingIO;
+  e2.precedingIO = e1Name ++ ".io";
 }
 
 
 aspect production varExpr
 top::Expr ::= name::String
 {
-  top.silverExpr =
-      "case lookup(name, " ++ top.ctxExpr ++ ") of " ++
-      "| just(x) -> x " ++
-      "| nothing() -> error(\"" ++ name ++ " not defined\") " ++
-      "end";
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverExpr = buildIOVal(top.precedingIO, name);
 }
 
 
 aspect production intExpr
 top::Expr ::= i::Integer
 {
-  top.silverExpr = toString(i);
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverExpr = buildIOVal(top.precedingIO, toString(i));
 }
 
 
 aspect production stringExpr
 top::Expr ::= s::String
 {
-  top.silverExpr = "\"" ++ s ++ "\"";
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverExpr = buildIOVal(top.precedingIO, "\"" ++ s ++ "\"");
 }
 
 
 aspect production funCall
 top::Expr ::= fun::QName args::Args
 {
+  top.silverExpr =
+      foldr(\ p::(String, Type, String) rest::String ->
+              buildLet(p.1, "IOVal<" ++ p.2.silverType ++ ">", p.3,
+                       rest),
+            call, args.silverArgs);
   local funName::String = fun.fullFunction.name.silverFunName;
-  top.silverExpr = error("funCall.silverExpr");
-
-  top.containsIO = true;
-
-  args.precedingName = top.precedingName;
-  top.thisName = error("top.thisName");
-
-  top.stmtDefs = error("funCall.stmtDefs");
+  local call::String =
+      funName ++ "(" ++
+         implode(", ", map(\ p::(String, Type, String) ->
+                             p.1 ++ ".iovalue",
+                           args.silverArgs) ++ [args.resultingIO]) ++
+         ")";
+  args.precedingIO = top.precedingIO;
 }
 
 
 aspect production trueExpr
 top::Expr ::=
 {
-  top.silverExpr = "true";
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverExpr = buildIOVal(top.precedingIO, "true");
 }
 
 
 aspect production falseExpr
 top::Expr ::=
 {
-  top.silverExpr = "false";
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverExpr = buildIOVal(top.precedingIO, "false");
 }
 
 
 aspect production listIndexExpr
 top::Expr ::= l::Expr i::Expr
 {
-  top.silverExpr = error("listIndexExpr.silverExpr");
+  top.silverExpr =
+      buildLet(lName, "IOVal<" ++ l.type.silverType ++ ">",
+               l.silverExpr,
+         buildLet(iName, "IOVal<Integer>", i.silverExpr,
+            buildIOVal(iName ++ ".io",
+               "head(drop(" ++ iName ++ ".iovalue, " ++ lName ++
+                  ".iovalue))")));
+  local lName::String = "_index1_" ++ toString(genInt());
+  local iName::String = "_index2_" ++ toString(genInt());
 
-  top.containsIO = l.containsIO || i.containsIO;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  l.precedingIO = top.precedingIO;
+  i.precedingIO = lName ++ ".io";
 }
 
 
@@ -504,43 +420,31 @@ top::Expr ::= l::Expr i::Expr
 
 
 attribute
-   ctxExpr,
-   --name for IO before evaluating current
-   precedingName,
-   --name for IO after evaluating current
-   thisName,
-   stmtDefs,
-   silverArgs, containsIO
+   silverArgs, precedingIO, resultingIO
 occurs on Args;
-propagate ctxExpr on Args;
 
-synthesized attribute silverArgs::String;
+--[(name, SOS-Ext type, expression to assign to that name)]
+synthesized attribute silverArgs::[(String, Type, String)];
+
+--IO after computing all the args
+synthesized attribute resultingIO::String;
 
 aspect production nilArgs
 top::Args ::=
 {
-  top.silverArgs = "";
-
-  top.containsIO = false;
-
-  top.thisName = top.precedingName;
-
-  top.stmtDefs = [];
+  top.silverArgs = [];
+  top.resultingIO = top.precedingIO;
 }
 
 
 aspect production consArgs
 top::Args ::= e::Expr rest::Args
 {
-  top.silverArgs =
-      e.silverExpr ++ if rest.silverArgs == ""
-                      then "" else ", " ++ rest.silverArgs;
+  local argName::String = "_arg_" ++ toString(genInt());
+  top.silverArgs = (argName, e.type, e.silverExpr)::rest.silverArgs;
 
-  top.containsIO = e.containsIO || rest.containsIO;
+  e.precedingIO = top.precedingIO;
+  rest.precedingIO = argName ++ ".io";
 
-  e.precedingName = top.precedingName;
-  rest.precedingName = e.thisName;
-  top.thisName = rest.thisName;
-
-  top.stmtDefs = e.stmtDefs ++ rest.stmtDefs;
+  top.resultingIO = rest.resultingIO;
 }

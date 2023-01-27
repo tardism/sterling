@@ -50,7 +50,8 @@ function buildLet
 String ::= name::String ty::String val::String rest::String
 {
   return
-      "let " ++ name ++ "::" ++ ty ++ " = " ++ val ++ " in " ++ rest;
+      "let " ++ name ++ "::" ++ ty ++ " = " ++ val ++ " in " ++
+      rest ++ " end";
 }
 
 function addAssigns
