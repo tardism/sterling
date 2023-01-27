@@ -4,7 +4,7 @@ attribute
    silverType
 occurs on Type;
 
-synthesized attribute silverType::String
+synthesized attribute silverType::String;
 
 aspect production nameType
 top::Type ::= name::QName
@@ -48,6 +48,20 @@ top::Type ::=
 }
 
 
+aspect production unitType
+top::Type ::=
+{
+  top.silverType = error("unityType.silverType");
+}
+
+
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  top.silverType = "(" ++ tys.silverType ++ ")";
+}
+
+
 aspect production listType
 top::Type ::= ty::Type
 {
@@ -58,15 +72,21 @@ top::Type ::= ty::Type
 
 
 
+attribute
+   silverType
+occurs on TypeList;
+
 aspect production nilTypeList
 top::TypeList ::=
 {
-
+  top.silverType = "";
 }
 
 
 aspect production consTypeList
 top::TypeList ::= t::Type rest::TypeList
 {
-
+  top.silverType = t.silverType ++
+                   if rest.silverType == ""
+                   then "" else ", " ++ rest.silverType;
 }

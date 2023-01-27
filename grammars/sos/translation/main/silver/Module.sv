@@ -1,5 +1,6 @@
 grammar sos:translation:main:silver;
 
+import sos:core:concreteDefs:abstractSyntax;
 import sos:core:modules;
 
 

@@ -13,6 +13,8 @@ imports sos:translation:semantic:extensibella;
 
 imports sos:translation:conc:silver;
 
+imports sos:translation:main:silver;
+
 --Don't include sos:testing because that isn't meant for use anywhere
 --but in testing things work; it should not be used in an actual
 --module.

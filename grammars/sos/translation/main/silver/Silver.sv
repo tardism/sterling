@@ -1,5 +1,9 @@
 grammar sos:translation:main:silver;
 
+imports sos:core:common:abstractSyntax;
+imports sos:core:semanticDefs:abstractSyntax;
+imports sos:core:main:abstractSyntax;
+
 nonterminal SilverFunDef with pp;
 
 abstract production silverFunDef
@@ -10,7 +14,7 @@ top::SilverFunDef ::= name::String params::[(String, String)]
       "function " ++ name ++ "\n" ++ retTy ++ " ::= " ++
       implode(" ", map(\ p::(String, String) ->
                          p.1 ++ "::" ++ p.2, params)) ++
-      " " ++ ioname ++ "::IOToken\n{\n" ++ body ++ "\n}";
+      " ioin::IOToken\n{\n" ++ body ++ "\n}";
 }
 
 
@@ -31,7 +35,7 @@ top::StmtDef ::= name::String body::String
 abstract production stmtTypedDef
 top::StmtDef ::= name::String type::String body::String
 {
-
+  top.pp = error("stmtTypedDef.pp");
 }
 
 

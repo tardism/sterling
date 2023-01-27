@@ -2,6 +2,7 @@ grammar sos:translation:main:silver;
 
 import silver:util:cmdargs;
 import sos:core;
+import sos:core:modules only ModuleList;
 
 
 function main

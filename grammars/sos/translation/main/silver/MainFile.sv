@@ -49,7 +49,7 @@ attribute
 occurs on FunDecl;
 
 aspect production funDecl
-top::FunDecl ::= name::String params::Params retTy::Type body::Stmt
+top::FunDecl ::= name::String params::Params retTy::Type body::Expr
 {
   local bodyStr::String = error("funDecl.bodyStr");
   top.silverFunDefs =
@@ -85,5 +85,5 @@ top::Params ::=
 aspect production oneParams
 top::Params ::= name::String ty::Type
 {
-
+  top.silverParams = [(name, ty.silverType)];
 }
