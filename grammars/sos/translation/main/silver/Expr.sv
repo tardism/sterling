@@ -30,7 +30,18 @@ synthesized attribute stmtDefs::[StmtDef];
 aspect production letExpr
 top::Expr ::= names::[String] e1::Expr e2::Expr
 {
-  top.silverExpr = error("letExpr.silverExpr");
+  top.silverExpr =
+      case e1.type, names of
+      | tupleType(tys), _::_::_ ->
+        foldr(\ p::(String, Integer, Type) rest::String ->
+                buildLet(p.1, p.3.silverType,
+                         letName ++ "." ++ toString(p.2), rest),
+              e2.silverExpr,
+              zip(names, zip(range(1, tys.len + 1), tys.toList)))
+      | _ ->
+        buildLet(head(names), e1.type.silverType, e1.silverExpr,
+                 e2.silverExpr)
+      end;
 
   top.containsIO = e1.containsIO || e2.containsIO;
 
@@ -38,7 +49,9 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
   e2.precedingName = e1.thisName;
   top.thisName = e2.thisName;
 
-  top.stmtDefs = e1.stmtDefs ++ e2.stmtDefs;
+  top.stmtDefs =
+      stmtTypedDef(letName, e1.silverType,
+                   e1.silverExpr)::(e1.stmtDefs ++ e2.stmtDefs;
 }
 
 
@@ -61,7 +74,7 @@ top::Expr ::= a::Expr b::Expr
 aspect production ifExpr
 top::Expr ::= cond::Expr th::Expr el::Expr
 {
-  top.silverExpr = ifName ++ ".iovalue";
+  top.silverExpr = if isUnit then "unit()" else ifName ++ ".iovalue";
 
   top.containsIO = cond.containsIO || th.containsIO || el.containsIO;
 
@@ -91,7 +104,7 @@ aspect production printExpr
 top::Expr ::= e::Expr
 {
   --no actual value
-  top.silverExpr = error("printExpr.silverExpr");
+  top.silverExpr = "unit()";
 
   top.containsIO = true;
 
@@ -114,7 +127,7 @@ top::Expr ::= e::Expr
 aspect production writeExpr
 top::Expr ::= e::Expr file::Expr
 {
-  top.silverExpr = error("writeExpr.silverExpr");
+  top.silverExpr = "unit()";
 
   top.containsIO = true;
 

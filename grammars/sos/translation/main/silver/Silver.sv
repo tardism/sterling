@@ -46,6 +46,13 @@ String ::= valin::String
   return valin ++ ".iovalue";
 }
 
+function buildLet
+String ::= name::String ty::String val::String rest::String
+{
+  return
+      "let " ++ name ++ "::" ++ ty ++ " = " ++ val ++ " in " ++ rest;
+}
+
 function addAssigns
 String ::= assigns::[(String, String)] currentCtx::String
 {
