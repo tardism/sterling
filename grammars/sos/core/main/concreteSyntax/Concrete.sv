@@ -160,10 +160,19 @@ concrete productions top::IndexExpr_c
   { top.ast = e.ast; }
 
 concrete productions top::FactorExpr_c
-| 'Derive' j::Judgment_c 'assigning' '[' vars::Vars_c ']'
-  { top.ast = deriveExpr(j.ast, vars.ast, location=top.location); }
-| 'Derive' j::Judgment_c 'assigning' '[' ']'
-  { top.ast = deriveExpr(j.ast, [], location=top.location); }
+| 'Derive' '{' j::Judgment_c '}' 'for' useVars::Vars_c
+  'assigning' '[' vars::Vars_c ']'
+  { top.ast = deriveExpr(j.ast, useVars.ast, vars.ast,
+                         location=top.location); }
+| 'Derive' '{' j::Judgment_c '}' 'for' useVars::Vars_c
+  'assigning' '[' ']'
+  { top.ast = deriveExpr(j.ast, useVars.ast, [],
+                         location=top.location); }
+| 'Derive' '{' j::Judgment_c '}' 'assigning' '[' vars::Vars_c ']'
+  { top.ast = deriveExpr(j.ast, [], vars.ast,
+                         location=top.location); }
+| 'Derive' '{' j::Judgment_c '}' 'assigning' '[' ']'
+  { top.ast = deriveExpr(j.ast, [], [], location=top.location); }
 | 'Parse' nt::LowerQName_t 'from' e::FactorExpr_c
   { top.ast = parseExpr(toQName(nt.lexeme, nt.location), e.ast,
                         location=top.location); }

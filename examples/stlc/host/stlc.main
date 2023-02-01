@@ -7,7 +7,7 @@ Function main : <Args : [string]> -> int {
    in
      If ParseSuccess
      Then
-       Let Success, Ty := Derive typeOf nil Tm Ty assigning [Ty]
+       Let Success, Ty := Derive {typeOf nil Tm Ty} for Tm assigning [Ty]
        in
          If Success
          Then

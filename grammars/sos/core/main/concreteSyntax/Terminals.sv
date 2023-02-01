@@ -14,6 +14,7 @@ terminal From_t    'from'    lexer classes {KEYWORD};
 
 terminal Derive_t      'Derive'      lexer classes {KEYWORD};
 terminal Assigning_t   'assigning'   lexer classes {KEYWORD};
+terminal For_t         'for'         lexer classes {KEYWORD};
 
 terminal Fun_t      'Function'   lexer classes {KEYWORD};
 terminal Arrow_t    '->';

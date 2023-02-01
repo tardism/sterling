@@ -121,9 +121,10 @@ top::Expr ::= file::Expr
 
 --vars are the bindings we want out of the judgment
 aspect production deriveExpr
-top::Expr ::= j::Judgment vars::[String]
+top::Expr ::= j::Judgment useVars::[String] vars::[String]
 {
   top.silverExpr = error("deriveExpr.silverExpr");
+  local deriveName::String = "_derive_" ++ toString(genInt());
 }
 
 
@@ -133,8 +134,25 @@ top::Expr ::= j::Judgment vars::[String]
 aspect production parseExpr
 top::Expr ::= nt::QName parseString::Expr
 {
-  top.silverExpr = error("parseExpr.silverExpr");
+  top.silverExpr =
+    buildLet(parseStringName, "IOVal<String>", parseString.silverExpr,
+       buildLet(parseName, "IOVal<Either<String Term>>", parseExpr,
+          "case " ++ parseName ++ ".iovalue of " ++
+          "| right(tm) -> " ++ buildIOVal(parseName ++ ".io",
+                                          "(true, tm)") ++
+         " | left(e) -> " ++ buildIOVal(parseName ++ ".io",
+                                "(false, error(e))") ++ "end"));
+                                  
+  local parseStringName::String =
+      "_parseString_" ++ toString(genInt());
+  local parseName::String = "_parse_" ++ toString(genInt());
+  local parseExpr::String =
+      "parse(_parserConfig_, " ++ parseStringName ++ ".iovalue, " ++
+             nt.pp ++ ", " ++ parseStringName ++ ".io)";
+
+  parseString.precedingIO = top.precedingIO;
 }
+
 
 aspect production orExpr
 top::Expr ::= e1::Expr e2::Expr

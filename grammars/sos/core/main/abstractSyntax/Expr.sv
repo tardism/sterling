@@ -156,10 +156,12 @@ top::Expr ::= file::Expr
 
 --vars are the bindings we want out of the judgment
 abstract production deriveExpr
-top::Expr ::= j::Judgment vars::[String]
+top::Expr ::= j::Judgment useVars::[String] vars::[String]
 {
-  top.pp = "Derive " ++ j.pp ++
-           " assigning [" ++ implode(", ", vars) ++ "]";
+  top.pp = "Derive {" ++ j.pp ++ "} " ++
+           (if null(useVars) then ""
+                             else "for " ++ implode(", ", useVars)) ++
+           "assigning [" ++ implode(", ", vars) ++ "]";
 
   j.isConclusion = false;
   j.isExtensibleRule = false;
@@ -177,12 +179,14 @@ top::Expr ::= j::Judgment vars::[String]
             end,
           lkpVarsTys);
   top.type =
-      tupleType(foldr(consTypeList(_, _, location=top.location),
-                      nilTypeList(location=top.location),
-                      boolType(location=top.location)::varsTys),
-                location=top.location);
+      if null(vars)
+      then boolType(location=top.location)
+      else tupleType(foldr(consTypeList(_, _, location=top.location),
+                           nilTypeList(location=top.location),
+                           boolType(location=top.location)::varsTys),
+                     location=top.location);
 
-  --check for duplicate var names
+  --check for duplicate var names being assigned
   top.errors <-
       flatMap(\ g::[String] ->
                 if length(g) > 1
@@ -191,6 +195,15 @@ top::Expr ::= j::Judgment vars::[String]
                          location=top.location)]
                 else [],
               group(sort(vars)));
+  --check for duplicate var names being sent in
+  top.errors <-
+      flatMap(\ g::[String] ->
+                if length(g) > 1
+                then [errorMessage("Multiple declarations of using" ++
+                         " variable " ++ head(g) ++ " in Derive",
+                         location=top.location)]
+                else [],
+              group(sort(useVars)));
   --check for vars being defined by the judgment
   top.errors <-
       flatMap(\ p::(String, Maybe<Type>) ->
@@ -201,7 +214,16 @@ top::Expr ::= j::Judgment vars::[String]
                                 "occur in the derived judgment",
                                 location=top.location)]
                 end,
-              lkpVarsTys);
+         lkpVarsTys ++ map(\ v::String ->
+                             (v, lookup(v, j.upVarTypes)), useVars));
+  --check for overlap between vars sent in and vars assigned
+  top.errors <-
+      flatMap(
+         \ x::String ->
+           if contains(x, vars)
+           then [errorMessage("Variable " ++ x ++ " cannot both " ++
+                    "be used and assigned", location=top.location)]
+           else [], useVars);
 }
 
 
@@ -215,7 +237,7 @@ top::Expr ::= nt::QName parseString::Expr
 
   parseString.downVarTypes = top.downVarTypes;
 
-  top.type =
+  top.type = --(bool, parsed AST)
       tupleType(
          consTypeList(boolType(location=top.location),
          consTypeList(if nt.concreteFound

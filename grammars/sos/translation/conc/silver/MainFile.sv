@@ -97,7 +97,7 @@ top::Expr ::= file::Expr
 
 --vars are the bindings we want out of the judgment
 aspect production deriveExpr
-top::Expr ::= j::Judgment vars::[String]
+top::Expr ::= j::Judgment useVars::[String] vars::[String]
 {
   top.parsedTypes = [];
 }

@@ -135,11 +135,11 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
   local parseFunction::String =
       "function parse\n" ++
       "IOVal<Either<String Term>> ::= p::ParserConfig s::String " ++
-                                     "q::QName ioin::IOToken\n{\n" ++
+                                     "q::String ioin::IOToken\n{\n" ++
               --parser reserved word
       "   local parseR::(ParseResult<Term_c> ::= String String) = " ++
               foldr(\ q::QName rest::String ->
-                      "if q.pp = " ++ q.pp ++
+                      "if q == " ++ q.pp ++
                      " then " ++ q.parserName ++
                      " else " ++ rest,
                     "error(\"Impossible\")", parsedNTs) ++ ";\n" ++
