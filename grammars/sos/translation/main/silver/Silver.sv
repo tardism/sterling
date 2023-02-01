@@ -11,7 +11,7 @@ top::SilverFunDef ::= name::String params::[(String, String)]
                       retTy::String body::String
 {
   top.pp =
-      "function " ++ name ++ "\n" ++ retTy ++ " ::= " ++
+      "function " ++ funName(name) ++ "\n" ++ retTy ++ " ::= " ++
       implode(" ", map(\ p::(String, String) ->
                          p.1 ++ "::" ++ p.2, params)) ++
       " ioin::IOToken\n{\n" ++ body ++ "\n}";

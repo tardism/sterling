@@ -51,7 +51,9 @@ occurs on FunDecl;
 aspect production funDecl
 top::FunDecl ::= name::String params::Params retTy::Type body::Expr
 {
-  local bodyStr::String = error("funDecl.bodyStr");
+  body.precedingIO = "ioin";
+  local bodyStr::String =
+      "return " ++ body.silverExpr ++ ";";
   top.silverFunDefs =
       [silverFunDef(funName(name), params.silverParams,
                     retTy.silverType, bodyStr)];

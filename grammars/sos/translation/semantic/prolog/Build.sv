@@ -71,7 +71,12 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
   --derive function
   local deriveFunction::String =
       "function derive\nIOVal<Maybe<[(String, Term)]>> ::= " ++
-           "d::DeriveConfig j::Judgment ioin::IOToken\n{\n" ++
+           "d::DeriveConfig j::Judgment inArgs::[(String, Term)] " ++
+           "ioin::IOToken\n{\n" ++
+      "   local args::String = " ++
+             "foldr(\\ p::(String, Term) rest::String -> " ++
+                      "p.1 ++ \"=\" ++ p.2 ++ \", \" ++ rest, " ++
+                   "j.prolog, inArgs);\n" ++
       "   local s::IOToken = sendToProcess(d, " ++
                                "j.prolog ++ \". .\\n\");\n" ++
                      --end with ". ." so we get the next prompt always

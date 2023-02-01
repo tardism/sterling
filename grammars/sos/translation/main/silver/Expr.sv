@@ -123,8 +123,31 @@ top::Expr ::= file::Expr
 aspect production deriveExpr
 top::Expr ::= j::Judgment useVars::[String] vars::[String]
 {
-  top.silverExpr = error("deriveExpr.silverExpr");
+  top.silverExpr =
+      buildLet(deriveName, "IOVal<Maybe[(String, Term)]>>",
+         funCall, finalResult);
   local deriveName::String = "_derive_" ++ toString(genInt());
+  local funCall::String =
+      "derive(_deriveConfig_, " ++ j.pp ++ ", " ++ args ++ ", " ++
+              top.precedingIO ++ ")";
+  local args::String =
+      "[" ++ implode(", ",
+                map(\ v::String -> "(\"" ++ v ++ "\", " ++ v ++ ")",
+                    useVars)) ++ "]";
+  local finalResult::String =
+      buildIOVal(deriveName ++ ".io",
+         "case " ++ deriveName ++ ".iovalue of " ++
+         "| nothing() -> (" ++
+            implode(", ",
+               "false"::map(\ v::String ->
+                              "error(\"" ++ v ++ " not defined in " ++
+                              "failing derivation\")", vars)) ++
+           ") " ++
+         "| just(l) -> " ++
+           "(" ++ implode(", ",
+                     map(\ v::String ->
+                           "lookup(" ++ v ++ ", l).fromJust",
+                         vars)) ++ ") end");
 }
 
 
