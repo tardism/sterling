@@ -17,10 +17,11 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [actionSpec(runFun = runProlog,
-                         shouldDoFun = \ a::Decorated CmdArgs ->
-                                         a.outputProlog,
-                         actionDesc = "Prolog Translation")];
+  semTransActions <-
+      [actionSpec(runFun = runProlog,
+                  shouldDoFun = \ a::Decorated CmdArgs ->
+                                  a.outputProlog,
+                  actionDesc = "Prolog Translation")];
 }
 
 
@@ -150,7 +151,7 @@ top::CmdArgs ::= rest::CmdArgs
 aspect function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  flags <-
+  semTransFlags <-
      [flagSpec(name="--prolog",
                paramString=nothing(),
                help="output Prolog translation of semantics",

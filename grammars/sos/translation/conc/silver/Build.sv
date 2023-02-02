@@ -15,7 +15,7 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <-
+  concTransActions <-
       [actionSpec(runFun = runSilverConc,
                   shouldDoFun = \ a::Decorated CmdArgs ->
                                   a.outputSilverConc,
@@ -214,7 +214,7 @@ top::CmdArgs ::= rest::CmdArgs
 aspect function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  flags <-
+  concTransFlags <-
      [flagSpec(name="--silver-concrete",
                paramString=nothing(),
                help="output Silver translation of concrete syntax",

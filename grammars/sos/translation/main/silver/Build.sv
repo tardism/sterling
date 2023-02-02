@@ -16,7 +16,7 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <-
+  mainTransActions <-
       [actionSpec(
           runFun = runSilverMain,
           shouldDoFun =

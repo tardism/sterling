@@ -17,7 +17,7 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <-
+  nonTransActions <-
       [actionSpec(runFun = runLambdaProlog,
                   shouldDoFun = \ a::Decorated CmdArgs ->
                                   a.outputLambdaProlog,
@@ -81,7 +81,7 @@ top::CmdArgs ::= rest::CmdArgs
 aspect function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  flags <-
+  nonTransFlags <-
      [flagSpec(name="--lprolog",
                paramString=nothing(),
                help="output Lambda Prolog translation",

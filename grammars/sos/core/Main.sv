@@ -46,9 +46,9 @@ IOVal<Integer> ::= args::[String]
    mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioin::IOToken
 {
-  --(result ::= compiled mods  gen loc  grammars loc  args  io)
-  production attribute actions::[ActionSpec] with ++;
-  actions :=
+  --actions that aren't for producing runnable translations
+  production attribute nonTransActions::[ActionSpec] with ++;
+  nonTransActions :=
      [
       actionSpec(
          runFun =
@@ -64,6 +64,20 @@ IOVal<Integer> ::= args::[String]
          shouldDoFun = \ a::Decorated CmdArgs -> true,
          actionDesc = "Error Checking")
      ];
+
+  --actions for producing runnable translations for derivations
+  production attribute semTransActions::[ActionSpec] with ++;
+  semTransActions := [];
+  --actions for producing runnable translations for parsing
+  production attribute concTransActions::[ActionSpec] with ++;
+  concTransActions := [];
+  --actions for producing runnable translations for main function
+  production attribute mainTransActions::[ActionSpec] with ++;
+  mainTransActions := [];
+
+  local actions::[ActionSpec] =
+      nonTransActions ++ semTransActions ++ concTransActions ++
+      mainTransActions;
 
   local e::Either<String  Decorated CmdArgs> = parseArgs(args);
   local a::Decorated CmdArgs = e.fromRight;
@@ -161,7 +175,7 @@ top::ActionSpec ::=
 
 
 attribute
-   errors, generateModuleName, rootLoc, outputName,
+   errors, generateModuleName, rootLoc, outputName, helpRequest,
    concTranslations, semTranslations
 occurs on CmdArgs;
 
@@ -169,6 +183,8 @@ synthesized attribute errors::[String];
 synthesized attribute generateModuleName::String;
 synthesized attribute rootLoc::[String];
 synthesized attribute outputName::[String];
+
+synthesized attribute helpRequest::Boolean;
 
 --lists of given runnable translations
 --should contain names that can easily be traced to flags
@@ -191,6 +207,8 @@ top::CmdArgs ::= l::[String]
   top.rootLoc = [];
   top.outputName = [];
 
+  top.helpRequest = false;
+
   top.concTranslations = [];
   top.semTranslations = [];
 }
@@ -205,6 +223,8 @@ top::CmdArgs ::= loc::String rest::CmdArgs
 
   top.rootLoc = loc::rest.rootLoc;
   top.outputName = rest.outputName;
+
+  top.helpRequest = rest.helpRequest;
 
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
@@ -223,6 +243,27 @@ top::CmdArgs ::= filename::String rest::CmdArgs
   top.rootLoc = rest.rootLoc;
   top.outputName = filename::rest.outputName;
 
+  top.helpRequest = rest.helpRequest;
+
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
+  forwards to rest;
+}
+
+
+abstract production helpFlag
+top::CmdArgs ::= rest::CmdArgs
+{
+  top.errors = rest.errors;
+
+  top.generateModuleName = rest.generateModuleName;
+
+  top.rootLoc = rest.rootLoc;
+  top.outputName = rest.outputName;
+
+  top.helpRequest = true;
+
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
@@ -234,10 +275,9 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  production attribute flags::[FlagSpec] with ++;
-  flags := [];
-
-  flags <-
+  --flags that aren't for producing runnable translations
+  production attribute nonTransFlags::[FlagSpec] with ++;
+  nonTransFlags :=
      [flagSpec(name="-I",
                paramString=just("<path>"),
                help="path to modules",
@@ -245,7 +285,25 @@ Either<String  Decorated CmdArgs> ::= args::[String]
       flagSpec(name="-o",
                paramString=just("<filename>"),
                help="runnable file to produce",
-               flagParser=option(outputNameOption))];
+               flagParser=option(outputNameOption)),
+      flagSpec(name="--help",
+               paramString=nothing(),
+               help="display help message",
+               flagParser=flag(helpFlag))];
+
+  --runnable translations for derivations
+  production attribute semTransFlags::[FlagSpec] with ++;
+  semTransFlags := [];
+  --runnable translations for parsing
+  production attribute concTransFlags::[FlagSpec] with ++;
+  concTransFlags := [];
+  --runnable translations for main function
+  production attribute mainTransFlags::[FlagSpec] with ++;
+  mainTransFlags := [];
+
+  local flags::[FlagSpec] =
+      nonTransFlags ++ semTransFlags ++ concTransFlags ++
+      mainTransFlags;
 
   local usage::String = 
         "Usage: sos-ext [options] <module name>\n\n" ++
@@ -289,6 +347,8 @@ Either<String  Decorated CmdArgs> ::= args::[String]
 
   return if !null(errors)
          then left(implode("\n", errors) ++ "\n\n" ++ usage)
+         else if a.helpRequest
+         then left(usage)
          else right(a);
 }
 

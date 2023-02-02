@@ -17,7 +17,7 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <-
+  nonTransActions <-
       [actionSpec(runFun = runLaTeX,
                   shouldDoFun = \ a::Decorated CmdArgs ->
                                   !null(a.latexLocation),
@@ -72,7 +72,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 aspect function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  flags <-
+  nonTransFlags <-
      [flagSpec(name="--latex",
                paramString=just("<filename>"),
                help="filename for LaTeX output",

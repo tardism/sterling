@@ -17,10 +17,11 @@ IOVal<Integer> ::= args::[String] ioin::IOToken
 aspect function run
 IOVal<Integer> ::= _ _ _ _ _
 {
-  actions <- [actionSpec(runFun = runExtensibella,
-                         shouldDoFun = \ a::Decorated CmdArgs ->
-                                         a.outputExtensibella,
-                         actionDesc = "Extensibella Translation")];
+  nonTransActions <-
+      [actionSpec(runFun = runExtensibella,
+                  shouldDoFun = \ a::Decorated CmdArgs ->
+                                  a.outputExtensibella,
+                  actionDesc = "Extensibella Translation")];
 }
 
 
@@ -81,7 +82,7 @@ top::CmdArgs ::= rest::CmdArgs
 aspect function parseArgs
 Either<String  Decorated CmdArgs> ::= args::[String]
 {
-  flags <-
+  nonTransFlags <-
      [flagSpec(name="--extensibella",
                paramString=nothing(),
                help="output Extensibella translation",

@@ -168,6 +168,7 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
   j.isTranslationRule = false;
 
   j.downVarTypes = top.downVarTypes;
+  j.downSubst = emptySubst();
 
   local lkpVarsTys::[(String, Maybe<Type>)] =
       map(\ v::String -> (v, lookup(v, j.upVarTypes)), vars);
@@ -175,7 +176,8 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
       map(\ p::(String, Maybe<Type>) ->
             case p.2 of
             | nothing() -> errorType(location=top.location)
-            | just(t) -> t
+            | just(t) -> --substitute to get actual types
+              performSubstitutionType(t, j.upSubst)
             end,
           lkpVarsTys);
   top.type =
@@ -224,6 +226,8 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
            then [errorMessage("Variable " ++ x ++ " cannot both " ++
                     "be used and assigned", location=top.location)]
            else [], useVars);
+  --check for a problem unifying in the judgment
+  top.errors <- errorsFromSubst(j.upSubst);
 }
 
 
