@@ -108,6 +108,10 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
 {
   --Silver imports
   local importGrammars::[String] =
+      ["import sos:core:common:concreteSyntax;\n",
+       "import sos:core:common:abstractSyntax;\n",
+       "import sos:core:semanticDefs:concreteSyntax;\n",
+       "import sos:core:semanticDefs:abstractSyntax;\n"] ++
       map(\ s::String -> "import silverConc:" ++ s ++ ";\n",
           allGrmmrs);
 
@@ -115,8 +119,11 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
   local reducedParseNTs::[QName] = nub(parsedNTs);
   local parsers::[String] =
       map(\ q::QName ->
-            "parser " ++ q.parserName ++ "::Term_c{\n   " ++
-            implode(";\n   ", allGrmmrs) ++ "\n};",
+            "parser " ++ q.parserName ++ "::" ++
+                         q.silverConcNt ++ "{\n   " ++
+            implode(";\n   ",
+               map(\ s::String -> "silverConc:" ++ s, allGrmmrs)) ++
+            ";\n}",
           reducedParseNTs);
 
   --nonterminal for parser configuration and its constructor
@@ -128,7 +135,7 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
   --init function for parser---does nothing
   local initFunction::String =
       "function init_parse\nIOVal<ParserConfig> ::= " ++
-      "c::Decorated CmdArgs ioin::IOToken\n{\n" ++
+      "ioin::IOToken\n{\n" ++
       "   return ioval(ioin, parserConfig());\n}";
 
   --parse function
@@ -136,36 +143,36 @@ IOVal<Integer> ::= genLoc::String module::String parsedNTs::[QName]
       "function parse\n" ++
       "IOVal<Either<String Term>> ::= p::ParserConfig s::String " ++
                                      "q::String ioin::IOToken\n{\n" ++
-              --parser reserved word
-      "   local parseR::(ParseResult<Term_c> ::= String String) = " ++
-              foldr(\ q::QName rest::String ->
-                      "if q == " ++ q.pp ++
-                     " then " ++ q.parserName ++
-                     " else " ++ rest,
-                    "error(\"Impossible\")", parsedNTs) ++ ";\n" ++
-      "   local parsed::ParseResult<Term> = " ++
-             "parseR(s, \"<<input>>\");\n" ++
-      "   return ioval(ioin, if parsed.parseSuccess " ++
-                            "then right(parsed.ast) " ++
-                            "else left(parsed.parseErrors));" ++
-      "\n}";
+      "   return " ++
+            foldr(\ q::QName rest::String ->
+                    "if q == \"" ++ q.pp ++ "\" " ++
+                    "then let parsed::ParseResult<" ++
+                                          q.silverConcNt ++ "> = " ++
+                              q.parserName ++ "(s, \"<<input>>\") " ++
+                         "in ioval(ioin, " ++
+                               "if parsed.parseSuccess " ++
+                               "then right(parsed.parseTree.ast) " ++
+                               "else left(parsed.parseErrors)) end" ++
+                   " else " ++ rest,
+                  "error(\"Impossible\")", parsedNTs) ++ ";\n" ++
+      "}";
 
   --end function for parser---does nothing
   local endFunction::String =
       "function end_parse\nIOToken ::= p::ParserConfig " ++
-      "ioin::IOToken\n{\n   return ioin\n}";
+      "ioin::IOToken\n{\n   return ioin;\n}";
 
   local grammarInfo::(String, String) =
       buildFinalGrammar(module, genLoc);
 
   --contents of the Parse.sv file
   local completeContents::String =
-      "grammar " ++ grammarInfo.2 ++ ";\n" ++
-      implode("", importGrammars) ++
+      "grammar " ++ grammarInfo.2 ++ ";\n\n" ++
+      implode("", importGrammars) ++ "\n" ++
       implode("\n", parsers) ++ "\n" ++
-      parserConfig ++ "\n" ++
-      initFunction ++ "\n" ++
-      parseFunction ++ "\n" ++
+      parserConfig ++ "\n\n" ++
+      initFunction ++ "\n\n" ++
+      parseFunction ++ "\n\n" ++
       endFunction ++ "\n";
 
   --write it out

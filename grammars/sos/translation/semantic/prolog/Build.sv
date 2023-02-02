@@ -65,7 +65,7 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
   --init function for Prolog interaction, starting Prolog process
   local initFunction::String =
       "function init_derive\nIOVal<DeriveConfig> ::= " ++
-                       "a::Decorated CmdArgs ioin::IOToken\n{\n" ++
+                       "ioin::IOToken\n{\n" ++
       "   return spawnProcess(\"swipl\", [\"" ++ prologFile ++
                                            "\"], ioin);\n}";
 
@@ -76,10 +76,10 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
            "ioin::IOToken\n{\n" ++
       "   local args::String = " ++
              "foldr(\\ p::(String, Term) rest::String -> " ++
-                      "p.1 ++ \"=\" ++ p.2 ++ \", \" ++ rest, " ++
-                   "j.prolog, inArgs);\n" ++
+                "p.1 ++ \"=\" ++ p.2.prolog.pp ++ \", \" ++ rest, " ++
+                   "j.prolog.pp, inArgs);\n" ++
       "   local s::IOToken = sendToProcess(d, " ++
-                               "j.prolog ++ \". .\\n\");\n" ++
+                               "args ++ \". .\\n\", ioin);\n" ++
                      --end with ". ." so we get the next prompt always
       "   local output::IOVal<String> = " ++
              "readUntilFromProcess(d, \"?-\", s);\n" ++
@@ -89,8 +89,8 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
   local endFunction::String =
       "function end_derive\nIOToken ::= d::DeriveConfig " ++
                                        "ioin::IOToken\n{\n" ++
-      "   return waitForProcess(d, sendToProcess(\"halt.\\n\", " ++
-                                                 "d, ioin));\n}";
+      "   return waitForProcess(d, sendToProcess(d, \"halt.\\n\", " ++
+                                                 "ioin));\n}";
 
   local grammarInfo::(String, String) =
       buildFinalGrammar(module, genLoc);
@@ -99,6 +99,8 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
   local completeContents::String =
       "grammar " ++ grammarInfo.2 ++ ";\n" ++
       "import silver:util:subprocess;\n" ++
+      "import sos:core:common:abstractSyntax;\n" ++
+      "import sos:core:semanticDefs:abstractSyntax;\n" ++
       "import sos:translation:semantic:prolog;\n" ++
       "type DeriveConfig = ProcessHandle;\n" ++
       initFunction ++ "\n" ++

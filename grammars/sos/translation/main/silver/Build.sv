@@ -31,7 +31,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken =
-      printT("Producing Silver output for main function\n\n", i);
+      printT("Producing Silver output for main function\n", i);
 
   local silverGenLoc::String =
       genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
@@ -43,8 +43,9 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
       printT("Error producing Silver grammar files\n", genGrammars.io);
   --generate pieces for running
   local genMain::IOVal<Integer> =
-      genSilverMainFunction(genLoc, a.generateModuleName,
-         map(fst,  m.silverFunDefsModules), genGrammars.io);
+      genSilverMainFunction(genLoc, grmmrsLoc, a,
+         a.generateModuleName, map(fst,  m.silverFunDefsModules),
+         genGrammars.io);
 
   return
       if !genGrammars.iovalue
@@ -63,7 +64,7 @@ IOVal<Boolean> ::= mods::[(String, [SilverFunDef])] genLoc::String
       "grammar " ++ grmmr ++ ";\n" ++
       "import sos:core:common:abstractSyntax;\n" ++
       "import sos:core:semanticDefs:abstractSyntax;\n" ++
-      decls;
+      decls ++ "\n";
   local modSplit::[String] = explode(":", head(mods).1);
   local dir::String =
       genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
@@ -90,8 +91,8 @@ IOVal<Boolean> ::= mods::[(String, [SilverFunDef])] genLoc::String
 
 
 function genSilverMainFunction
-IOVal<Integer> ::= genLoc::String module::String allGrmmrs::[String]
-                   ioin::IOToken
+IOVal<Integer> ::= genLoc::String grmmrsLoc::String a::Decorated CmdArgs
+                   module::String allGrmmrs::[String] ioin::IOToken
 {
   --Silver imports
   local importGrammars::[String] =
@@ -99,22 +100,31 @@ IOVal<Integer> ::= genLoc::String module::String allGrmmrs::[String]
 
   --main function
   local mainFunction::String =
-      "function main\nIOVal<Integer> ::= " ++
-      "args::[String] ioin::IOToken\n{\n" ++
-      "   local startP::IOVal<ParserConfig> = init_parse(ioin);\n" ++
-      "   local startD::IOVal<DeriveConfig> = init_derive(ioin);\n" ++
-      "   local _parseConfig_::ParserConfig = startP.iovalue;\n" ++
-      "   local _deriveConfig_::DeriveConfig = startD.iovalue;\n" ++
-      "   local run::IOVal<Integer> = " ++
-              module ++ ":" ++ funName("main") ++
-                                 "(args, startD.io);\n" ++
-      "   local endP::IOToken = end_parse(_parseConfig_, run.io);\n" ++
-      "   local endD::IOToken = end_derive(_deriveConfig_, endP);\n" ++
-      "   return ioval(endD, run.iovalue);\n" ++
-      "}";
+    "function main\nIOVal<Integer> ::= " ++
+    "args::[String] ioin::IOToken\n{\n" ++
+    "   local startP::IOVal<ParserConfig> = init_parse(ioin);\n" ++
+    "   local startD::IOVal<DeriveConfig> = init_derive(ioin);\n" ++
+    "   local parserConfig__::ParserConfig = startP.iovalue;\n" ++
+    "   local deriveConfig__::DeriveConfig = startD.iovalue;\n" ++
+    "   local parseFun__::(IOVal<Either<String Term>> ::= " ++
+                             "String String IOToken) = " ++
+           "parse(parserConfig__, _, _, _);\n" ++
+    "   local deriveFun__::(IOVal<Maybe<[(String, Term)]>> ::= " ++
+                       "Judgment [(String, Term)] IOToken) = " ++
+           "derive(deriveConfig__, _, _, _);\n" ++
+    "   local run::IOVal<Integer> = " ++
+          "silverMain:" ++ module ++ ":" ++ funName("main") ++
+             "(args, parseFun__, deriveFun__, startD.io);\n" ++
+    "   local endP::IOToken = end_parse(parserConfig__, run.io);\n" ++
+    "   local endD::IOToken = end_derive(deriveConfig__, endP);\n" ++
+    "   return ioval(endD, run.iovalue);\n" ++
+    "}";
 
   local completeContents::String =
-      implode("\n", importGrammars) ++ "\n" ++ mainFunction ++ "\n";
+      "grammar main:" ++ a.generateModuleName ++ ";\n" ++
+      "import sos:core:semanticDefs:abstractSyntax;\n" ++
+      implode("\n", importGrammars) ++ "\n\n" ++
+      mainFunction ++ "\n";
 
   local grammarInfo::(String, String) =
       buildFinalGrammar(module, genLoc);
@@ -126,8 +136,24 @@ IOVal<Integer> ::= genLoc::String module::String allGrmmrs::[String]
   local written::IOToken =
       writeFileT(filename, completeContents, mkDirectory.io);
 
+  --compile it, since this is the last piece of the main
+  local compileCmd::String =
+      "silver -I " ++ genLoc ++ " " ++
+             "-I " ++ grmmrsLoc ++ " " ++
+             ( if null(a.outputName)
+               then "-o " ++ module ++ ".jar"
+               else "-o " ++ head(a.outputName) ) ++ " " ++
+             "main:" ++ a.generateModuleName;
+  local compile::IOVal<Integer> = systemT(compileCmd, written);
+  local printCompileError::IOToken =
+      printT("Error compiling runnable translation\n" ++
+             "  (command: " ++ compileCmd ++ "; returned " ++
+             toString(compile.iovalue) ++ ")\n", compile.io);
+
   return
-      if mkDirectory.iovalue == 0
-      then ioval(written, 0)
-      else mkDirectory;
+      if mkDirectory.iovalue != 0
+      then mkDirectory
+      else if compile.iovalue != 0
+      then ioval(printCompileError, 2)
+      else compile;
 }

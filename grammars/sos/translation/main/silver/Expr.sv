@@ -1,5 +1,8 @@
 grammar sos:translation:main:silver;
 
+--for parse
+import sos:core:concreteDefs:abstractSyntax;
+
 attribute
    precedingIO, silverExpr
 occurs on Expr;
@@ -14,10 +17,7 @@ inherited attribute precedingIO::String;
 aspect production letExpr
 top::Expr ::= names::[String] e1::Expr e2::Expr
 {
-  local letName::String =
-      if length(names) > 1
-      then "_let_" ++ toString(genInt())
-      else head(names);
+  local letName::String = "let__" ++ toString(genInt());
   top.silverExpr =
       buildLet(letName, "IOVal<" ++ e1.type.silverType ++ ">",
          e1.silverExpr,
@@ -29,7 +29,10 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
                  e2.silverExpr,
                  zipWith(pair, names,
                     zipWith(pair, range(1, tys.len + 1), tys.toList)))
-         | _, _ -> e2.silverExpr
+         | _, [x] ->
+           buildLet(x, e1.type.silverType, letName ++ ".iovalue",
+                    e2.silverExpr)
+         | _, _ -> error("Should not translate")
          end);
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = letName ++ ".io";
@@ -41,7 +44,7 @@ top::Expr ::= a::Expr b::Expr
 {
   top.silverExpr =
       buildLet(seqName, "IOVal<Unit>", a.silverExpr, b.silverExpr);
-  local seqName::String = "_seq_" ++ toString(genInt());
+  local seqName::String = "seq__" ++ toString(genInt());
   a.precedingIO = top.precedingIO;
   b.precedingIO = seqName ++ ".io";
 }
@@ -52,7 +55,7 @@ top::Expr ::= cond::Expr th::Expr el::Expr
 {
   top.silverExpr =
       buildLet(condName, "IOVal<Boolean>", cond.silverExpr, ifBody);
-  local condName::String = "_cond_" ++ toString(genInt());
+  local condName::String = "cond__" ++ toString(genInt());
   local ifBody::String =
       "if " ++ condName ++ ".iovalue" ++ " then " ++ th.silverExpr ++
       " else " ++ el.silverExpr;
@@ -69,7 +72,7 @@ top::Expr ::= e::Expr
   top.silverExpr =
       buildLet(eName, "IOVal<" ++ e.type.silverType ++ ">",
                e.silverExpr, buildIOVal(printBody, "unit()"));
-  local eName::String = "_print_e_" ++ toString(genInt());
+  local eName::String = "print_e__" ++ toString(genInt());
   local printBody::String =
       "printT(" ++
       case e.type of
@@ -90,8 +93,8 @@ top::Expr ::= e::Expr file::Expr
       buildLet(eName, "IOVal<String>", e.silverExpr,
          buildLet(fileName, "IOVal<String>", file.silverExpr,
             buildIOVal(writeBody, "unit()")));
-  local eName::String = "_write_e_" ++ toString(genInt());
-  local fileName::String = "_write_file_" ++ toString(genInt());
+  local eName::String = "write_e__" ++ toString(genInt());
+  local fileName::String = "write_file__" ++ toString(genInt());
   local writeBody::String =
       "writeFileT(" ++ fileName ++ ".iovalue, " ++
       case e.type of
@@ -111,7 +114,7 @@ top::Expr ::= file::Expr
 {
   top.silverExpr =
       buildLet(fileName, "IOVal<String>", file.silverExpr, readBody);
-  local fileName::String = "_read_" ++ toString(genInt());
+  local fileName::String = "read__" ++ toString(genInt());
   local readBody::String =
       "readFileT(" ++ fileName ++ ".iovalue, " ++ fileName ++ ".io)";
 
@@ -124,11 +127,11 @@ aspect production deriveExpr
 top::Expr ::= j::Judgment useVars::[String] vars::[String]
 {
   top.silverExpr =
-      buildLet(deriveName, "IOVal<Maybe[(String, Term)]>>",
+      buildLet(deriveName, "IOVal<Maybe<[(String, Term)]>>",
          funCall, finalResult);
-  local deriveName::String = "_derive_" ++ toString(genInt());
+  local deriveName::String = "derive__" ++ toString(genInt());
   local funCall::String =
-      "derive(_deriveConfig_, " ++ j.pp ++ ", " ++ args ++ ", " ++
+      "deriveFun__(" ++ j.silver_pp ++ ", " ++ args ++ ", " ++
               top.precedingIO ++ ")";
   local args::String =
       "[" ++ implode(", ",
@@ -143,11 +146,11 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
                               "error(\"" ++ v ++ " not defined in " ++
                               "failing derivation\")", vars)) ++
            ") " ++
-         "| just(l) -> " ++
-           "(" ++ implode(", ",
-                     map(\ v::String ->
-                           "lookup(" ++ v ++ ", l).fromJust",
-                         vars)) ++ ") end");
+         "| just(l) -> (" ++
+            implode(", ",
+               "true"::map(\ v::String ->
+                             "lookup(\"" ++ v ++ "\", l).fromJust",
+                                     vars)) ++ ") end");
 }
 
 
@@ -167,11 +170,12 @@ top::Expr ::= nt::QName parseString::Expr
                                 "(false, error(e))") ++ "end"));
                                   
   local parseStringName::String =
-      "_parseString_" ++ toString(genInt());
-  local parseName::String = "_parse_" ++ toString(genInt());
+      "parseString__" ++ toString(genInt());
+  local parseName::String = "parse__" ++ toString(genInt());
   local parseExpr::String =
-      "parse(_parserConfig_, " ++ parseStringName ++ ".iovalue, " ++
-             nt.pp ++ ", " ++ parseStringName ++ ".io)";
+      "parseFun__(" ++ parseStringName ++ ".iovalue, " ++
+             "\"" ++ nt.fullConcreteName.pp ++ "\", " ++
+             parseStringName ++ ".io)";
 
   parseString.precedingIO = top.precedingIO;
 }
@@ -185,7 +189,7 @@ top::Expr ::= e1::Expr e2::Expr
          "if " ++ e1Name ++ ".iovalue " ++
          "then " ++ buildIOVal(e1Name ++ ".io", "true") ++
         " else " ++ e2.silverExpr);
-  local e1Name::String = "_or1_" ++ toString(genInt());
+  local e1Name::String = "or1__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -200,7 +204,7 @@ top::Expr ::= e1::Expr e2::Expr
          "if " ++ e1Name ++ ".iovalue " ++
          "then " ++ e2.silverExpr ++
         " else " ++ buildIOVal(e1Name ++ ".io", "true"));
-  local e1Name::String = "_and1_" ++ toString(genInt());
+  local e1Name::String = "and1__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -215,8 +219,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue < " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_lt1_" ++ toString(genInt());
-  local e2Name::String = "_lt2_" ++ toString(genInt());
+  local e1Name::String = "lt1__" ++ toString(genInt());
+  local e2Name::String = "lt2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -231,8 +235,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue > " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_gt1_" ++ toString(genInt());
-  local e2Name::String = "_gt2_" ++ toString(genInt());
+  local e1Name::String = "gt1__" ++ toString(genInt());
+  local e2Name::String = "gt2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -247,8 +251,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue <= " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_le1_" ++ toString(genInt());
-  local e2Name::String = "_le2_" ++ toString(genInt());
+  local e1Name::String = "le1__" ++ toString(genInt());
+  local e2Name::String = "le2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -263,8 +267,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue >= " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_ge1_" ++ toString(genInt());
-  local e2Name::String = "_ge2_" ++ toString(genInt());
+  local e1Name::String = "ge1__" ++ toString(genInt());
+  local e2Name::String = "ge2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -281,8 +285,8 @@ top::Expr ::= e1::Expr e2::Expr
                   e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue == " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_eq1_" ++ toString(genInt());
-  local e2Name::String = "_eq2_" ++ toString(genInt());
+  local e1Name::String = "eq1__" ++ toString(genInt());
+  local e2Name::String = "eq2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -297,8 +301,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue + " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_plus1_" ++ toString(genInt());
-  local e2Name::String = "_plus2_" ++ toString(genInt());
+  local e1Name::String = "plus1__" ++ toString(genInt());
+  local e2Name::String = "plus2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -313,8 +317,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue - " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_minus1_" ++ toString(genInt());
-  local e2Name::String = "_minus2_" ++ toString(genInt());
+  local e1Name::String = "minus1__" ++ toString(genInt());
+  local e2Name::String = "minus2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -329,8 +333,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue * " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_mult1_" ++ toString(genInt());
-  local e2Name::String = "_mult2_" ++ toString(genInt());
+  local e1Name::String = "mult1__" ++ toString(genInt());
+  local e2Name::String = "mult2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -345,8 +349,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue / " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_div1_" ++ toString(genInt());
-  local e2Name::String = "_div2_" ++ toString(genInt());
+  local e1Name::String = "div1__" ++ toString(genInt());
+  local e2Name::String = "div2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -361,8 +365,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<Integer>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue % " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_mod1_" ++ toString(genInt());
-  local e2Name::String = "_mod2_" ++ toString(genInt());
+  local e1Name::String = "mod1__" ++ toString(genInt());
+  local e2Name::String = "mod2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -377,8 +381,8 @@ top::Expr ::= e1::Expr e2::Expr
          buildLet(e2Name, "IOVal<String>", e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue ++ " ++ e2Name ++ ".iovalue")));
-  local e1Name::String = "_append1_" ++ toString(genInt());
-  local e2Name::String = "_append2_" ++ toString(genInt());
+  local e1Name::String = "append1__" ++ toString(genInt());
+  local e2Name::String = "append2__" ++ toString(genInt());
 
   e1.precedingIO = top.precedingIO;
   e2.precedingIO = e1Name ++ ".io";
@@ -419,7 +423,9 @@ top::Expr ::= fun::QName args::Args
       funName ++ "(" ++
          implode(", ", map(\ p::(String, Type, String) ->
                              p.1 ++ ".iovalue",
-                           args.silverArgs) ++ [args.resultingIO]) ++
+                           args.silverArgs) ++
+                       ["parserFun__", "deriveFun__",
+                        args.resultingIO]) ++
          ")";
   args.precedingIO = top.precedingIO;
 }
@@ -449,8 +455,8 @@ top::Expr ::= l::Expr i::Expr
             buildIOVal(iName ++ ".io",
                "head(drop(" ++ iName ++ ".iovalue, " ++ lName ++
                   ".iovalue))")));
-  local lName::String = "_index1_" ++ toString(genInt());
-  local iName::String = "_index2_" ++ toString(genInt());
+  local lName::String = "index1__" ++ toString(genInt());
+  local iName::String = "index2__" ++ toString(genInt());
 
   l.precedingIO = top.precedingIO;
   i.precedingIO = lName ++ ".io";
@@ -481,7 +487,7 @@ top::Args ::=
 aspect production consArgs
 top::Args ::= e::Expr rest::Args
 {
-  local argName::String = "_arg_" ++ toString(genInt());
+  local argName::String = "arg__" ++ toString(genInt());
   top.silverArgs = (argName, e.type, e.silverExpr)::rest.silverArgs;
 
   e.precedingIO = top.precedingIO;

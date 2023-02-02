@@ -55,7 +55,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
   local bodyStr::String =
       "return " ++ body.silverExpr ++ ";";
   top.silverFunDefs =
-      [silverFunDef(funName(name), params.silverParams,
+      [silverFunDef(name, params.silverParams,
                     retTy.silverType, bodyStr)];
 }
 

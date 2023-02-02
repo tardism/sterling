@@ -115,6 +115,20 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
       else [errorMessage("Expected function body to have type " ++
                retTy.pp ++ " but found " ++ body.type.pp,
                location=top.location)];
+  --Check for a correct main type
+  top.errors <-
+      if name == "main"
+      then case params.toList of
+           | [(_, listType(stringType()))] -> []
+           | _ -> [errorMessage("Main function must take one " ++
+                                "argument of type [string]",
+                                location=top.location)]
+           end ++
+           if retTy == intType(location=bogusLoc())
+           then []
+           else [errorMessage("Main function must return int",
+                              location=top.location)]
+      else [];
 }
 
 
@@ -123,6 +137,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
 
 nonterminal Params with
    pp,
+   toList<(String, Type)>, len,
    tyEnv,
    upVarTypes, types,
    errors,
@@ -133,6 +148,9 @@ abstract production branchParams
 top::Params ::= p1::Params p2::Params
 {
   top.pp = p1.pp ++ " " ++ p2.pp;
+
+  top.toList = p1.toList ++ p2.toList;
+  top.len = p1.len + p2.len;
 
   top.upVarTypes = p1.upVarTypes ++ p2.upVarTypes;
   top.types = foldr(consTypeList(_, _, location=top.location),
@@ -152,6 +170,9 @@ top::Params ::=
 {
   top.pp = "";
 
+  top.toList = [];
+  top.len = 0;
+
   top.upVarTypes = [];
   top.types = nilTypeList(location=top.location);
 }
@@ -161,6 +182,9 @@ abstract production oneParams
 top::Params ::= name::String ty::Type
 {
   top.pp = "<" ++ name ++ " : " ++ ty.pp ++ ">";
+
+  top.toList = [(name, ty)];
+  top.len = 1;
 
   top.upVarTypes = [(name, ty)];
   top.types = consTypeList(ty, nilTypeList(location=top.location),
