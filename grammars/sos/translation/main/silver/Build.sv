@@ -31,7 +31,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
 {
   local message::IOToken =
-      printT("Producing Silver output for main function\n", i);
+      printT("Producing Silver output for main function\n\n", i);
 
   local silverGenLoc::String =
       genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++

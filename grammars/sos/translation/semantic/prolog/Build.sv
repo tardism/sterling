@@ -62,6 +62,12 @@ function genSilverFunctions
 IOVal<Integer> ::= genLoc::String module::String prologFile::String
                    ioin::IOToken
 {
+  --
+  local parserFunction::String =
+      "parser parsePrologOutput::PrologOutput{\n" ++
+      "   sos:translation:semantic:prolog:parseProlog;\n" ++
+      "}";
+
   --init function for Prolog interaction, starting Prolog process
   local initFunction::String =
       "function init_derive\nIOVal<DeriveConfig> ::= " ++
@@ -83,7 +89,10 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
                      --end with ". ." so we get the next prompt always
       "   local output::IOVal<String> = " ++
              "readUntilFromProcess(d, \"?-\", s);\n" ++
-      "   return ioval(output.io, nothing());\n}"; --TODO
+      "   local parsed::ParseResult<PrologOutput> = " ++
+             "parsePrologOutput(output.iovalue, " ++
+                              "\"<<prolog output>>\");\n" ++
+      "   return ioval(output.io, parsed.parseTree.result);\n}";
 
   --end function for Prolog interaction, killing background process
   local endFunction::String =
@@ -102,9 +111,11 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
       "import sos:core:common:abstractSyntax;\n" ++
       "import sos:core:semanticDefs:abstractSyntax;\n" ++
       "import sos:translation:semantic:prolog;\n" ++
-      "type DeriveConfig = ProcessHandle;\n" ++
-      initFunction ++ "\n" ++
-      deriveFunction ++ "\n" ++
+      "import sos:translation:semantic:prolog:parseProlog;\n" ++
+      "type DeriveConfig = ProcessHandle;\n\n" ++
+      parserFunction ++ "\n\n" ++
+      initFunction ++ "\n\n" ++
+      deriveFunction ++ "\n\n" ++
       endFunction ++ "\n";
 
   --write it out
