@@ -41,7 +41,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                             message);
   local genGrammarsError::IOToken =
       printT("Error producing Silver grammar files\n", genGrammars.io);
-  --generate pieces for running
+  --generate and compile pieces for running
   local genMain::IOVal<Integer> =
       genSilverMainFunction(genLoc, grmmrsLoc, a,
          a.generateModuleName, map(fst,  m.silverFunDefsModules),
