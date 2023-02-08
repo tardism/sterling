@@ -43,7 +43,7 @@ eval_e G index(E1, E2) V
 
 
 eval_e G E ListVal
-length ListVal Length
+lengthRel ListVal Length
 --------------------------------- [E-Length]
 eval_e G length(E) intVal(Length)
 
@@ -67,22 +67,22 @@ indexRel VT I Result
 indexRel V I Result
 
 
-Judgment length : value* int
+Judgment lengthRel : value* int
 
 --------------- [Len-Nil]
-length nilVal 0
+lengthRel nilVal 0
 
 
-length Tl SubLen
+lengthRel Tl SubLen
 SubLen + 1 = Len
--------------------------- [Len-Cons]
-length consVal(Hd, Tl) Len
+----------------------------- [Len-Cons]
+lengthRel consVal(Hd, Tl) Len
 
 
 |{value}- V ~~> VT
-length VT Len
+lengthRel VT Len
 ------------------ [Len-Trans]*
-length V Len
+lengthRel V Len
 
 
 

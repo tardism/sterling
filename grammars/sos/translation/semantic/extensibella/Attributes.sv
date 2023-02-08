@@ -26,6 +26,11 @@ synthesized attribute ebRulesByModule::[(String, [Def])];
 synthesized attribute ebJudgments::[(String, [ExtensibellaType])];
 
 
+--Errors arising from translating to Extensibella that are not
+--problems otherwise
+synthesized attribute ebErrors::[String];
+
+
 --Variable for the PC in a translation rule's conclusion
 synthesized attribute pcVar::String;
 

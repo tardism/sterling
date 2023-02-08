@@ -328,7 +328,7 @@ Extensible_Theorem
 
 Extensible_Theorem
   length_is_integer : forall L V,
-    Len : length L V ->
+    Len : lengthRel L V ->
     is_integer V
   on Len.
 %Len-Nil
@@ -340,8 +340,8 @@ Extensible_Theorem
  apply IH to Len2. search.
 Extensible_Theorem
   length_unique : forall L V1 V2,
-    Len1 : length L V1 ->
-    Len2 : length L V2 ->
+    Len1 : lengthRel L V1 ->
+    Len2 : lengthRel L V2 ->
     V1 = V2
   on Len1.
 %1 by Len-Nil
