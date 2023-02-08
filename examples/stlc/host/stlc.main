@@ -18,7 +18,7 @@ Function main : <Args : [string]> -> int {
            Print "No type" Before
            1
      Else
-       Print "Error parsing file" Before
+       Print "Error parsing file " Before
        Print Args[0] Before
        Print "\n" Before
        1
