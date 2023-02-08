@@ -84,7 +84,7 @@ closed nonterminal Vars_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<[String]>, location;
 
 concrete productions top::MainExpr_c
-| 'Let' v::Vars_c ':=' e1::MainExpr_c 'in' e2::MainExpr_c
+| 'Let' v::Vars_c ':=' e1::MainExpr_c 'In' e2::MainExpr_c
   { top.ast = letExpr(v.ast, e1.ast, e2.ast, location=top.location); }
 | 'If' c::MainExpr_c 'Then' th::MainExpr_c 'Else' el::MainExpr_c
   { top.ast = ifExpr(c.ast, th.ast, el.ast, location=top.location); }

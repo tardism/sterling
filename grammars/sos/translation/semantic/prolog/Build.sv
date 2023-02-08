@@ -90,7 +90,7 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
       "   local output::IOVal<String> = " ++
              "readUntilFromProcess(d, \"?-\", s);\n" ++
       "   local parsed::ParseResult<PrologOutput> = " ++
-             "parsePrologOutput(output.iovalue, " ++
+             "parsePrologOutput(unsafeTracePrint(output.iovalue, \"IOVal len:  \" ++ toString(length(output.iovalue)) ++ \"\\n\")," ++
                               "\"<<prolog output>>\");\n" ++
       "   return ioval(output.io, parsed.parseTree.result);\n}";
 

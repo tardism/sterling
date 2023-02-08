@@ -16,7 +16,7 @@
   (interactive)
   (kill-all-local-variables)
   (setq major-mode `sos-ext-mode)
-  (setq mode-name "Sos-Ext Grammar")
+  (setq mode-name "Sos-Ext Module")
   ;;syntax highlighting
   (set-syntax-table sos-ext-syntax-table)
   (set (make-local-variable 'font-lock-defaults)

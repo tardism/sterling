@@ -2,13 +2,13 @@ Module stlc:host
 
 Function main : <Args : [string]> -> int {
    Let Contents := Read Args[0]
-   in
-   Let ParseSuccess, Tm := Parse term_c from Contents
-   in
-     If ParseSuccess
+   In
+   Let PSuccess, Tm, Errors := Parse term_c from Contents
+   In
+     If PSuccess
      Then
        Let Success, Ty := Derive {typeOf nil Tm Ty} for Tm assigning [Ty]
-       in
+       In
          If Success
          Then
            Print "Type: " Before
@@ -20,6 +20,8 @@ Function main : <Args : [string]> -> int {
      Else
        Print "Error parsing file " Before
        Print Args[0] Before
+       Print "\n" Before
+       Print Errors Before
        Print "\n" Before
        1
 }

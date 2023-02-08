@@ -8,7 +8,10 @@ top::Judgment ::= rel::QName args::TermList
 {
   top.prolog = termPrologFormula(top.prologTerm);
   top.prologTerm =
-      applicationTerm(rel.fullJudgment.name.prolog, args.prolog);
+      applicationTerm(
+         if rel.isQualified
+         then rel.prolog
+         else rel.fullJudgment.name.prolog, args.prolog);
   top.pcVar = args.pcVar;
 }
 
@@ -19,7 +22,9 @@ top::Judgment ::= rel::QName args::TermList
   top.prolog =
       negatePrologFormula(
          termPrologFormula(
-            applicationTerm(rel.fullJudgment.name.prolog,
+            applicationTerm(if rel.isQualified
+                            then rel.prolog
+                            else rel.fullJudgment.name.prolog,
                             args.prolog)));
   top.prologTerm = error("No Prolog term for negationRelation");
   top.pcVar = args.pcVar;
@@ -31,7 +36,10 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
 {
   top.prolog = termPrologFormula(top.prologTerm);
   top.prologTerm =
-      applicationTerm("translation___" ++ ty.fullTy.prolog,
+      applicationTerm(
+         "translation___" ++ if ty.isQualified
+                             then ty.prolog
+                             else ty.fullTy.prolog,
          consPrologTermList(t.prolog,
          consPrologTermList(translation.prolog, args.prolog)));
   top.pcVar = error("Cannot access pcVar on transJudgment");

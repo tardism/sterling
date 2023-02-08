@@ -7,7 +7,9 @@ aspect production const
 top::Term ::= name::QName
 {
   top.prolog =
-      constPrologTerm("constr___" ++ name.fullConstrName.prolog);
+      constPrologTerm("constr___" ++ if name.isQualified
+                                     then name.prolog
+                                     else name.fullConstrName.prolog);
 
   top.pcVar = error("Cannot access pcVar on const");
 }
@@ -45,7 +47,9 @@ top::Term ::= constructor::QName args::TermList
 {
   top.prolog =
       applicationTerm("constr___" ++
-                      constructor.fullConstrName.prolog,
+                      if constructor.isQualified
+                      then constructor.prolog
+                      else constructor.fullConstrName.prolog,
                       args.prolog);
 
   top.pcVar = error("Cannot access pcVar on appTerm");

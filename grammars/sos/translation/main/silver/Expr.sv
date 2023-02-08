@@ -164,11 +164,13 @@ top::Expr ::= nt::QName parseString::Expr
     buildLet(parseStringName, "IOVal<String>", parseString.silverExpr,
        buildLet(parseName, "IOVal<Either<String Term>>", parseExpr,
           "case " ++ parseName ++ ".iovalue of " ++
-          "| right(tm) -> " ++ buildIOVal(parseName ++ ".io",
-                                          "(true, tm)") ++
-         " | left(e) -> " ++ buildIOVal(parseName ++ ".io",
-                                "(false, error(e))") ++ "end"));
-                                  
+          "| right(tm) -> " ++
+             buildIOVal(parseName ++ ".io",
+                "(true, tm, error(\"Parse succeeded, no errs\"))") ++
+         " | left(e) -> " ++
+             buildIOVal(parseName ++ ".io",
+                "(false, error(e), e)") ++ "end"));
+
   local parseStringName::String =
       "parseString__" ++ toString(genInt());
   local parseName::String = "parse__" ++ toString(genInt());

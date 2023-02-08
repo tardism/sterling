@@ -1,0 +1,1 @@
+(\ x:base -> base. \ y:base. x y) (\ a:base. a)

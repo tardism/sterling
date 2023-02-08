@@ -25,7 +25,7 @@ terminal If_t       'If'       lexer classes {KEYWORD};
 terminal Then_t     'Then'     lexer classes {KEYWORD};
 terminal Else_t     'Else'     lexer classes {KEYWORD};
 terminal Let_t      'Let'      lexer classes {KEYWORD};
-terminal In_t       'in'       lexer classes {KEYWORD};
+terminal In_t       'In'       lexer classes {KEYWORD};
 terminal Before_t   'Before'   lexer classes {KEYWORD};
 
 terminal Print_t   'Print'   lexer classes {KEYWORD};

@@ -241,13 +241,15 @@ top::Expr ::= nt::QName parseString::Expr
 
   parseString.downVarTypes = top.downVarTypes;
 
-  top.type = --(bool, parsed AST)
+  top.type = --(bool, parsed AST, error string)
       tupleType(
          consTypeList(boolType(location=top.location),
          consTypeList(if nt.concreteFound
                       then nt.concreteType
                       else errorType(location=top.location),
+         consTypeList(stringType(location=top.location),
          nilTypeList(location=top.location),
+                     location=top.location),
                      location=top.location),
                      location=top.location),
          location=top.location);

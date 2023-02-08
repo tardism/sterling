@@ -1,6 +1,6 @@
 Module stlc:host
 
-ignore /\n\r\t /
+ignore /[\n\r\t\ ]+/
 
 name_t   /[a-z][a-zA-Z0-9_]*/
 
@@ -12,7 +12,7 @@ base_t    /base/
 
 lambda_t   /\\/
 colon_t    /:/
-dot_t      /./
+dot_t      /\./
 
 
 term_c<term> ::=
