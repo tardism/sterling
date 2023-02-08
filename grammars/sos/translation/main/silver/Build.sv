@@ -141,7 +141,8 @@ IOVal<Integer> ::= genLoc::String grmmrsLoc::String a::Decorated CmdArgs
       "silver -I " ++ genLoc ++ " " ++
              "-I " ++ grmmrsLoc ++ " " ++
              ( if null(a.outputName)
-               then "-o " ++ module ++ ".jar"
+                --Java has a problem with JAR file names having colons
+               then "-o " ++ substitute(":", ".", module) ++ ".jar"
                else "-o " ++ head(a.outputName) ) ++ " " ++
              "main:" ++ a.generateModuleName;
   local compile::IOVal<Integer> = systemT(compileCmd, written);
