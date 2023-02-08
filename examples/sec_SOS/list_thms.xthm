@@ -168,10 +168,10 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
 %tail
  case Hyp1. apply vars_unique to H1 Hyp2. search.
 %index
- VI: case Hyp1. VT: case Hyp2. VIdx2: case VT1. VLst2: case VT.
- case VIdx2. case VLst2. apply vars_unique to VI VLst1.
- apply vars_unique to VI1 VIdx1. case VIdx3. case VLst3.
- apply joinDomains_unique to VI2 VT2. search.
+ VI: case Hyp1. VT: case Hyp2. VIdx2: case VT1. case VIdx2.
+ VLst2: case VT. case VIdx3. apply vars_unique to VI VLst2.
+ apply vars_unique to VI1 VIdx1. apply joinDomains_unique to VI2 VT2.
+ search.
 %length
  case Hyp1. apply vars_unique to Hyp2 H1. search.
 Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
@@ -270,7 +270,7 @@ Prove_Constraint sec_SOS:host:trans_eval_e.
 %tail
  case Hyp1. search.
 %index
- Ev: case Hyp1. skip.
+ Ev: case Hyp1. search.
 %length
  Ev: case Hyp1. search.
 

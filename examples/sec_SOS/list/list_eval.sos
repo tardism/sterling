@@ -32,10 +32,13 @@ eval_e G E consVal(V1, V2)
 eval_e G tail(E) V2
 
 
-eval_e G E1 ListVal
+/*To address proof problems, explicitly make indexing H::T
+  We need this form in order for indexing to succeed anyway
+  Another option would be to make indexRel fixed*/
+eval_e G E1 consVal(Hd, Tl)
 eval_e G E2 intVal(I)
-indexRel ListVal I V
------------------------- [E-Index]
+indexRel consVal(Hd, Tl) I V
+---------------------------- [E-Index]
 eval_e G index(E1, E2) V
 
 

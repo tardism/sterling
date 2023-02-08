@@ -44,7 +44,7 @@ e ::= ...
   constraints and translate to something unrelated to the actual
   value.*/
 -------------------------------------------------- [Trans-Index]
-|{e}- index(Lst, Index) ~~> and(eq(nil, Lst),
+|{e}- index(Lst, Index) ~~> and(null(Lst),
                                 eq(num(0), Index))
 
 
