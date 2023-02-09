@@ -274,6 +274,14 @@ Extensible_Theorem
 
 Translation_Constraint trans_e_vars_exist : forall E E' V,
   |{e}- E ~~> E' -> vars E V -> exists V', vars E' V'.
+
+%Rationale for TC:
+%Evaluation depends on the variables in an expression.  In fact, by
+%the property vars_eval_same_result below, evaluation is determined
+%*entirely* by the variables in an expression.  Therefore making the
+%variables in an expression be a subset of those in its translation
+%gives other extensions a handle on understanding the behavior of an
+%unknown expression in particular contexts.
 Translation_Constraint trans_e_vars : forall E E' V V' X,
   |{e}- E ~~> E' -> vars E V -> vars E' V' ->
   memDomain X V -> memDomain X V'.
