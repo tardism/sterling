@@ -626,7 +626,7 @@ Translation_Constraint trans_c_eval : forall C C' G G2,
   |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
 Translation_Constraint trans_c_eval_results :
   forall C C' G G1 G2 X V1 V2,
-    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C G2 ->
+    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
     lookupVal G1 X V1 -> lookupVal G2 X V2 -> V1 = V2.
 
 
@@ -757,7 +757,6 @@ Extensible_Theorem
   %1 by E-Name
    Ev2: case Ev2. Vars: case Vars. apply Equiv to _ Ev3 Ev2. search.
   %1 by E-GreaterTrue
-   Set subgoals off.
    Vars1: case Vars. Ev2: case Ev2.
      %2 by E-GreaterTrue
       apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.
