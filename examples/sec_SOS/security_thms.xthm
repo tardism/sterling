@@ -63,7 +63,7 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
 Prove_Constraint sec_SOS:host:trans_c_eval_results.
 %declareSec
  Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
- apply lookupVal_unique to Hyp3 Hyp4. search.
+ search.
 
 Prove sec_SOS:host:eval_c_unique,
       sec_SOS:host:update_rec_fields_unique.
