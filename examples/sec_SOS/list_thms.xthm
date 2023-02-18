@@ -388,11 +388,11 @@ Prove sec_SOS:host:eval_e_unique,
 Prove_Constraint sec_SOS:host:trans_c_eval.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results.
-
-
 Prove sec_SOS:host:eval_c_unique,
       sec_SOS:host:update_rec_fields_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
 
 
 Prove sec_SOS:host:memDomain_joinDomains_left.

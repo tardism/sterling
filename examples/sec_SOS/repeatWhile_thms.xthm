@@ -1,0 +1,142 @@
+Module sec_SOS:repeatWhile.
+
+
+Prove_Constraint sec_SOS:host:trans_e_unique.
+Prove_Constraint sec_SOS:host:trans_e_is.
+Prove_Constraint sec_SOS:host:trans_rf_unique.
+Prove_Constraint sec_SOS:host:trans_rf_is.
+
+
+Prove_Constraint sec_SOS:host:trans_c_unique.
+%repeatWhile
+ case Hyp1. search.
+
+Prove_Constraint sec_SOS:host:trans_c_is.
+%repeatWhile
+ case Hyp1. search.
+
+
+Prove_Constraint sec_SOS:host:trans_recFields_unique.
+Prove_Constraint sec_SOS:host:trans_recFields_is.
+Prove_Constraint sec_SOS:host:trans_ty_unique.
+Prove_Constraint sec_SOS:host:trans_ty_is.
+Prove_Constraint sec_SOS:host:trans_value_unique.
+Prove_Constraint sec_SOS:host:trans_value_is.
+Prove_Constraint sec_SOS:host:trans_domain_mem_fwd.
+Prove_Constraint sec_SOS:host:trans_domain_mem_back.
+
+
+Prove sec_SOS:host:joinDomains_unique.
+Prove sec_SOS:host:joinDomains_total.
+Prove sec_SOS:host:joinDomains_empty_right.
+Prove sec_SOS:host:joinDomains_is.
+Prove sec_SOS:host:joinDomains_assoc.
+Prove sec_SOS:host:join_something_join_anything.
+Prove sec_SOS:host:join_joined.
+Prove sec_SOS:host:joinDomains_mem.
+Prove sec_SOS:host:mem_joinDomains1.
+Prove sec_SOS:host:mem_joinDomains2.
+
+
+Prove sec_SOS:host:vars_join,
+      sec_SOS:host:vars_rf_join.
+Prove sec_SOS:host:vars_unique,
+      sec_SOS:host:vars_rf_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_e_vars_exist.
+Prove_Constraint sec_SOS:host:trans_e_vars.
+Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
+Prove_Constraint sec_SOS:host:trans_rf_vars.
+
+
+Prove sec_SOS:host:vars_is,
+      sec_SOS:host:vars_rf_is.
+Prove sec_SOS:host:vars_exist,
+      sec_SOS:host:vars_rf_exist.
+
+
+Prove sec_SOS:host:lookupTy_unique.
+
+
+Prove sec_SOS:host:typeOf_unique,
+      sec_SOS:host:typeRecFields_unique.
+
+
+Prove sec_SOS:host:typeOK_unique.
+%repeatWhile
+ case Ty2. search.
+
+
+Prove sec_SOS:host:lookupVal_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_eval_e.
+
+
+Prove sec_SOS:host:eval_e_unique,
+      sec_SOS:host:eval_rf_unique.
+
+
+Extensible_Theorem
+  repeatWhile_transEval : forall G Body Cond G1,
+    Ev: eval_c G (repeatWhile Body Cond) G1 ->
+    exists G2, eval_c G (seq Body (while Cond Body)) G2
+  on Ev.
+%E-RepeatWhileTrue
+ EvSeq: apply IH to Ev3. EvSeq: case EvSeq. search.
+%E-RepeatWhileFalse
+ search.
+
+Prove_Constraint sec_SOS:host:trans_c_eval.
+%repeatWhile
+ apply repeatWhile_transEval to Hyp1. search.
+
+
+Prove sec_SOS:host:eval_c_unique,
+      sec_SOS:host:update_rec_fields_unique.
+%E-RepeatWhileTrue
+ Ev2: case Ev2.
+   %E-RepeatWhileTrue for 2
+    apply IH to Ev3 Ev2. apply IH to Ev5 Ev7. search.
+   %E-RepeatWhileFalse for 2
+    apply IH to Ev3 Ev2. apply eval_e_unique to Ev4 Ev6.
+%E-RepeatWhileFalse
+ Ev2: case Ev2.
+   %E-RepeatWhileTrue for 2
+    apply IH to Ev3 Ev2. apply eval_e_unique to Ev4 Ev5.
+   %E-RepeatWhileFalse for 2
+    apply IH to Ev3 Ev2. search.
+
+
+Extensible_Theorem
+  repeatWhile_transSame : forall G Body Cond G1 G2,
+    EvRW: eval_c G (repeatWhile Body Cond) G1 ->
+    EvSW: eval_c G (seq Body (while Cond Body)) G2 ->
+    G1 = G2
+  on EvRW.
+%E-RepeatWhileTrue
+ EvSW: case EvSW. apply eval_c_unique to EvRW1 EvSW. EvW': case EvSW1.
+   %E-WhileFalse
+    apply eval_e_unique to EvRW2 EvW'.
+   %E-WhileTrue
+    EvSeq: assert eval_c G4 (seq Body (while Cond Body)) G2.
+    apply IH to EvRW3 EvSeq. search.
+%E-RepeatWhileFalse
+ EvSW: case EvSW. apply eval_c_unique to EvRW1 EvSW. EvW: case EvSW1.
+   %E-WhileFalse
+    search.
+   %E-WhileTrue
+    apply eval_e_unique to EvRW2 EvW.
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
+%repeatWhile
+ apply repeatWhile_transSame to Hyp1 Hyp2. search.
+
+
+Prove sec_SOS:host:memDomain_joinDomains_left.
+Prove sec_SOS:host:memDomain_joinDomains_right.
+
+
+Prove sec_SOS:host:vars_eval_same_result,
+      sec_SOS:host:vars_equal_rf_same_result.

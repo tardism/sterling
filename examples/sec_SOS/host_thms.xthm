@@ -624,10 +624,6 @@ Extensible_Theorem
 
 Translation_Constraint trans_c_eval : forall C C' G G2,
   |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
-Translation_Constraint trans_c_eval_results :
-  forall C C' G G1 G2 X V,
-    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
-    lookupVal G1 X V -> lookupVal G2 X V.
 
 
 Extensible_Theorem
@@ -683,6 +679,12 @@ Extensible_Theorem
   %1 by URF-Step
    U2: case U2. apply lookupVal_unique to U3 U2. apply IH1 to U4 U5.
    search.
+
+
+Translation_Constraint trans_c_eval_results :
+  forall C C' G G1 G2 X V,
+    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
+    lookupVal G1 X V -> lookupVal G2 X V.
 
 
 Extensible_Theorem
