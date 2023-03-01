@@ -46,6 +46,10 @@ concrete productions top::PrologTerm
 | name::Constr_t '(' args::PrologTermList ')'
   { top.tm = appTerm(constrQName(name.lexeme), args.tmList,
                      location=bogusLoc()); }
+| str::String_t
+  { top.tm =
+        stringConst(substring(1, length(str.lexeme) - 1, str.lexeme),
+                    location=bogusLoc()); }
 
 concrete productions top::PrologTermList
 | t::PrologTerm
@@ -81,6 +85,8 @@ terminal RParen_t   ')';
 
 terminal VarName_t   /[A-Z][a-zA-Z0-9_]*/;
 terminal Constr_t    /[a-z][a-zA-Z0-9_]*/;
+
+terminal String_t    /"([^"]|(\\"))*"/;
 
 terminal Error_t   /Error: Stream.+/;
 

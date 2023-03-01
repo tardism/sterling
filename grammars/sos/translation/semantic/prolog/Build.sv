@@ -88,9 +88,14 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
                                "args ++ \". .\\n\", ioin);\n" ++
                      --end with ". ." so we get the next prompt always
       "   local output::IOVal<String> = " ++
-             "readUntilFromProcess(d, \"?-\", s);\n" ++
+             "let throwAway1::IOVal<String> = readLineFromProcess(d, s) in " ++
+             --actual is first line of output
+             "let actual::IOVal<String> = readLineFromProcess(d, throwAway1.io) in " ++
+             --anymore is anything left after that
+             "let anymore::IOVal<String> = readAllFromProcess(d, actual.io) in " ++
+             "ioval(anymore.io, actual.iovalue ++ anymore.iovalue) end end end;\n" ++
       "   local parsed::ParseResult<PrologOutput> = " ++
-             "parsePrologOutput(unsafeTracePrint(output.iovalue, \"IOVal len:  \" ++ toString(length(output.iovalue)) ++ \"\\n\")," ++
+             "parsePrologOutput(output.iovalue," ++
                               "\"<<prolog output>>\");\n" ++
       "   return ioval(output.io, parsed.parseTree.result);\n}";
 

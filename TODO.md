@@ -1,7 +1,4 @@
 
-* We might add more translations:
-  + Coq
-
 * We can add some built-in types:
   + Polymorphic contexts where we can choose the key and value types,
     with lookup, containment, and non-containment relations

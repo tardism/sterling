@@ -36,28 +36,15 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
       genSilverConcGrammars(m.silverConc, silverGenLoc, message);
   local genGrammarsError::IOToken =
       printT("Error producing Silver grammar files\n", genGrammars.io);
-  --compile it
-  local compileCmd::String =
-      "silver -I " ++ genLoc ++ " " ++
-             "-I " ++ grmmrsLoc ++ " " ++
-             "-o " ++ silverGenLoc ++ "/test.jar " ++
-             "silverConc:" ++ a.generateModuleName;
-  local compile::IOVal<Integer> = systemT(compileCmd, genGrammars.io);
-  local printCompileError::IOToken =
-      printT("Error compiling Silver concrete translation\n" ++
-             "  (command: " ++ compileCmd ++ "; returned " ++
-             toString(compile.iovalue) ++ ")\n", compile.io);
 
   --generate pieces for running
   local genParse::IOVal<Integer> =
       genSilverFunctions(genLoc, a.generateModuleName, m.parsedTypes,
-                         m.nameList, compile.io);
+                         m.nameList, genGrammars.io);
 
   return
       if !genGrammars.iovalue
       then ioval(genGrammarsError, 2)
-      else if compile.iovalue != 0
-      then ioval(printCompileError, 2)
       else genParse;
 }
 
