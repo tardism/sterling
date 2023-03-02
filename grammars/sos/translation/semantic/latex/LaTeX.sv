@@ -20,12 +20,13 @@ top::LaTeXTerm ::= macroName::String args::LaTeXTermList
 
 
 
-nonterminal LaTeXTermList with ppLaTeX;
+nonterminal LaTeXTermList with ppLaTeX, toList<LaTeXTerm>;
 
 abstract production nilLaTeXTermList
 top::LaTeXTermList ::=
 {
   top.ppLaTeX = "";
+  top.toList = [];
 }
 
 
@@ -33,6 +34,7 @@ abstract production addLaTeXTermList
 top::LaTeXTermList ::= t::LaTeXTerm rest::LaTeXTermList
 {
   top.ppLaTeX = "{" ++ t.ppLaTeX ++ "}" ++ rest.ppLaTeX;
+  top.toList = t::rest.toList;
 }
 
 

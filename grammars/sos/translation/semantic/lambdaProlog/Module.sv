@@ -44,6 +44,12 @@ top::ModuleList ::= m::Module rest::ModuleList
                                   freshName("I", rest ++ r_vars)
                                 | stringType() ->
                                   freshName("S", rest ++ r_vars)
+                                | tupleType(l) ->
+                                  if l.len == 2
+                                  then freshName("P", rest ++ r_vars)
+                                  else freshName("T", rest ++ r_vars)
+                                | listType(ty) ->
+                                  freshName("L", rest ++ r_vars)
                                 | _ ->
                                   freshName("X", rest ++ r_vars)
                                 end::rest,

@@ -34,14 +34,16 @@ top::Type ::=
 aspect production listType
 top::Type ::= ty::Type
 {
-  --top.latex = constLaTeXTerm("[");
+  top.latex = constLaTeXTerm("\\[" ++ ty.latex.ppLaTeX ++ "\\]");
 }
 
 
 aspect production tupleType
 top::Type ::= tys::TypeList
 {
-  --top.latex =
+  top.latex =
+      constLaTeXTerm("(" ++
+         implode(", ", map((.ppLaTeX), tys.latex.toList)) ++ ")");
 }
 
 

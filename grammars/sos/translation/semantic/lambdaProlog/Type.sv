@@ -34,7 +34,10 @@ top::Type ::=
 aspect production tupleType
 top::Type ::= tys::TypeList
 {
-  --top.lp = 
+  top.lp =
+      foldr1(\ ty::LambdaPrologType rest::LambdaPrologType ->
+               appLPType(appLPType(nameLPType("pair*"), ty), rest),
+             tys.lp);
 }
 
 
