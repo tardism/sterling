@@ -31,6 +31,20 @@ top::Type ::=
 }
 
 
+aspect production listType
+top::Type ::= ty::Type
+{
+  --top.latex = constLaTeXTerm("[");
+}
+
+
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  --top.latex =
+}
+
+
 aspect production errorType
 top::Type ::=
 {

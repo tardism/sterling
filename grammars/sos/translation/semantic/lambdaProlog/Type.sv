@@ -31,6 +31,20 @@ top::Type ::=
 }
 
 
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  --top.lp = 
+}
+
+
+aspect production listType
+top::Type ::= ty::Type
+{
+  top.lp = appLPType(nameLPType("list"), ty.lp);
+}
+
+
 aspect production errorType
 top::Type ::=
 {

@@ -31,6 +31,20 @@ top::Type ::=
 }
 
 
+aspect production listType
+top::Type ::= ty::Type
+{
+  top.prolog = error("Should not access prolog on listType");
+}
+
+
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  top.prolog = error("Should not access prolog on tupleType");
+}
+
+
 aspect production errorType
 top::Type ::=
 {

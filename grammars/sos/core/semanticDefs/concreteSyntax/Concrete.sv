@@ -138,19 +138,6 @@ concrete productions top::AbsConstructorDecl_c
 
 
 
-closed nonterminal CommaTypeList_c layout {Spacing_t, Comment_t}
-   with ast<TypeList>, location;
-
-concrete productions top::CommaTypeList_c
-| ty::Type_c
-  { top.ast =
-        consTypeList(ty.ast, nilTypeList(location=top.location),
-                     location=top.location); }
-| ty::Type_c ',' x2::EmptyNewlines rest::CommaTypeList_c
-  { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
-
-
-
 closed nonterminal Rule_c layout {Spacing_t, Comment_t}
    with ast<Rule>, location;
 

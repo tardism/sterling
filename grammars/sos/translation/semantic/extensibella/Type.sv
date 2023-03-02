@@ -45,6 +45,26 @@ top::Type ::=
 }
 
 
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  top.eb = foldr1(extensibellaPairTy, tys.eb);
+
+  top.ebIs = foldr1(\ a::String b::String ->
+                      "is_pair (" ++ a ++ ") (" ++ b ++ ")",
+                    tys.ebIses);
+}
+
+
+aspect production listType
+top::Type ::= ty::Type
+{
+  top.eb = extensibellaListTy(ty.eb);
+
+  top.ebIs = "is_list (" ++ ty.ebIs ++ ")";
+}
+
+
 aspect production errorType
 top::Type ::=
 {
@@ -65,13 +85,17 @@ top::Type ::= t::Type
 
 
 attribute
-   eb<[ExtensibellaType]>
+   eb<[ExtensibellaType]>, ebIses
 occurs on TypeList;
+
+synthesized attribute ebIses::[String];
 
 aspect production nilTypeList
 top::TypeList ::=
 {
   top.eb = [];
+
+  top.ebIses = [];
 }
 
 
@@ -79,4 +103,6 @@ aspect production consTypeList
 top::TypeList ::= t::Type rest::TypeList
 {
   top.eb = t.eb::rest.eb;
+
+  top.ebIses = t.ebIs::rest.ebIses;
 }

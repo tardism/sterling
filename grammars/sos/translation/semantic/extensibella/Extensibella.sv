@@ -343,6 +343,20 @@ top::ExtensibellaType ::=
 }
 
 
+abstract production extensibellaListTy
+top::ExtensibellaType ::= ty::ExtensibellaType
+{
+  top.pp = "list (" ++ ty.pp ++ ")";
+}
+
+
+abstract production extensibellaPairTy
+top::ExtensibellaType ::= a::ExtensibellaType b::ExtensibellaType
+{
+  top.pp = "$lib__pair (" ++ a.pp ++ ") (" ++ b.pp ++ ")";
+}
+
+
 
 
 
@@ -559,6 +573,8 @@ String ::= ty::Type used::[String]
       | intType() -> "I"
       | stringType() -> "S"
       | nameType(q) -> capitalize(q.base)
+      | listType(_) -> "L"
+      | tupleType(x) -> if x.len == 2 then "P" else "T"
       | errorType() -> "X"
       end;
   return freshName(base, used);

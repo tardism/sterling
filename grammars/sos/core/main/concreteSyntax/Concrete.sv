@@ -51,8 +51,6 @@ concrete productions top::Params_c
 
 --Add to existing types
 concrete productions top::Type_c
-| '[' x1::EmptyNewlines ty::Type_c x2::EmptyNewlines ']'
-  { top.ast = listType(ty.ast, location=top.location); }
 | 'bool'
   { top.ast = boolType(location=top.location); }
 

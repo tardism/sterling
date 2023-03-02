@@ -18,13 +18,8 @@ terminal ExtLine_t        /---+/ dominates {Minus_t};
 terminal FixedLine_t      /===+/;
 
 
-terminal LBracket_t   '[';
-terminal RBracket_t   ']';
-terminal LParen_t     '(';
-terminal RParen_t     ')';
 terminal Eq_t         '=';
 terminal Neq_t        '!=';
-terminal Comma_t      ',';
 terminal Colon_t      ':';
 terminal Period_t     '.';
 terminal LAngle_t     '<';

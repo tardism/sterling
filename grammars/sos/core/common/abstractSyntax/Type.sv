@@ -72,6 +72,54 @@ top::Type ::=
 }
 
 
+abstract production listType
+top::Type ::= ty::Type
+{
+  top.pp = "[" ++ ty.pp ++ "]";
+
+  top.type = listType(ty.type, location=top.location);
+
+  ty.tyEnv = top.tyEnv;
+  top.isError = ty.isError;
+
+  ty.compareTo =
+      case top.compareTo of
+      | listType(x) -> x
+      | _ -> error("Should not access")
+      end;
+  top.isEqual =
+      case top.compareTo of
+      | listType(x) -> ty.isEqual
+      | errorType() -> true
+      | _ -> false
+      end;
+}
+
+
+abstract production tupleType
+top::Type ::= tys::TypeList
+{
+  top.pp = "(" ++ tys.pp_comma ++ ")";
+
+  top.type = tupleType(tys.types, location=top.location);
+
+  tys.tyEnv = top.tyEnv;
+  top.isError = tys.isError;
+
+  tys.compareTo =
+      case top.compareTo of
+      | tupleType(x) -> x
+      | _ -> error("Should not access")
+      end;
+  top.isEqual =
+      case top.compareTo of
+      | tupleType(x) -> tys.isEqual
+      | errorType() -> true
+      | _ -> false
+      end;
+}
+
+
 abstract production errorType
 top::Type ::=
 {

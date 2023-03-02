@@ -12,6 +12,13 @@ terminal Module_t       'Module'        lexer classes {KEYWORD};
 terminal StringTy_t   'string'   lexer classes {KEYWORD};
 terminal IntTy_t      'int'      lexer classes {KEYWORD};
 
+terminal LBracket_t   '[';
+terminal RBracket_t   ']';
+terminal LParen_t     '(';
+terminal RParen_t     ')';
+
+terminal Comma_t      ',';
+
 
 --We don't need the \r in this to make it work, since \r is part of
 --the ignore terminal for whitespace.  However, we get a warning that

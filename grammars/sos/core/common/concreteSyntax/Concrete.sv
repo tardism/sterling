@@ -22,12 +22,31 @@ concrete productions top::Type_c
   { top.ast = intType(location=top.location); }
 | 'string'
   { top.ast = stringType(location=top.location); }
+| '[' x1::EmptyNewlines ty::Type_c x2::EmptyNewlines ']'
+  { top.ast = listType(ty.ast, location=top.location); }
+| '(' x::EmptyNewlines ')'
+  { top.ast = tupleType(nilTypeList(location=top.location),
+                        location=top.location); }
+| '(' x1::EmptyNewlines tys::CommaTypeList_c x2::EmptyNewlines ')'
+  { top.ast = tupleType(tys.ast, location=top.location); }
 | ty::LowerId_t
   { top.ast = nameType(toQName(ty.lexeme, ty.location),
                        location=top.location); }
 | ty::LowerQName_t
   { top.ast = nameType(toQName(ty.lexeme, ty.location),
                        location=top.location); }
+
+
+
+
+closed nonterminal CommaTypeList_c with ast<TypeList>, location;
+
+concrete productions top::CommaTypeList_c
+| ty::Type_c
+  { top.ast = consTypeList(ty.ast, nilTypeList(location=top.location),
+                           location=top.location); }
+| ty::Type_c ',' x::EmptyNewlines rest::CommaTypeList_c
+  { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
 
 
 

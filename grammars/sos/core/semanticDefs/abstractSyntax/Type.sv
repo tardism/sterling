@@ -141,6 +141,72 @@ top::Type ::=
 }
 
 
+aspect production tupleType
+top::Type ::= tys::TypeList
+{
+  tys.subst = top.subst;
+  top.substituted = tupleType(tys.substituted, location=top.location);
+
+  tys.downSubst = top.downSubst;
+  tys.unifyLoc = top.unifyLoc;
+  tys.unifyWith =
+      case top.unifyWith of
+      | tupleType(t2) -> t2
+      | _ -> error("Should not access")
+      end;
+  top.upSubst =
+      case top.unifyWith of
+      | tupleType(t2) -> tys.upSubst
+      | varType(v) -> addSubst(v, top, top.downSubst)
+      | _ ->
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
+      end;
+
+  top.freshen = tupleType(tys.freshen, location=top.location);
+  top.freshenSubst = tys.freshenSubst;
+
+  top.isExtensible = false;
+  top.isPC = false;
+
+  top.containsVars = tys.containsVars;
+}
+
+
+aspect production listType
+top::Type ::= ty::Type
+{
+  top.substituted = listType(ty.substituted, location=top.location);
+
+  top.upSubst =
+      case top.unifyWith of
+      | listType(ty2) -> ty.upSubst
+      | varType(v) -> addSubst(v, top, top.downSubst)
+      | _ ->
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
+      end;
+
+  ty.subst = top.subst;
+  ty.downSubst = top.downSubst;
+
+  top.freshen = listType(ty.freshen, location=top.location);
+  top.freshenSubst = ty.freshenSubst;
+
+  top.isExtensible = false;
+  top.isPC = false;
+
+  top.containsVars = ty.containsVars;
+
+  ty.unifyLoc = top.unifyLoc;
+  ty.unifyWith =
+      case top.unifyWith of
+      | listType(ty2) -> ty2
+      | _ -> error("Should not access")
+      end;
+}
+
+
 aspect production errorType
 top::Type ::=
 {
