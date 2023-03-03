@@ -299,14 +299,14 @@ concrete productions top::Term_c
   { top.ast =
         stringConst(substring(1, length(s.lexeme) - 1, s.lexeme),
                     location=top.location); }
-| constructor::LowerId_t '(' x1::EmptyNewlines args::CommaTermList_c
-                             x2::EmptyNewlines ')'
+| constructor::LowerId_t
+  '(' x1::EmptyNewlines args::ContainedCommaTermList_c ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
                 args.ast, location=top.location); }
-| constructor::LowerQName_t '(' x1::EmptyNewlines args::CommaTermList_c
-                                x2::EmptyNewlines ')'
+| constructor::LowerQName_t
+  '(' x1::EmptyNewlines args::ContainedCommaTermList_c ')'
   { top.ast =
         appTerm(toQName(constructor.lexeme,
                         constructor.location),
@@ -323,6 +323,28 @@ concrete productions top::Term_c
                         constructor.location),
                 nilTermList(location=top.location),
                 location=top.location); }
+  {-
+    Tuples are delimited by '<' and '>' because using parentheses
+    creates ambiguities with constructors:  We can't tell whether
+    "x (1, 2)" is supposed to be a single term, a constructor x with
+    arguments 1 and 2, or two terms, a constructor x without arguments
+    and a tuple.
+  -}
+| '<' x1::EmptyNewlines '>'
+  { top.ast = tupleTerm(nilTermList(location=top.location),
+                        location=top.location); }
+| '<' x1::EmptyNewlines contents::ContainedCommaTermList_c '>'
+  { top.ast =
+        case contents.ast.toList of
+        | [t] -> t
+        | _ -> tupleTerm(contents.ast, location=top.location)
+        end; }
+| '[' x1::EmptyNewlines ']'
+  { top.ast = nilTerm(location=top.location); }
+| '[' x1::EmptyNewlines contents::ContainedCommaTermList_c ']'
+  { top.ast = contents.listTerm; }
+| hd::Term_c '::' x1::EmptyNewlines tl::Term_c
+  { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
 | '<' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
       x3::EmptyNewlines ty::Type_c x4::EmptyNewlines '>'
   { top.ast = ascriptionTerm(t.ast, ty.ast, location=top.location); }
@@ -354,3 +376,25 @@ concrete productions top::CommaTermList_c
 | t::Term_c ',' x::EmptyNewlines rest::CommaTermList_c
   { top.ast = consTermList(t.ast, rest.ast, location=top.location); }
 
+
+
+--Ends with empty newlines because it is followed by a delimiter
+closed nonterminal ContainedCommaTermList_c
+   layout {Spacing_t, Comment_t}
+   with ast<TermList>, listTerm, location;
+--turn the contents of a list into a list term with cons
+synthesized attribute listTerm::Term;
+
+concrete productions top::ContainedCommaTermList_c
+| t::Term_c x::EmptyNewlines
+  { top.ast = consTermList(t.ast, nilTermList(location=top.location),
+                           location=top.location);
+    top.listTerm = consTerm(t.ast, nilTerm(location=top.location),
+                            location=top.location); }
+--Because we require the comma to be on the same line, we can let the
+--user put in extra newlines to organize things nicer without making
+--the grammar ambiguous
+| t::Term_c ',' x::EmptyNewlines rest::ContainedCommaTermList_c
+  { top.ast = consTermList(t.ast, rest.ast, location=top.location);
+    top.listTerm = consTerm(t.ast, rest.listTerm,
+                            location=top.location); }

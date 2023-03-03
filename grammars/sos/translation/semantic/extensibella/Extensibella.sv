@@ -252,7 +252,7 @@ top::ExtensibellaTerm ::= name::String
 }
 
 
-abstract production consTerm
+abstract production consExtensibellaTerm
 top::ExtensibellaTerm ::= hd::ExtensibellaTerm tl::ExtensibellaTerm
 {
   top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
@@ -263,11 +263,11 @@ top::ExtensibellaTerm ::= hd::ExtensibellaTerm tl::ExtensibellaTerm
   tl.replaceVar = top.replaceVar;
   hd.replaceVal = top.replaceVal;
   tl.replaceVal = top.replaceVal;
-  top.replaced = consTerm(hd.replaced, tl.replaced);
+  top.replaced = consExtensibellaTerm(hd.replaced, tl.replaced);
 }
 
 
-abstract production nilTerm
+abstract production nilExtensibellaTerm
 top::ExtensibellaTerm ::=
 {
   top.pp = "nil";
@@ -301,7 +301,8 @@ ExtensibellaTerm ::= s::String
       map(ordinalToCharConstructor, charOrdinals);
   local charTerms::[ExtensibellaTerm] =
       map(nameExtensibellaTerm(_), charConstants);
-  return foldr(consTerm, nilTerm(), charTerms);
+  return foldr(consExtensibellaTerm, nilExtensibellaTerm(),
+               charTerms);
 }
 function ordinalToCharConstructor
 String ::= ord::Integer

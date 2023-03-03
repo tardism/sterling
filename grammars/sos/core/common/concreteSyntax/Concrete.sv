@@ -57,7 +57,7 @@ concrete productions top::CommaTypeList_c
   this nonterminal to allow the extra, unneeded newlines, but also not
   require them.
 -}
-closed nonterminal EmptyNewlines;
+closed nonterminal EmptyNewlines with location;
 
 concrete productions top::EmptyNewlines
 |

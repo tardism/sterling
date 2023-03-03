@@ -36,6 +36,8 @@ terminal App_t     '++';
 
 terminal Negate_t   '!';
 
+terminal Cons_t   '::'   association=right;
+
 terminal TransStart_t    '|{';
 terminal TransEnd_t      '}-';
 terminal Trans_t         '~~>';
