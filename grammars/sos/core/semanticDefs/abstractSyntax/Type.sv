@@ -10,7 +10,10 @@ inherited attribute unifyWith<a>::a;
 --freshen a type by creating new ty vars for each variable
 synthesized attribute freshenSubst::Substitution;
 synthesized attribute freshen<a>::a;
-inherited attribute freshenLoc::Location;
+
+--replace variables with new, rigid variables
+synthesized attribute rigidizeSubst::Substitution;
+synthesized attribute rigidize<a>::a;
 
 --whether there are var types contained within
 synthesized attribute containsVars::Boolean;
@@ -23,6 +26,7 @@ attribute
    subst, substituted<Type>,
    unifyWith<Type>, unifyLoc, downSubst, upSubst,
    freshen<Type>, freshenSubst,
+   rigidize<Type>, rigidizeSubst,
    isExtensible,
    isPC,
    containsVars
@@ -47,6 +51,9 @@ top::Type ::= name::QName
 
   top.freshen = nameType(name, location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.rigidize = top;
+  top.rigidizeSubst = emptySubst();
 
   --assume all name types are extensible
   top.isExtensible = true;
@@ -78,6 +85,10 @@ top::Type ::= name::String
               location=top.location);
   top.freshenSubst = addSubst(name, top.freshen, emptySubst());
 
+  top.rigidize =
+      rigidVarType(name ++ toString(genInt()), location=top.location);
+  top.rigidizeSubst = addSubst(name, top.rigidize, emptySubst());
+
   --assume variable types are not extensible, as undetermined
   top.isExtensible = false;
   top.isPC = false;
@@ -87,6 +98,43 @@ top::Type ::= name::String
   top.isError = false;
 
   top.containsVars = true;
+
+  --This doesn't really fit for forwarding to anything actual
+  forwards to errorType(location=top.location);
+}
+
+
+--used for checking rules for polymorphic judgments
+abstract production rigidVarType
+top::Type ::= name::String
+{
+  top.pp = "rigid(" ++ name ++ ")";
+
+  top.substituted = top;
+
+  top.upSubst =
+      case top.unifyWith of
+      | rigidVarType(n) when n == name -> top.downSubst
+      | varType(v) -> addSubst(v, top, top.downSubst)
+      | _ ->
+        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
+                    top.pp, top.unifyLoc, top.downSubst)
+      end;
+
+  top.freshen = error("Should not freshen with rigid vars");
+  top.freshenSubst = emptySubst();
+
+  top.rigidize = error("Should not rigidize with rigid vars");
+  top.rigidizeSubst = emptySubst();
+
+  top.isExtensible = false;
+  top.isPC = false;
+
+  top.type = top;
+
+  top.isError = false;
+
+  top.containsVars = false;
 
   --This doesn't really fit for forwarding to anything actual
   forwards to errorType(location=top.location);
@@ -109,6 +157,9 @@ top::Type ::=
 
   top.freshen = intType(location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.rigidize = top;
+  top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
   top.isPC = false;
@@ -133,6 +184,9 @@ top::Type ::=
 
   top.freshen = stringType(location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.rigidize = top;
+  top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
   top.isPC = false;
@@ -166,6 +220,9 @@ top::Type ::= tys::TypeList
   top.freshen = tupleType(tys.freshen, location=top.location);
   top.freshenSubst = tys.freshenSubst;
 
+  top.rigidize = tupleType(tys.rigidize, location=top.location);
+  top.rigidizeSubst = tys.rigidizeSubst;
+
   top.isExtensible = false;
   top.isPC = false;
 
@@ -193,6 +250,9 @@ top::Type ::= ty::Type
   top.freshen = listType(ty.freshen, location=top.location);
   top.freshenSubst = ty.freshenSubst;
 
+  top.rigidize = listType(ty.rigidize, location=top.location);
+  top.rigidizeSubst = ty.rigidizeSubst;
+
   top.isExtensible = false;
   top.isPC = false;
 
@@ -216,6 +276,9 @@ top::Type ::=
 
   top.freshen = errorType(location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.rigidize = top;
+  top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
   top.isPC = false;
@@ -247,6 +310,7 @@ attribute
    subst, substituted<TypeList>,
    unifyWith<TypeList>, unifyLoc, downSubst, upSubst,
    freshen<TypeList>, freshenSubst,
+   rigidize<TypeList>, rigidizeSubst,
    pcIndex, foundPC,
    containsVars
 occurs on TypeList;
@@ -258,6 +322,9 @@ top::TypeList ::=
 
   top.freshen = nilTypeList(location=top.location);
   top.freshenSubst = emptySubst();
+
+  top.rigidize = top;
+  top.rigidizeSubst = emptySubst();
 
   top.pcIndex = error("pcIndex on nilTypeList");
   top.foundPC = false;
@@ -290,6 +357,14 @@ top::TypeList ::= t::Type rest::TypeList
                    location=top.location);
   top.freshenSubst =
       joinSubst(t.freshenSubst, freshenSubstituted.freshenSubst);
+
+  local rigidizeSubstituted::TypeList =
+      performSubstitutionTypeList(rest, t.rigidizeSubst);
+  top.rigidize =
+      consTypeList(t.rigidize, rigidizeSubstituted.rigidize,
+                   location=top.location);
+  top.rigidizeSubst =
+      joinSubst(t.rigidizeSubst, rigidizeSubstituted.rigidizeSubst);
 
   top.pcIndex =
       if t.isPC
@@ -476,5 +551,19 @@ function freshenTypeList
 TypeList ::= ty::TypeList
 {
   return ty.freshen;
+}
+
+
+function rigidizeType
+Type ::= ty::Type
+{
+  return ty.rigidize;
+}
+
+
+function rigidizeTypeList
+TypeList ::= ty::TypeList
+{
+  return ty.rigidize;
 }
 

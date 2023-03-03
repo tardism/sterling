@@ -38,10 +38,15 @@ top::Judgment ::= rel::QName args::TermList
   rel.judgmentEnv = top.judgmentEnv;
   top.errors <- rel.judgmentErrors;
 
-  local freshened::TypeList = freshenTypeList(rel.judgmentType);
+  --if it is the conclusion, we want to check it works even if the
+  --relation is polymorphic, so rigidize rather than freshen
+  local freshened::TypeList =
+      if top.isConclusion
+      then rigidizeTypeList(rel.judgmentType)
+      else freshenTypeList(rel.judgmentType);
   args.expectedTypes =
        if rel.judgmentFound
-       then just(rel.judgmentType)
+       then just(freshened)
        else nothing();
   args.lastConstructor =
        if rel.judgmentFound

@@ -42,13 +42,6 @@ top::JudgmentDecl ::= name::String ty::TypeList
             fullName.pp, location=top.location)]
       end;
 
-  --Cannot contain variable types in declared judgment args
-  top.errors <-
-      if !ty.containsVars then []
-      else [errorMessage("Declared type arguments to judgment " ++
-               fullName.pp ++ " cannot contain variable types",
-               location=top.location)];
-
   local pcFound::Boolean = ty.foundPC;
   production pcType::Type =
       if ty.foundPC
@@ -148,13 +141,6 @@ top::JudgmentDecl ::= name::String ty::TypeList
         [errorMessage("Found multiple declarations for judgment " ++
             fullName.pp, location=top.location)]
       end;
-
-  --Cannot contain variable types in declared judgment args
-  top.errors <-
-      if !ty.containsVars then []
-      else [errorMessage("Declared type arguments to judgment " ++
-               fullName.pp ++ " cannot contain variable types",
-               location=top.location)];
 }
 
 
