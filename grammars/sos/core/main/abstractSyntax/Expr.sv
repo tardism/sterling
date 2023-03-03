@@ -169,6 +169,7 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
 
   j.downVarTypes = top.downVarTypes;
   j.downSubst = emptySubst();
+  j.finalSubst = j.upSubst;
 
   local lkpVarsTys::[(String, Maybe<Type>)] =
       map(\ v::String -> (v, lookup(v, j.upVarTypes)), vars);

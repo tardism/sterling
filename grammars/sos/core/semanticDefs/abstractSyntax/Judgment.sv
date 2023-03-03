@@ -245,6 +245,7 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   result.downSubst = t2.upSubst;
   op.downSubst = result.upSubst;
   top.upSubst = op.upSubst;
+  op.finalSubst = top.finalSubst;
 
   op.leftTy = t1.type;
   op.rightTy = t2.type;
@@ -321,8 +322,9 @@ top::Judgment ::= t1::Term op::TopBinOp t2::Term
 --A binary operator for the judgment form  T1 <op> T2 = T3
 nonterminal BinOp with
    pp,
-   leftTy, rightTy, resultTy, downSubst, upSubst, finalSubst,
+   leftTy, rightTy, resultTy, downSubst, upSubst, finalSubst, errors,
    location;
+propagate errors on BinOp;
 
 inherited attribute leftTy::Type;
 inherited attribute rightTy::Type;
@@ -443,20 +445,25 @@ top::BinOp ::=
 {
   top.pp = " ++ ";
 
-  --everything should be string
-  local unifyLeft::TypeUnify =
-        typeUnify(stringType(location=top.location), top.leftTy,
-                  location=top.location);
-  local unifyRight::TypeUnify =
-        typeUnify(stringType(location=top.location), top.rightTy,
-                  location=top.location);
-  local unifyResult::TypeUnify =
-        typeUnify(stringType(location=top.location), top.resultTy,
-                  location=top.location);
-  unifyLeft.downSubst = top.downSubst;
-  unifyRight.downSubst = unifyLeft.upSubst;
-  unifyResult.downSubst = unifyRight.upSubst;
-  top.upSubst = unifyResult.upSubst;
+  --unify the three types with each other
+  local unifyLeftRight::TypeUnify =
+      typeUnify(top.leftTy, top.rightTy, location=top.location);
+  local unifyRightResult::TypeUnify =
+      typeUnify(top.rightTy, top.resultTy, location=top.location);
+  unifyLeftRight.downSubst = top.downSubst;
+  unifyRightResult.downSubst = unifyLeftRight.upSubst;
+  top.upSubst = unifyRightResult.upSubst;
+
+  --everything should be string or list in the end
+  --only need to check one because they are all unified
+  top.errors <-
+      case performSubstitutionType(top.leftTy, top.finalSubst) of
+      | stringType() -> []
+      | listType(_) -> []
+      | varType(_) -> [] --not filled in, so could be string or list
+      | ty -> [errorMessage("Cannot append type " ++ ty.pp,
+                            location=top.location)]
+      end;
 }
 
 
