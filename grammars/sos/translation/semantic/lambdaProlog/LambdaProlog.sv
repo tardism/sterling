@@ -529,6 +529,9 @@ String ::= lpModuleName::String importedSOSModules::[String]
 
   return "sig " ++ lpModuleName ++ ".\n\n" ++
          importString ++ "\n\n" ++
+         --declare the pair we will use for tuples
+         "kind pair*   type -> type -> type.\n" ++
+         "type pair*   A -> B -> pair* A B.\n\n" ++
          implode("", map((.pp), sortedDecls)) ++ "\n";
 }
 

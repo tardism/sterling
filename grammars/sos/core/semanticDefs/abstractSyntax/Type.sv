@@ -447,6 +447,24 @@ top::TypeUnify ::= ty1::Type ty2::Type
 }
 
 
+--unify all the types in a list with each other (e.g. list const)
+abstract production typesUnify
+top::TypeUnify ::= tys::[Type]
+{
+  local first::TypeUnify =
+      typeUnify(head(tys), head(tail(tys)), location=top.location);
+  local rest::TypeUnify =
+      typesUnify(tail(tys), location=top.location);
+  first.downSubst = top.downSubst;
+  rest.downSubst = first.upSubst;
+  top.upSubst =
+      case tys of
+      | _::_::_ -> rest.upSubst
+      | _ -> top.downSubst --no types to unify
+      end;
+}
+
+
 
 function performSubstitutionType
 Type ::= t::Type s::Substitution

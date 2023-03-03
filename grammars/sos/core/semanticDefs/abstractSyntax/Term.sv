@@ -173,6 +173,105 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+abstract production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.pp = "(" ++ contents.pp_comma ++ ")";
+
+  contents.moduleName = top.moduleName;
+
+  contents.constructorEnv = top.constructorEnv;
+  contents.tyEnv = top.tyEnv;
+
+  contents.downSubst = top.downSubst;
+  top.upSubst = contents.upSubst;
+  contents.finalSubst = top.finalSubst;
+
+  top.type = tupleType(contents.types, location=top.location);
+
+  contents.downVarTypes = top.downVarTypes;
+  top.upVarTypes = contents.upVarTypes;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = false;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
+}
+
+
+abstract production listConstTerm
+top::Term ::= contents::TermList
+{
+  top.pp = "[" ++ contents.pp_comma ++ "]";
+
+  contents.moduleName = top.moduleName;
+
+  contents.constructorEnv = top.constructorEnv;
+  contents.tyEnv = top.tyEnv;
+
+  local unify::TypeUnify =
+      typesUnify(contents.types.toList, location=top.location);
+  contents.downSubst = top.downSubst;
+  unify.downSubst = contents.upSubst;
+  contents.finalSubst = top.finalSubst;
+
+  top.type =
+      if null(contents.types.toList)
+      then listType(varType("X" ++ toString(genInt()),
+                            location=top.location),
+                    location=top.location)
+      else listType(head(contents.types.toList),
+                    location=top.location);
+
+  contents.downVarTypes = top.downVarTypes;
+  top.upVarTypes = contents.upVarTypes;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = false;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
+}
+
+
+abstract production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
+
+  hd.moduleName = top.moduleName;
+  tl.moduleName = top.moduleName;
+
+  hd.constructorEnv = top.constructorEnv;
+  tl.constructorEnv = top.constructorEnv;
+  hd.tyEnv = top.tyEnv;
+  tl.tyEnv = top.tyEnv;
+
+  local unify::TypeUnify =
+      typeUnify(listType(hd.type, location=top.location), tl.type,
+                location=top.location);
+  hd.downSubst = top.downSubst;
+  tl.downSubst = hd.upSubst;
+  unify.downSubst = tl.upSubst;
+  top.upSubst = unify.upSubst;
+  hd.finalSubst = top.finalSubst;
+  tl.finalSubst = top.finalSubst;
+
+  top.type = listType(hd.type, location=top.location);
+
+  hd.downVarTypes = top.downVarTypes;
+  tl.downVarTypes = hd.upVarTypes;
+  top.upVarTypes = tl.upVarTypes;
+
+  top.headIsConstructor = false;
+  top.headConstructorCurrentModule = false; --placeholder
+  top.isVariable = false;
+
+  top.headConstructor = baseName("err", location=bogusLoc());
+}
+
+
 abstract production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {
