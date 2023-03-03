@@ -56,6 +56,31 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.prolog = tuplePrologTerm(contents.prolog);
+
+  top.pcVar = error("Cannott access pcVar on tupleTerm");
+}
+
+
+aspect production nilTerm
+top::Term ::=
+{
+  top.prolog = nilPrologTerm();
+  top.pcVar = error("Cannot access pcVar on nilTerm");
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.prolog = consPrologTerm(hd.prolog, tl.prolog);
+  top.pcVar = error("Cannot access pcVar on consTerm");
+}
+
+
 aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {

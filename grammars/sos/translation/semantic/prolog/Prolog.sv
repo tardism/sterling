@@ -53,6 +53,47 @@ top::PrologTerm ::= text::String
 }
 
 
+abstract production tuplePrologTerm
+top::PrologTerm ::= contents::PrologTermList
+{
+  top.pp = "(" ++ contents.pp ++ ")";
+
+  contents.replaceVar = top.replaceVar;
+  contents.replaceVal = top.replaceVal;
+  top.replaced = tuplePrologTerm(contents.replaced);
+
+  top.countVarOccurrences = contents.countVarOccurrences;
+}
+
+
+abstract production nilPrologTerm
+top::PrologTerm ::=
+{
+  top.pp = "[]";
+
+  top.replaced = top;
+
+  top.countVarOccurrences = [];
+}
+
+
+abstract production consPrologTerm
+top::PrologTerm ::= hd::PrologTerm tl::PrologTerm
+{
+  top.pp = "[" ++ hd.pp ++ "|" ++ tl.pp ++ "]";
+
+  hd.replaceVar = top.replaceVar;
+  tl.replaceVar = top.replaceVar;
+  hd.replaceVal = top.replaceVal;
+  tl.replaceVal = top.replaceVal;
+  top.replaced = consPrologTerm(hd.replaced, tl.replaced);
+
+  top.countVarOccurrences =
+      combineVarOccurrences(hd.countVarOccurrences,
+                            tl.countVarOccurrences);
+}
+
+
 abstract production applicationTerm
 top::PrologTerm ::= name::String args::PrologTermList
 {

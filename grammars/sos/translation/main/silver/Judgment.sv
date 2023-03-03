@@ -202,6 +202,30 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.silver_pp = "tupleTerm(" ++ contents.silver_pp ++
+                          ", location=bogusLoc())";
+}
+
+
+aspect production nilTerm
+top::Term ::=
+{
+  top.silver_pp = "nilTerm(location=bogusLoc())";
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.silver_pp =
+      "consTerm(" ++ hd.silver_pp ++ ", " ++ tl.silver_pp ++
+             ", location=bogusLoc())";
+}
+
+
 aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {

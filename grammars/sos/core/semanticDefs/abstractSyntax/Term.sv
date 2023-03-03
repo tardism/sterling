@@ -183,6 +183,14 @@ top::Term ::= contents::TermList
   contents.constructorEnv = top.constructorEnv;
   contents.tyEnv = top.tyEnv;
 
+  contents.expectedTypes = nothing(); --don't expect anything
+  contents.expectedPC = nothing();
+  contents.isTranslationRule = false;
+  contents.isExtensibleRule = false;
+  contents.isConclusion = false;
+  contents.lastConstructor =
+      error("Should not access lastConstructor (tupleTerm)");
+
   contents.downSubst = top.downSubst;
   top.upSubst = contents.upSubst;
   contents.finalSubst = top.finalSubst;

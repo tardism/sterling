@@ -42,6 +42,28 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.lp = foldl(applicationLambdaPrologTerm,
+                 constLambdaPrologTerm("pair*"), contents.lp);
+}
+
+
+aspect production nilTerm
+top::Term ::=
+{
+  top.lp = constLambdaPrologTerm("nil");
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.lp = consLambdaPrologTerm(hd.lp, tl.lp);
+}
+
+
 aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {

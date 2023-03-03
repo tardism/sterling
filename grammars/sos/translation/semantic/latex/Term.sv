@@ -38,6 +38,30 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.latex =
+      constLaTeXTerm("(" ++
+         implode(", ", map((.ppLaTeX), contents.latex.toList)) ++ ")");
+}
+
+
+aspect production nilTerm
+top::Term ::=
+{
+  top.latex = constLaTeXTerm("\\[\\]");
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.latex =
+      constLaTeXTerm(hd.latex.ppLaTeX ++ "::" ++ tl.latex.ppLaTeX);
+}
+
+
 aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {

@@ -43,6 +43,29 @@ top::Term ::= constructor::QName args::TermList
 }
 
 
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.eb = foldr1(\ a::ExtensibellaTerm b::ExtensibellaTerm ->
+                    applicationExtensibellaTerm("$pair_c", [a, b]),
+                  contents.eb);
+}
+
+
+aspect production nilTerm
+top::Term ::=
+{
+  top.eb = nilExtensibellaTerm();
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.eb = consExtensibellaTerm(hd.eb, tl.eb);
+}
+
+
 aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {

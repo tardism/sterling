@@ -203,6 +203,25 @@ top::LambdaPrologTerm ::= var::String body::LambdaPrologTerm
 }
 
 
+abstract production consLambdaPrologTerm
+top::LambdaPrologTerm ::= hd::LambdaPrologTerm tl::LambdaPrologTerm
+{
+  top.pp =
+      (if hd.isAtomic then hd.pp else "(" ++ hd.pp ++ ")") ++ "::" ++
+      (if tl.isAtomic then tl.pp else "(" ++ tl.pp ++ ")");
+  top.isAtomic = false;
+  top.isApp = false;
+
+  hd.replaceVar = top.replaceVar;
+  tl.replaceVar = top.replaceVar;
+  hd.replaceVal = top.replaceVal;
+  tl.replaceVal = top.replaceVal;
+  top.replaced = consLambdaPrologTerm(hd.replaced, tl.replaced);
+
+  top.vars = union(hd.vars, tl.vars);
+}
+
+
 
 
 
