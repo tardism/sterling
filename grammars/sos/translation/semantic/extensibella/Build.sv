@@ -32,6 +32,11 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local message::IOToken =
       printT("Producing Extensibella output\n", i);
 
+  --error message if errors are identified
+  local printErrs::IOToken =
+      printT("Extensibella errors:\n  " ++
+             implode("\n  ", m.ebErrors) ++ "\n", message);
+
   local mkdir::IOVal<Boolean> = mkdirT(gendir, message);
   local gendir::String = genLoc ++ "extensibella/";
   --definition file

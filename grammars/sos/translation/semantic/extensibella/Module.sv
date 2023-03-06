@@ -6,7 +6,7 @@ import sos:core:main:abstractSyntax only MainFile;
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules,
+   ebTranslationRules, ebErrors,
    defFileContents, interfaceFileContents
 occurs on ModuleList;
 
@@ -26,6 +26,8 @@ top::ModuleList ::=
       error("Should not access on empty module list");
   top.interfaceFileContents =
       error("Should not access on empty module list");
+
+  top.ebErrors = [];
 }
 
 
@@ -96,6 +98,17 @@ top::ModuleList ::= m::Module rest::ModuleList
          rulesImportedUnknown ++ rulesNewUnknown);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(m.modName, top.buildsOns);
+
+  top.ebErrors =
+      case intersect(map((.name), m.constructorDecls),
+                     map((.name), m.judgmentDecls)) of
+      | [] -> []
+      | l ->
+        ["Module " ++ m.modName ++ " declares both a constructor " ++
+         "and a judgment of the following names:  [" ++
+         implode(", ", map((.pp), l)) ++ "];  Extensibella has a " ++
+         "single namespace for both"]
+      end ++ rest.ebErrors;
 }
 
 

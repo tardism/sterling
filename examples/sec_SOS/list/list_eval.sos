@@ -32,54 +32,57 @@ eval_e G E consVal(V1, V2)
 eval_e G tail(E) V2
 
 
-eval_e G E1 ListVal
+/*To address proof problems, explicitly make indexing H::T
+  We need this form in order for indexing to succeed anyway
+  Another option would be to make indexRel fixed*/
+eval_e G E1 consVal(Hd, Tl)
 eval_e G E2 intVal(I)
-index ListVal I V
------------------------- [E-Index]
+indexRel consVal(Hd, Tl) I V
+---------------------------- [E-Index]
 eval_e G index(E1, E2) V
 
 
 eval_e G E ListVal
-length ListVal Length
+lengthRel ListVal Length
 --------------------------------- [E-Length]
 eval_e G length(E) intVal(Length)
 
 
 /*Support for list expression evaluation*/
-Judgment index : value* int value
+Judgment indexRel : value* int value
 
--------------------------- [Index-0]
-index consVal(Hd, Tl) 0 Hd
+----------------------------- [Index-0]
+indexRel consVal(Hd, Tl) 0 Hd
 
 
 Index - 1 = SubIndex
-index Tl SubIndex V
------------------------------ [Index-Step]
-index consVal(Hd, Tl) Index V
+indexRel Tl SubIndex V
+-------------------------------- [Index-Step]
+indexRel consVal(Hd, Tl) Index V
 
 
 |{value}- V ~~> VT
-index VT I Result
------------------- [Index-Trans]*
-index V I Result
+indexRel VT I Result
+-------------------- [Index-Trans]*
+indexRel V I Result
 
 
-Judgment length : value* int
+Judgment lengthRel : value* int
 
 --------------- [Len-Nil]
-length nilVal 0
+lengthRel nilVal 0
 
 
-length Tl SubLen
+lengthRel Tl SubLen
 SubLen + 1 = Len
--------------------------- [Len-Cons]
-length consVal(Hd, Tl) Len
+----------------------------- [Len-Cons]
+lengthRel consVal(Hd, Tl) Len
 
 
 |{value}- V ~~> VT
-length VT Len
+lengthRel VT Len
 ------------------ [Len-Trans]*
-length V Len
+lengthRel V Len
 
 
 

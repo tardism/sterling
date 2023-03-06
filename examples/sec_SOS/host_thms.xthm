@@ -274,6 +274,14 @@ Extensible_Theorem
 
 Translation_Constraint trans_e_vars_exist : forall E E' V,
   |{e}- E ~~> E' -> vars E V -> exists V', vars E' V'.
+
+%Rationale for TC:
+%Evaluation depends on the variables in an expression.  In fact, by
+%the property vars_eval_same_result below, evaluation is determined
+%*entirely* by the variables in an expression.  Therefore making the
+%variables in an expression be a subset of those in its translation
+%gives other extensions a handle on understanding the behavior of an
+%unknown expression in particular contexts.
 Translation_Constraint trans_e_vars : forall E E' V V' X,
   |{e}- E ~~> E' -> vars E V -> vars E' V' ->
   memDomain X V -> memDomain X V'.
@@ -616,10 +624,6 @@ Extensible_Theorem
 
 Translation_Constraint trans_c_eval : forall C C' G G2,
   |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
-Translation_Constraint trans_c_eval_results :
-  forall C C' G G1 G2 X V1 V2,
-    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C G2 ->
-    lookupVal G1 X V1 -> lookupVal G2 X V2 -> V1 = V2.
 
 
 Extensible_Theorem
@@ -675,6 +679,12 @@ Extensible_Theorem
   %1 by URF-Step
    U2: case U2. apply lookupVal_unique to U3 U2. apply IH1 to U4 U5.
    search.
+
+
+Translation_Constraint trans_c_eval_results :
+  forall C C' G G1 G2 X V,
+    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
+    lookupVal G1 X V -> lookupVal G2 X V.
 
 
 Extensible_Theorem
@@ -749,7 +759,6 @@ Extensible_Theorem
   %1 by E-Name
    Ev2: case Ev2. Vars: case Vars. apply Equiv to _ Ev3 Ev2. search.
   %1 by E-GreaterTrue
-   Set subgoals off.
    Vars1: case Vars. Ev2: case Ev2.
      %2 by E-GreaterTrue
       apply IH to _ Vars1 Ev3 Ev2. backchain vars_equiv_left.

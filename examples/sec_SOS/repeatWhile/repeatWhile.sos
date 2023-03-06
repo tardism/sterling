@@ -1,0 +1,38 @@
+Module sec_SOS:repeatWhile
+
+Builds on sec_SOS:host
+
+/*Add a repeat-while construct*/
+c ::= ...
+    | repeatWhile(c, e)
+
+
+------------------------------------- [Trans-RepeatWhile]
+|{c}- repeatWhile(Body, Cond) ~~>
+         seq(Body, while(Cond, Body))
+
+
+
+/*Evaluation*/
+
+eval_c G Body G1
+eval_e G1 Cond trueVal
+eval_c G1 repeatWhile(Body, Cond) G2
+------------------------------------ [E-RepeatWhileTrue]
+eval_c G repeatWhile(Body, Cond) G2
+
+
+eval_c G Body G1
+eval_e G1 Cond falseVal
+----------------------------------- [E-RepeatWhileFalse]
+eval_c G repeatWhile(Body, Cond) G1
+
+
+
+/*Typing*/
+
+typeOK G Body GB
+typeOf G E boolTy
+---------------------------------- [T-RepeatWhile]
+typeOK G repeatWhile(Body, Cond) G
+/*body opens a new scope*/

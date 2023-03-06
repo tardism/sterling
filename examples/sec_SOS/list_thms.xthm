@@ -168,8 +168,9 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
 %tail
  case Hyp1. apply vars_unique to H1 Hyp2. search.
 %index
- VI: case Hyp1. VT: case Hyp2. VT: case VT. apply vars_unique to VI VT.
- apply vars_unique to VI1 VT1. apply joinDomains_unique to VI2 VT2.
+ VI: case Hyp1. VT: case Hyp2. VIdx2: case VT1. case VIdx2.
+ VLst2: case VT. case VIdx3. apply vars_unique to VI VLst2.
+ apply vars_unique to VI1 VIdx1. apply joinDomains_unique to VI2 VT2.
  search.
 %length
  case Hyp1. apply vars_unique to Hyp2 H1. search.
@@ -269,14 +270,14 @@ Prove_Constraint sec_SOS:host:trans_eval_e.
 %tail
  case Hyp1. search.
 %index
- Ev: case Hyp1. skip.
+ Ev: case Hyp1. search.
 %length
  Ev: case Hyp1. search.
 
 
 Extensible_Theorem
   index_is_integer : forall L I V,
-    Index : index L I V ->
+    Index : indexRel L I V ->
     is_integer I
   on Index.
 %Index-0
@@ -289,7 +290,7 @@ Extensible_Theorem
  backchain IH.
 Extensible_Theorem
   index_negative_false : forall L I V,
-    Index : index L I V ->
+    Index : indexRel L I V ->
     Neg : I < 0 ->
     false
   on Index.
@@ -304,8 +305,8 @@ Extensible_Theorem
  apply IH to Index2 Neg.
 Extensible_Theorem
   index_unique : forall L I V1 V2,
-    Index1 : index L I V1 ->
-    Index2 : index L I V2 ->
+    Index1 : indexRel L I V1 ->
+    Index2 : indexRel L I V2 ->
     V1 = V2
   on Index1.
 %1 by Index-0
@@ -327,7 +328,7 @@ Extensible_Theorem
 
 Extensible_Theorem
   length_is_integer : forall L V,
-    Len : length L V ->
+    Len : lengthRel L V ->
     is_integer V
   on Len.
 %Len-Nil
@@ -339,8 +340,8 @@ Extensible_Theorem
  apply IH to Len2. search.
 Extensible_Theorem
   length_unique : forall L V1 V2,
-    Len1 : length L V1 ->
-    Len2 : length L V2 ->
+    Len1 : lengthRel L V1 ->
+    Len2 : lengthRel L V2 ->
     V1 = V2
   on Len1.
 %1 by Len-Nil
@@ -387,11 +388,11 @@ Prove sec_SOS:host:eval_e_unique,
 Prove_Constraint sec_SOS:host:trans_c_eval.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results.
-
-
 Prove sec_SOS:host:eval_c_unique,
       sec_SOS:host:update_rec_fields_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
 
 
 Prove sec_SOS:host:memDomain_joinDomains_left.

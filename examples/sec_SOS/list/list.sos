@@ -43,8 +43,9 @@ e ::= ...
   conditionals, so we'll take advantage of the lax translation
   constraints and translate to something unrelated to the actual
   value.*/
----------------------------------------------------- [Trans-Index]
-|{e}- index(Lst, Index) ~~> plus(length(Lst), Index)
+-------------------------------------------------- [Trans-Index]
+|{e}- index(Lst, Index) ~~> and(null(Lst),
+                                eq(num(0), Index))
 
 
 --------------------- [Trans-Length]
