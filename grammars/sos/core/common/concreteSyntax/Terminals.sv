@@ -14,8 +14,8 @@ terminal IntTy_t      'int'      lexer classes {KEYWORD};
 
 terminal LBracket_t   '[';
 terminal RBracket_t   ']';
-terminal LParen_t     '(';
-terminal RParen_t     ')';
+terminal LBanana_t    '(|';
+terminal RBanana_t    '|)';
 
 terminal Comma_t      ',';
 

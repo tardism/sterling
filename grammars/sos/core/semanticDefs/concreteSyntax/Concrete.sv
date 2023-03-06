@@ -222,9 +222,6 @@ concrete productions top::Judgment_c
 | t1::Term_c op::BinOp_c t2::Term_c '=' t3::Term_c
   { top.ast = binOpJudgment(t1.ast, op.ast, t2.ast, t3.ast,
                             location=top.location); }
-| t1::Term_c '=' t2::Term_c op::BinOp_c t3::Term_c
-  { top.ast = binOpJudgment(t2.ast, op.ast, t3.ast, t1.ast,
-                            location=top.location); }
 
 
 
@@ -324,16 +321,16 @@ concrete productions top::Term_c
                 nilTermList(location=top.location),
                 location=top.location); }
   {-
-    Tuples are delimited by '<' and '>' because using parentheses
-    creates ambiguities with constructors:  We can't tell whether
-    "x (1, 2)" is supposed to be a single term, a constructor x with
-    arguments 1 and 2, or two terms, a constructor x without arguments
-    and a tuple.
+    Tuples are delimited by '(|' and '|)' because using only
+    parentheses creates ambiguities with constructors:  We can't tell
+    whether "x (1, 2)" is supposed to be a single term, a constructor
+    x with arguments 1 and 2, or two terms, a constructor x without
+    arguments and a tuple.
   -}
-| '<' x1::EmptyNewlines '>'
+| '(|' x1::EmptyNewlines '|)'
   { top.ast = tupleTerm(nilTermList(location=top.location),
                         location=top.location); }
-| '<' x1::EmptyNewlines contents::ContainedCommaTermList_c '>'
+| '(|' x1::EmptyNewlines contents::ContainedCommaTermList_c '|)'
   { top.ast =
         case contents.ast.toList of
         | [t] -> t
@@ -345,8 +342,14 @@ concrete productions top::Term_c
   { top.ast = contents.listTerm; }
 | hd::Term_c '::' x1::EmptyNewlines tl::Term_c
   { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
-| '<' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
-      x3::EmptyNewlines ty::Type_c x4::EmptyNewlines '>'
+  {-
+    Ascription uses curly braces because other delimiters we might use
+    cause ambiguities.  We could use bananas like tuples, but that
+    seems likely to confuse because it isn't a tuple, it is a single
+    term for which we are specifying the type.
+  -}
+| '{' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
+      x3::EmptyNewlines ty::Type_c x4::EmptyNewlines '}'
   { top.ast = ascriptionTerm(t.ast, ty.ast, location=top.location); }
 
 

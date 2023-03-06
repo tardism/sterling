@@ -36,7 +36,12 @@ terminal App_t     '++';
 
 terminal Negate_t   '!';
 
-terminal Cons_t   '::'   association=right;
+terminal LParen_t   '(';
+terminal RParen_t   ')';
+
+terminal Cons_t     '::'   association=right;
+terminal LCurly_t   '{';
+terminal RCurly_t   '}';
 
 terminal TransStart_t    '|{';
 terminal TransEnd_t      '}-';

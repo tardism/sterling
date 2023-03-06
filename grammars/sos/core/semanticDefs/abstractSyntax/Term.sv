@@ -176,14 +176,22 @@ top::Term ::= constructor::QName args::TermList
 abstract production tupleTerm
 top::Term ::= contents::TermList
 {
-  top.pp = "<" ++ contents.pp_comma ++ ">";
+  top.pp = "(|" ++ contents.pp_comma ++ "|)";
 
   contents.moduleName = top.moduleName;
 
   contents.constructorEnv = top.constructorEnv;
   contents.tyEnv = top.tyEnv;
 
-  contents.expectedTypes = nothing(); --don't expect anything
+  --"expect" a list of any types of the right length
+  contents.expectedTypes =
+      just(foldr(consTypeList(_, _, location=top.location),
+                 nilTypeList(location=top.location),
+                 map(\ x::Integer ->
+                       varType("Tuple" ++ toString(x) ++ "_" ++
+                               toString(genInt()),
+                               location=top.location),
+                     range(1, contents.len + 1))));
   contents.expectedPC = nothing();
   contents.isTranslationRule = false;
   contents.isExtensibleRule = false;

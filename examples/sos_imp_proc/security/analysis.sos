@@ -360,8 +360,9 @@ secure_program FG P
 
 
 
-------------------------------------- [BFSC-End]
-buildFunSecCtx endProgram emptyFunSec
+/*main function can't be called*/
+---------------------------------------- [BFSC-End]
+buildFunSecCtx endProgram(C) emptyFunSec
 
 
 buildFunSecCtx Rest SRest

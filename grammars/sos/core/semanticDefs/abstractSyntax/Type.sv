@@ -9,6 +9,7 @@ inherited attribute unifyWith<a>::a;
 
 --freshen a type by creating new ty vars for each variable
 synthesized attribute freshenSubst::Substitution;
+inherited attribute freshenSubst_down::Substitution;
 synthesized attribute freshen<a>::a;
 
 --replace variables with new, rigid variables
@@ -25,7 +26,7 @@ synthesized attribute foundPC::Boolean;
 attribute
    subst, substituted<Type>,
    unifyWith<Type>, unifyLoc, downSubst, upSubst,
-   freshen<Type>, freshenSubst,
+   freshen<Type>, freshenSubst_down, freshenSubst,
    rigidize<Type>, rigidizeSubst,
    isExtensible,
    isPC,
@@ -50,7 +51,7 @@ top::Type ::= name::QName
       end;
 
   top.freshen = nameType(name, location=top.location);
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
   top.rigidize = top;
   top.rigidizeSubst = emptySubst();
@@ -80,13 +81,20 @@ top::Type ::= name::String
       | ty -> addSubst(name, ty, top.downSubst)
       end;
 
+  --freshening a type variable is checking if it has already been
+  --freshened, taking the new one if it has, or creating a new one
   top.freshen =
-      varType("_var_" ++ name ++ "_" ++ toString(genInt()),
-              location=top.location);
-  top.freshenSubst = addSubst(name, top.freshen, emptySubst());
+      case lookupSubst(name, top.freshenSubst_down) of
+      | just(ty) -> ty
+      | nothing() ->
+        varType("_var_" ++ name ++ "_" ++ toString(genInt()),
+                location=top.location)
+      end;
+  top.freshenSubst =
+      addSubst(name, top.freshen, top.freshenSubst_down);
 
   top.rigidize =
-      rigidVarType(name ++ toString(genInt()), location=top.location);
+      rigidVarType(name, genInt(), location=top.location);
   top.rigidizeSubst = addSubst(name, top.rigidize, emptySubst());
 
   --assume variable types are not extensible, as undetermined
@@ -106,15 +114,16 @@ top::Type ::= name::String
 
 --used for checking rules for polymorphic judgments
 abstract production rigidVarType
-top::Type ::= name::String
+top::Type ::= name::String index::Integer
 {
-  top.pp = "rigid(" ++ name ++ ")";
+  top.pp = "<rigid ty var " ++ name ++ " " ++ toString(index) ++ ">";
 
   top.substituted = top;
 
   top.upSubst =
       case top.unifyWith of
-      | rigidVarType(n) when n == name -> top.downSubst
+      | rigidVarType(n, i) when n == name && i == index ->
+        top.downSubst
       | varType(v) -> addSubst(v, top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
@@ -122,9 +131,9 @@ top::Type ::= name::String
       end;
 
   top.freshen = error("Should not freshen with rigid vars");
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
-  top.rigidize = error("Should not rigidize with rigid vars");
+  top.rigidize = top;
   top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
@@ -156,7 +165,7 @@ top::Type ::=
       end;
 
   top.freshen = intType(location=top.location);
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
   top.rigidize = top;
   top.rigidizeSubst = emptySubst();
@@ -183,7 +192,7 @@ top::Type ::=
       end;
 
   top.freshen = stringType(location=top.location);
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
   top.rigidize = top;
   top.rigidizeSubst = emptySubst();
@@ -218,6 +227,7 @@ top::Type ::= tys::TypeList
       end;
 
   top.freshen = tupleType(tys.freshen, location=top.location);
+  tys.freshenSubst_down = top.freshenSubst_down;
   top.freshenSubst = tys.freshenSubst;
 
   top.rigidize = tupleType(tys.rigidize, location=top.location);
@@ -248,6 +258,7 @@ top::Type ::= ty::Type
   ty.downSubst = top.downSubst;
 
   top.freshen = listType(ty.freshen, location=top.location);
+  ty.freshenSubst_down = top.freshenSubst_down;
   top.freshenSubst = ty.freshenSubst;
 
   top.rigidize = listType(ty.rigidize, location=top.location);
@@ -275,7 +286,7 @@ top::Type ::=
   top.upSubst = top.downSubst;
 
   top.freshen = errorType(location=top.location);
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
   top.rigidize = top;
   top.rigidizeSubst = emptySubst();
@@ -309,7 +320,7 @@ top::Type ::= t::Type
 attribute
    subst, substituted<TypeList>,
    unifyWith<TypeList>, unifyLoc, downSubst, upSubst,
-   freshen<TypeList>, freshenSubst,
+   freshen<TypeList>, freshenSubst_down, freshenSubst,
    rigidize<TypeList>, rigidizeSubst,
    pcIndex, foundPC,
    containsVars
@@ -321,7 +332,7 @@ top::TypeList ::=
   top.substituted = nilTypeList(location=top.location);
 
   top.freshen = nilTypeList(location=top.location);
-  top.freshenSubst = emptySubst();
+  top.freshenSubst = top.freshenSubst_down;
 
   top.rigidize = top;
   top.rigidizeSubst = emptySubst();
@@ -350,13 +361,11 @@ top::TypeList ::= t::Type rest::TypeList
       consTypeList(t.substituted, rest.substituted,
                    location=top.location);
 
-  local freshenSubstituted::TypeList =
-        performSubstitutionTypeList(rest, t.freshenSubst);
-  top.freshen =
-      consTypeList(t.freshen, freshenSubstituted.freshen,
-                   location=top.location);
-  top.freshenSubst =
-      joinSubst(t.freshenSubst, freshenSubstituted.freshenSubst);
+  top.freshen = consTypeList(t.freshen, rest.freshen,
+                             location=top.location);
+  t.freshenSubst_down = top.freshenSubst_down;
+  rest.freshenSubst_down = t.freshenSubst;
+  top.freshenSubst = rest.freshenSubst;
 
   local rigidizeSubstituted::TypeList =
       performSubstitutionTypeList(rest, t.rigidizeSubst);
@@ -543,6 +552,7 @@ TypeList ::= t::TypeList s::Substitution
 function freshenType
 Type ::= ty::Type
 {
+  ty.freshenSubst_down = emptySubst();
   return ty.freshen;
 }
 
@@ -550,6 +560,7 @@ Type ::= ty::Type
 function freshenTypeList
 TypeList ::= ty::TypeList
 {
+  ty.freshenSubst_down = emptySubst();
   return ty.freshen;
 }
 

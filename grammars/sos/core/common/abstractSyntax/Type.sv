@@ -99,7 +99,7 @@ top::Type ::= ty::Type
 abstract production tupleType
 top::Type ::= tys::TypeList
 {
-  top.pp = "(" ++ tys.pp_comma ++ ")";
+  top.pp = "(|" ++ tys.pp_comma ++ "|)";
 
   top.type = tupleType(tys.types, location=top.location);
 

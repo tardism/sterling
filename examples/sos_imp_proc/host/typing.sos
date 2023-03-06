@@ -272,8 +272,9 @@ programTyOK FG addProgram(Fun, Rest)
 
 
 
------------------------------------ [BFTC-End]
-buildFunTyCtx endProgram emptyFunTy
+/*main function can't be called*/
+-------------------------------------- [BFTC-End]
+buildFunTyCtx endProgram(C) emptyFunTy
 
 
 buildFunTyCtx Rest FRest
