@@ -33,6 +33,12 @@ synthesized attribute type::Type;
 synthesized attribute types::TypeList;
 
 
+--Substitutions to thread around to fill in type variables
+inherited attribute downSubst::Substitution;
+synthesized attribute upSubst::Substitution;
+inherited attribute finalSubst::Substitution;
+
+
 synthesized attribute isError::Boolean;
 
 

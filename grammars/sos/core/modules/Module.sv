@@ -65,13 +65,59 @@ top::ModuleList ::=
 {
   top.nameList = [];
 
-  top.moduleTyDecls = [];
-  top.moduleConstructorDecls = [];
-  top.moduleJudgmentDecls = [];
-  top.moduleTranslationDecls = [];
-  top.moduleRuleDecls = [];
-  top.moduleConcreteDecls = [];
-  top.moduleFunctionDecls = [];
+  top.moduleTyDecls = [("sos-ext:stdLib", [])];
+  top.moduleConstructorDecls = [("sos-ext:stdLib", [])];
+  top.moduleJudgmentDecls =
+      [("sos-ext:stdLib",
+        [fixedJudgmentEnvItem(toQName("sos-ext:stdLib:lookup", loc),
+            toTypeList(
+               [listType(
+                   tupleType(toTypeList([varType("A", location=loc),
+                                         varType("B", location=loc)],
+                                loc), location=loc), location=loc),
+                varType("A", location=loc),
+                varType("B", location=loc)], loc)),
+         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:no_lookup", loc),
+            toTypeList(
+               [listType(
+                   tupleType(toTypeList([varType("A", location=loc),
+                                         varType("B", location=loc)],
+                                loc), location=loc), location=loc),
+                varType("A", location=loc)], loc)),
+         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:member", loc),
+            toTypeList(
+               [varType("A", location=loc),
+                listType(varType("A", location=loc), location=loc)],
+               loc)),
+         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:separate", loc),
+            toTypeList(
+               [varType("A", location=loc),
+                listType(varType("A", location=loc), location=loc),
+                listType(varType("A", location=loc), location=loc)],
+               loc))]
+       )];
+  top.moduleTranslationDecls = [("sos-ext:stdLib", [])];
+  top.moduleRuleDecls = [("sos-ext:stdLib", [])];
+  top.moduleConcreteDecls = [("sos-ext:stdLib", [])];
+  top.moduleFunctionDecls =
+      [("sos-ext:stdLib",
+        [functionEnvItem(toQName("sos-ext:stdLib:tail", loc),
+            toTypeList(
+               [listType(varType("A", location=loc), location=loc)],
+               loc),
+            varType("A", location=loc)),
+         functionEnvItem(toQName("sos-ext:stdLib:head", loc),
+            toTypeList(
+               [listType(varType("A", location=loc), location=loc)],
+               loc),
+            listType(varType("A", location=loc), location=loc)),
+         functionEnvItem(toQName("sos-ext:stdLib:null", loc),
+            toTypeList(
+               [listType(varType("A", location=loc), location=loc)],
+               loc),
+            boolType(location=loc))]
+       )];
+  local loc::Location = txtLoc("sos-ext:stdLib");
 
   top.buildsOns = [];
 
@@ -84,6 +130,8 @@ top::ModuleList ::= m::Module rest::ModuleList
 {
   top.nameList = m.modName::rest.nameList;
 
+  local fullBuildsOnDecls::[QName] =
+      toQName("sos-ext:stdLib", bogusLoc())::m.buildsOnDecls;
   --Reduce imported items in case something is imported by two
   --imported modules:  m imports A, B; A imports C; B imports C.
   --In that case, m would see everything from C twice.
@@ -91,36 +139,36 @@ top::ModuleList ::= m::Module rest::ModuleList
   --detect multiple declarations of the same name.
   local tys::[TypeEnvItem] =
         nubBy(\ t1::TypeEnvItem t2::TypeEnvItem -> t1.name == t2.name,
-           lookupAllModules(m.buildsOnDecls, rest.moduleTyDecls)) ++
+           lookupAllModules(fullBuildsOnDecls, rest.moduleTyDecls)) ++
            m.tyDecls;
   local cons::[ConstructorEnvItem] =
         nubBy(\ c1::ConstructorEnvItem c2::ConstructorEnvItem ->
                 c1.name == c2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleConstructorDecls)) ++ m.constructorDecls;
   local jdgs::[JudgmentEnvItem] =
         nubBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                 j1.name == j2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleJudgmentDecls)) ++ m.judgmentDecls;
   local trns::[TranslationEnvItem] =
         nubBy(\ t1::TranslationEnvItem t2::TranslationEnvItem ->
                 t1.name == t2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleTranslationDecls)) ++ m.translationDecls;
   local rules::[RuleEnvItem] =
         nubBy(\ r1::RuleEnvItem r2::RuleEnvItem -> r1.name == r2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleRuleDecls)) ++ m.ruleDecls;
   local concretes::[ConcreteEnvItem] =
         nubBy(\ c1::ConcreteEnvItem c2::ConcreteEnvItem ->
                 c1.name == c2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleConcreteDecls)) ++ m.concreteDecls;
   local functions::[FunctionEnvItem] =
         nubBy(\ f1::FunctionEnvItem f2::FunctionEnvItem ->
                 f1.name == f2.name,
-           lookupAllModules(m.buildsOnDecls,
+           lookupAllModules(fullBuildsOnDecls,
               rest.moduleFunctionDecls)) ++ m.funDecls;
   top.moduleTyDecls = (m.modName, tys)::rest.moduleTyDecls;
   top.moduleConstructorDecls =

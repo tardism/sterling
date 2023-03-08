@@ -73,6 +73,27 @@ top::Term ::= t::Term i1::Maybe<Integer> i2::Maybe<Integer>
 }
 
 
+aspect production nilTerm
+top::Term ::=
+{
+  top.silverConc = nilSilverConcTerm();
+}
+
+
+aspect production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.silverConc = consSilverConcTerm(hd.silverConc, tl.silverConc);
+}
+
+
+aspect production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.silverConc = tupleSilverConcTerm(contents.silverConc);
+}
+
+
 
 
 

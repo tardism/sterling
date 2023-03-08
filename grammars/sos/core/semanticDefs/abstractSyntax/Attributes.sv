@@ -17,10 +17,6 @@ synthesized attribute ruleDecls::[RuleEnvItem];
 synthesized attribute buildsOnDecls::[QName];
 
 
---Substitutions to thread around to fill in type variables
-inherited attribute downSubst::Substitution;
-synthesized attribute upSubst::Substitution;
-inherited attribute finalSubst::Substitution;
 --constructor whose argument types we are unifying
 inherited attribute lastConstructor::QName;
 inherited attribute expectedTypes::Maybe<TypeList>;

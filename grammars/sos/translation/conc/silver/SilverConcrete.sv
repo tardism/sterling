@@ -187,3 +187,24 @@ top::SilverConcTerm ::= a::SilverConcTerm b::SilverConcTerm
 {
   top.pp = "(" ++ a.pp ++ ") - (" ++ b.pp ++ ")";
 }
+
+
+abstract production nilSilverConcTerm
+top::SilverConcTerm ::=
+{
+  top.pp = "[]";
+}
+
+
+abstract production consSilverConcTerm
+top::SilverConcTerm ::= hd::SilverConcTerm tl::SilverConcTerm
+{
+  top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
+}
+
+
+abstract production tupleSilverConcTerm
+top::SilverConcTerm ::= contents::[SilverConcTerm]
+{
+  top.pp = "(" ++ implode(", ", map((.pp), contents)) ++ ")";
+}

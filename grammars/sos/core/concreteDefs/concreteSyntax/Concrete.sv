@@ -178,7 +178,9 @@ concrete productions top::RegexGroup_c
 closed nonterminal Term_c layout {Spacing_t, Comment_t}
    with ast<Term>, location;
 closed nonterminal TermList_c layout {Spacing_t, Comment_t}
-   with ast<TermList>, location;
+   with ast<TermList>, listAST, location;
+
+synthesized attribute listAST::Term;
 
 concrete productions top::Term_c
 | constant::LowerId_t
@@ -222,12 +224,24 @@ concrete productions top::Term_c
 | s::String_t
   { top.ast = stringTerm(substring(1, length(s.lexeme) - 1, s.lexeme),
                     location=top.location); }
+| '[' ']'
+  { top.ast = nilTerm(location=top.location); }
+| '[' tms::TermList_c ']'
+  { top.ast = tms.listAST; }
+| hd::Term_c '::' tl::Term_c
+  { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
+| '(|' tms::TermList_c '|)'
+  { top.ast = tupleTerm(tms.ast, location=top.location); }
 
 concrete productions top::TermList_c
 | t::Term_c
-  { top.ast = singleTermList(t.ast, location=top.location); }
+  { top.ast = singleTermList(t.ast, location=top.location);
+    top.listAST = consTerm(t.ast, nilTerm(location=top.location),
+                           location=top.location); }
 | t::Term_c ',' x::EmptyNewlines rest::TermList_c
   { top.ast = branchTermList(
                  singleTermList(t.ast, location=t.location),
-                 rest.ast, location=top.location); }
+                 rest.ast, location=top.location);
+    top.listAST = consTerm(t.ast, rest.listAST,
+                           location=top.location); }
 

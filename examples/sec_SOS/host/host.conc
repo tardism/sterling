@@ -85,10 +85,10 @@ recFieldExprs_c<recFieldExprs> ::=
 
 type_c<ty> ::= intTy_t ~~> intTy
              | boolTy_t ~~> boolTy
-             | lcurly_t rcurly_t ~~> recTy(emptyTy)
+             | lcurly_t rcurly_t ~~> recTy([])
              | lcurly_t Fields::recTyFields_c rcurly_t ~~>
                   recTy(Fields)
-recTyFields_c<tyctx> ::=
-   | Field::name_t colon_t Ty::type_c ~~> addTy(Field, Ty, emptyTy)
+recTyFields_c<[(|string, ty|)]> ::=
+   | Field::name_t colon_t Ty::type_c ~~> [(|Field, Ty|)]
    | Field::name_t colon_t Ty::type_c semi_t Rest::recTyFields_c ~~>
-        addTy(Field, Ty, Rest)
+        (|Field, Ty|)::Rest

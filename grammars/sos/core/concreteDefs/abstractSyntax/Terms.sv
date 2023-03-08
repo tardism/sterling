@@ -4,7 +4,7 @@ grammar sos:core:concreteDefs:abstractSyntax;
 nonterminal Term with
    pp,
    moduleName,
-   type,
+   type, upSubst, downSubst, finalSubst,
    tyEnv, constructorEnv, concreteEnv,
    productionElements,
    errors,
@@ -29,6 +29,7 @@ top::Term ::= name::QName
   top.type = if name.constrFound
              then name.constrType
              else errorType(location=top.location);
+  top.upSubst = top.downSubst;
 }
 
 
@@ -49,12 +50,16 @@ top::Term ::= name::QName args::TermList
   top.type = if name.constrFound
              then name.constrType
              else errorType(location=top.location);
+  args.downSubst = top.downSubst;
+  top.upSubst = args.upSubst;
+
   args.argumentIndex = 1;
   args.lastConstructor = name.fullConstrName;
   args.expectedTypes =
        if name.constrFound
-       then just(name.constrTypeArgs.toList)
+       then just(freshenTypeList(name.constrTypeArgs).toList)
        else nothing();
+
   top.errors <-
       case args.remainingTypes of
       | nothing() -> []
@@ -75,6 +80,8 @@ top::Term ::= s::String
   top.pp = "\"" ++ s ++ "\"";
 
   top.type = stringType(location=top.location);
+
+  top.upSubst = top.downSubst;
 }
 
 
@@ -84,6 +91,8 @@ top::Term ::= i::Integer
   top.pp = toString(i);
 
   top.type = intType(location=top.location);
+
+  top.upSubst = top.downSubst;
 }
 
 
@@ -92,7 +101,14 @@ top::Term ::= t::Term
 {
   top.pp = "$to_int(" ++ t.pp ++ ")";
 
+  local unify::TypeUnify =
+      typeUnify(t.type, stringType(location=top.location),
+                location=top.location);
   top.type = intType(location=top.location);
+  t.downSubst = top.downSubst;
+  unify.downSubst = t.upSubst;
+  top.upSubst = unify.upSubst;
+  t.finalSubst = top.finalSubst;
 
   t.moduleName = top.moduleName;
 
@@ -129,6 +145,7 @@ top::Term ::= var::String
       | (_, ty, _)::_ -> ty
       | _ -> errorType(location=top.location)
       end;
+  top.upSubst = top.downSubst;
 }
 
 
@@ -146,7 +163,13 @@ top::Term ::= t::Term i1::Maybe<Integer> i2::Maybe<Integer>
       | nothing(), nothing() -> t.pp ++ "[:]"
       end;
 
+  local unify::TypeUnify =
+      typeUnify(t.type, stringType(location=top.location),
+                location=top.location);
   top.type = stringType(location=top.location);
+  t.downSubst = top.downSubst;
+  unify.downSubst = t.upSubst;
+  top.upSubst = unify.upSubst;
 
   t.moduleName = top.moduleName;
 
@@ -165,6 +188,74 @@ top::Term ::= t::Term i1::Maybe<Integer> i2::Maybe<Integer>
 }
 
 
+abstract production nilTerm
+top::Term ::=
+{
+  top.pp = "[]";
+
+  top.type = listType(varType("X" ++ toString(genInt()),
+                              location=top.location),
+                      location=top.location);
+  top.upSubst = top.downSubst;
+}
+
+
+abstract production consTerm
+top::Term ::= hd::Term tl::Term
+{
+  top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
+
+  local unify::TypeUnify =
+      typeUnify(listType(hd.type, location=top.location), tl.type,
+                location=top.location);
+  top.type = listType(hd.type, location=top.location);
+  hd.downSubst = top.downSubst;
+  tl.downSubst = hd.upSubst;
+  unify.downSubst = tl.upSubst;
+  top.upSubst = unify.upSubst;
+
+  hd.moduleName = top.moduleName;
+  tl.moduleName = top.moduleName;
+
+  hd.tyEnv = top.tyEnv;
+  tl.tyEnv = top.tyEnv;
+  hd.constructorEnv = top.constructorEnv;
+  tl.constructorEnv = top.constructorEnv;
+
+  hd.productionElements = top.productionElements;
+  tl.productionElements = top.productionElements;
+}
+
+
+abstract production tupleTerm
+top::Term ::= contents::TermList
+{
+  top.pp = "(|" ++ contents.pp ++ "|)";
+
+  top.type = tupleType(toTypeList(contents.typeList, top.location),
+                       location=top.location);
+  contents.downSubst = top.downSubst;
+  top.upSubst = contents.upSubst;
+
+  contents.expectedTypes =
+      just(map(\ x::Integer ->
+                 varType("Tuple" ++ toString(x) ++ "_" ++
+                         toString(genInt()),
+                         location=top.location),
+               range(1, contents.len + 1)));
+
+  contents.moduleName = top.moduleName;
+
+  contents.lastConstructor = toQName("tuple", top.location);
+  contents.argumentIndex = 1;
+
+  contents.tyEnv = top.tyEnv;
+  contents.constructorEnv = top.constructorEnv;
+
+  contents.productionElements = top.productionElements;
+}
+
+
 
 
 
@@ -173,7 +264,8 @@ nonterminal TermList with
    moduleName,
    tyEnv, constructorEnv, concreteEnv,
    productionElements,
-   typeList,
+   toList<Term>, len,
+   typeList, upSubst, downSubst,
    expectedTypes, remainingTypes, lastConstructor,
    argumentIndex, nextArgumentIndex,
    errors,
@@ -185,6 +277,9 @@ top::TermList ::= t::Term
 {
   top.pp = t.pp;
 
+  top.toList = [t];
+  top.len = 1;
+
   t.moduleName = top.moduleName;
 
   t.tyEnv = top.tyEnv;
@@ -193,6 +288,18 @@ top::TermList ::= t::Term
   t.productionElements = top.productionElements;
 
   top.typeList = [t.type];
+
+  local unify::TypeUnify =
+      case top.expectedTypes of
+      | just(hd::_) ->
+        typeUnify(hd, t.type, location=top.location)
+      | _ -> typeUnify(errorType(location=top.location),
+                       errorType(location=top.location),
+                       location=top.location)
+      end;
+  t.downSubst = top.downSubst;
+  unify.downSubst = t.upSubst;
+  top.upSubst = unify.upSubst;
 
   top.errors <-
       case top.expectedTypes of
@@ -221,6 +328,9 @@ top::TermList ::= t1::TermList t2::TermList
 {
   top.pp = t1.pp ++ ", " ++ t2.pp;
 
+  top.toList = t1.toList ++ t2.toList;
+  top.len = t1.len + t2.len;
+
   t1.moduleName = top.moduleName;
   t2.moduleName = top.moduleName;
 
@@ -233,6 +343,10 @@ top::TermList ::= t1::TermList t2::TermList
   t2.productionElements = top.productionElements;
 
   top.typeList = t1.typeList ++ t2.typeList;
+
+  t1.downSubst = top.downSubst;
+  t2.downSubst = t1.upSubst;
+  top.upSubst = t2.upSubst;
 
   t1.argumentIndex = top.argumentIndex;
   t2.argumentIndex = t1.nextArgumentIndex;

@@ -114,6 +114,8 @@ top::ConcreteProdDecls ::= p::ProductionElement t::Term
 
   t.productionElements = p.gatherProdElems;
 
+  t.downSubst = emptySubst();
+
   --We want to catch if there are multiple definitions of a var
   --Sort it by var name to get all the same var together
   local sorted::[(String, QName, Type, Location)] =
@@ -140,6 +142,7 @@ top::ConcreteProdDecls ::= p::ProductionElement t::Term
                              l)),
                       location=top.location)::rest,
             [], grouped);
+  top.errors <- errorsFromSubst(t.upSubst);
 }
 
 
