@@ -15,15 +15,19 @@ top::ModuleList ::= files::Files
       [(stdLibName, files.silverFunDefs ++ hardSilverFunDefs)];
   local hardSilverFunDefs::[SilverFunDef] =
       map(\ e::FunctionEnvItem ->
+            {-We need to enumerate them to translate them correctly
+              generally.  These three would work with taking the short
+              name and applying it to l, but I want to catch if I add
+              a function to it so I don't forget to add it here.-}
             if e.name.base == "head"
-            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
-                              "a", "return head(l);")
+            then silverFunDef(e.name.base, [("l", "[a]")],
+                              "a", "return ioval(ioin, head(l));")
             else if e.name.base == "tail"
-            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
-                              "a", "return tail(l);")
+            then silverFunDef(e.name.base, [("l", "[a]")],
+                              "[a]", "return ioval(ioin, tail(l));")
             else if e.name.base == "null"
-            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
-                              "Boolean", "return null(l);")
+            then silverFunDef(e.name.base, [("l", "[a]")],
+                              "Boolean", "return ioval(ioin, null(l));")
             else error("Unexpected standard library function in " ++
                        "Silver translation of main files:  " ++
                        e.name.pp),

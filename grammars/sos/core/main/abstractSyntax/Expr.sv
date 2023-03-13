@@ -2,10 +2,10 @@ grammar sos:core:main:abstractSyntax;
 
 nonterminal Expr with
    pp,
-   type,
    tyEnv, constructorEnv, judgmentEnv, concreteEnv, funEnv,
    translationEnv, moduleName,
-   downVarTypes,
+   type, upSubst, downSubst, finalSubst,
+   downVarTypes, upVarTypes,
    errors,
    location;
 propagate errors, funEnv, tyEnv, constructorEnv, judgmentEnv,

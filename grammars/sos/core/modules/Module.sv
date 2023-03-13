@@ -100,12 +100,12 @@ top::ModuleList ::= files::Files
           toTypeList(
              [listType(varType("A", location=loc), location=loc)],
              loc),
-          varType("A", location=loc)),
+          listType(varType("A", location=loc), location=loc)),
        functionEnvItem(toQName(stdLibName ++ ":head", loc),
           toTypeList(
              [listType(varType("A", location=loc), location=loc)],
              loc),
-          listType(varType("A", location=loc), location=loc)),
+          varType("A", location=loc)),
        functionEnvItem(toQName(stdLibName ++ ":null", loc),
           toTypeList(
              [listType(varType("A", location=loc), location=loc)],
@@ -129,8 +129,8 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.nameList = m.modName::rest.nameList;
 
   --Everything includes the standard library
-  local fullBuildsOnDecls::[QName] =
-      toQName(stdLibName, bogusLoc())::m.buildsOnDecls;
+  local fullBuildsOnDecls::[QName] = m.buildsOnDecls;
+      --toQName(stdLibName, bogusLoc())::m.buildsOnDecls;
   --Reduce imported items in case something is imported by two
   --imported modules:  m imports A, B; A imports C; B imports C.
   --In that case, m would see everything from C twice.
@@ -325,7 +325,7 @@ top::Module ::= name::String files::Files
   top.judgmentDecls = files.judgmentDecls;
   top.translationDecls = files.translationDecls;
   top.ruleDecls = files.ruleDecls;
-  top.buildsOnDecls = files.buildsOnDecls;
+  top.buildsOnDecls = toQName(stdLibName, bogusLoc())::files.buildsOnDecls;
   top.concreteDecls = files.concreteDecls;
   top.funDecls = files.funDecls;
   top.transRuleConstructors = files.transRuleConstructors;

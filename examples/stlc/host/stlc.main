@@ -1,7 +1,23 @@
 Module stlc:host
 
 Function main : <Args : [string]> -> int {
-   Let Contents := Read Args[0]
+   run(Args)
+}
+
+
+Function run : <Files : [string]> -> int {
+   If null(Files)
+   Then 0
+   Else Let FResult := runFile(head(Files))
+        In
+          If FResult = 0
+          Then run(tail(Files))
+          Else FResult
+}
+
+
+Function runFile : <File : string> -> int {
+   Let Contents := Read File
    In
    Let PSuccess, Tm, Errors := Parse term_c from Contents
    In
@@ -20,7 +36,7 @@ Function main : <Args : [string]> -> int {
            1
      Else
        Print "Error parsing file " Before
-       Print Args[0] Before
+       Print File Before
        Print "\n" Before
        Print Errors Before
        Print "\n" Before
