@@ -81,11 +81,10 @@ IOVal<Integer> ::= args::[String]
 
   local e::Either<String  Decorated CmdArgs> = parseArgs(args);
   local a::Decorated CmdArgs = e.fromRight;
-  local rootLoc::String =
-        if null(a.rootLoc) then "" else head(a.rootLoc);
+  local rootLocs::[String] = a.rootLocs;
 
   local modules::IOVal<Either<String ModuleList>> =
-        buildModuleList(a.generateModuleName, rootLoc,
+        buildModuleList(a.generateModuleName, rootLocs,
            abstractFileParse, concreteFileParse, mainFileParse, ioin);
   local genLoc::IOVal<String> =
         envVarT("SOS_GENERATED", modules.io);
@@ -175,13 +174,13 @@ top::ActionSpec ::=
 
 
 attribute
-   errors, generateModuleName, rootLoc, outputName, helpRequest,
+   errors, generateModuleName, rootLocs, outputName, helpRequest,
    concTranslations, semTranslations
 occurs on CmdArgs;
 
 synthesized attribute errors::[String];
 synthesized attribute generateModuleName::String;
-synthesized attribute rootLoc::[String];
+synthesized attribute rootLocs::[String];
 synthesized attribute outputName::[String];
 
 synthesized attribute helpRequest::Boolean;
@@ -204,7 +203,7 @@ top::CmdArgs ::= l::[String]
 
   top.generateModuleName = head(l);
 
-  top.rootLoc = [];
+  top.rootLocs = [];
   top.outputName = [];
 
   top.helpRequest = false;
@@ -221,7 +220,9 @@ top::CmdArgs ::= loc::String rest::CmdArgs
 
   top.generateModuleName = rest.generateModuleName;
 
-  top.rootLoc = loc::rest.rootLoc;
+  --normalize so all have the file separator at the end
+  top.rootLocs =
+      (if endsWith(loc, "/") then loc else loc ++ "/")::rest.rootLocs;
   top.outputName = rest.outputName;
 
   top.helpRequest = rest.helpRequest;
@@ -240,7 +241,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 
   top.generateModuleName = rest.generateModuleName;
 
-  top.rootLoc = rest.rootLoc;
+  top.rootLocs = rest.rootLocs;
   top.outputName = filename::rest.outputName;
 
   top.helpRequest = rest.helpRequest;
@@ -259,7 +260,7 @@ top::CmdArgs ::= rest::CmdArgs
 
   top.generateModuleName = rest.generateModuleName;
 
-  top.rootLoc = rest.rootLoc;
+  top.rootLocs = rest.rootLocs;
   top.outputName = rest.outputName;
 
   top.helpRequest = true;
@@ -314,11 +315,6 @@ Either<String  Decorated CmdArgs> ::= args::[String]
 
   production attribute errors::[String] with ++;
   errors := a.errors;
-  errors <-
-     if length(a.rootLoc) > 1
-     then ["Can only give one location; found " ++
-           toString(length(a.rootLoc))]
-     else [];
   errors <-
      case a.outputName of
      | [] -> []

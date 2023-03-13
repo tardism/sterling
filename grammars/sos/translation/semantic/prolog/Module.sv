@@ -15,12 +15,12 @@ synthesized attribute
    instanTransPrologRules::[(QName, Maybe<PrologFormula>, PrologTerm)]
 occurs on ModuleList;
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.prologTranslationRules = [];
+  top.prologTranslationRules = files.prologTranslationRules;
 
-  top.prologRules = [];
+  top.prologRules = files.prologRules;
 
   top.instanTransPrologRules = [];
 }

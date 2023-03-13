@@ -7,12 +7,12 @@ attribute
    silverConc<[(String, [SilverConcDecl])]>, parsedTypes
 occurs on ModuleList;
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.silverConc = [];
+  top.silverConc = [(stdLibName, files.silverConc)];
 
-  top.parsedTypes = [];
+  top.parsedTypes = files.parsedTypes;
 }
 
 

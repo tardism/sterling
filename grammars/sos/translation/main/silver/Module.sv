@@ -8,10 +8,25 @@ synthesized attribute silverFunDefsModules::[(String, [SilverFunDef])]
    occurs on ModuleList;
 
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.silverFunDefsModules = [];
+  top.silverFunDefsModules =
+      [(stdLibName, files.silverFunDefs ++ hardSilverFunDefs)];
+  local hardSilverFunDefs::[SilverFunDef] =
+      map(\ e::FunctionEnvItem ->
+            if e.name.base == "head"
+            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
+                              "a", "return head(l);")
+            else if e.name.base == "tail"
+            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
+                              "a", "return tail(l);")
+            else if e.name.base == "null"
+            then silverFunDef(e.name.silverFunName, [("l", "[a]")],
+                              "Boolean", "return null(l);")
+            else error("Unexpected standard library function " ++
+                       e.name.pp),
+          hardFunDefs);
 }
 
 

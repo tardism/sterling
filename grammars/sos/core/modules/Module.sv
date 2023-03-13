@@ -35,8 +35,11 @@ synthesized attribute modName::String;
 synthesized attribute errorString::String;
 
 
-{-
+--to make it easier to change the name, should we need to do so
+global stdLibName::String = "stdLib";
 
+
+{-
   We assume all modules a module builds on/imports occur *later* in
   the list.  For example, suppose we have
        stlc:host
@@ -51,6 +54,10 @@ synthesized attribute errorString::String;
   relationship to one another, we don't care about the relative
   ordering of those modules.  We cannot have cycles in a well-defined
   set of modules, so this can always be the case.
+
+  In addition to the declared set of builds-on declarations, there is
+  the standard library.  Everything builds on this implicitly, and it
+  therefore comes at the end of the list.
 -}
 nonterminal ModuleList with
    nameList,
@@ -60,68 +67,59 @@ nonterminal ModuleList with
    buildsOns,
    errorString;
 
-abstract production nilModuleList
-top::ModuleList ::=
+abstract production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.nameList = [];
+  top.nameList = [stdLibName];
 
-  top.moduleTyDecls = [("sos-ext:stdLib", [])];
-  top.moduleConstructorDecls = [("sos-ext:stdLib", [])];
+  files.moduleName = toQName(stdLibName, loc);
+  files.tyEnv = buildEnv(files.tyDecls);
+  files.constructorEnv = buildEnv(files.constructorDecls);
+  files.judgmentEnv = buildEnv(files.judgmentDecls);
+  files.translationEnv = buildEnv(files.translationDecls);
+  files.ruleEnv = buildEnv(files.ruleDecls);
+  files.concreteEnv = buildEnv(files.concreteDecls);
+  files.funEnv = buildEnv(files.funDecls);
+  files.transRuleConstructors_down = files.transRuleConstructors;
+
+  top.moduleTyDecls = [(stdLibName, files.tyDecls)];
+  top.moduleConstructorDecls =
+      [(stdLibName, files.constructorDecls)];
   top.moduleJudgmentDecls =
-      [("sos-ext:stdLib",
-        [fixedJudgmentEnvItem(toQName("sos-ext:stdLib:lookup", loc),
-            toTypeList(
-               [listType(
-                   tupleType(toTypeList([varType("A", location=loc),
-                                         varType("B", location=loc)],
-                                loc), location=loc), location=loc),
-                varType("A", location=loc),
-                varType("B", location=loc)], loc)),
-         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:no_lookup", loc),
-            toTypeList(
-               [listType(
-                   tupleType(toTypeList([varType("A", location=loc),
-                                         varType("B", location=loc)],
-                                loc), location=loc), location=loc),
-                varType("A", location=loc)], loc)),
-         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:member", loc),
-            toTypeList(
-               [varType("A", location=loc),
-                listType(varType("A", location=loc), location=loc)],
-               loc)),
-         fixedJudgmentEnvItem(toQName("sos-ext:stdLib:separate", loc),
-            toTypeList(
-               [varType("A", location=loc),
-                listType(varType("A", location=loc), location=loc),
-                listType(varType("A", location=loc), location=loc)],
-               loc))]
-       )];
-  top.moduleTranslationDecls = [("sos-ext:stdLib", [])];
-  top.moduleRuleDecls = [("sos-ext:stdLib", [])];
-  top.moduleConcreteDecls = [("sos-ext:stdLib", [])];
+      [(stdLibName, files.judgmentDecls)];
+  top.moduleTranslationDecls =
+      [(stdLibName, files.translationDecls)];
+  top.moduleRuleDecls = [(stdLibName, files.ruleDecls)];
+  top.moduleConcreteDecls = [(stdLibName, files.concreteDecls)];
   top.moduleFunctionDecls =
-      [("sos-ext:stdLib",
-        [functionEnvItem(toQName("sos-ext:stdLib:tail", loc),
-            toTypeList(
-               [listType(varType("A", location=loc), location=loc)],
-               loc),
-            varType("A", location=loc)),
-         functionEnvItem(toQName("sos-ext:stdLib:head", loc),
-            toTypeList(
-               [listType(varType("A", location=loc), location=loc)],
-               loc),
-            listType(varType("A", location=loc), location=loc)),
-         functionEnvItem(toQName("sos-ext:stdLib:null", loc),
-            toTypeList(
-               [listType(varType("A", location=loc), location=loc)],
-               loc),
-            boolType(location=loc))]
-       )];
-  local loc::Location = txtLoc("sos-ext:stdLib");
+      [(stdLibName, hardFunDefs++ files.funDecls)];
+  local loc::Location = txtLoc(stdLibName);
+  --some functions we can't write in the code:
+  production hardFunDefs::[FunctionEnvItem] =
+      [functionEnvItem(toQName(stdLibName ++ ":tail", loc),
+          toTypeList(
+             [listType(varType("A", location=loc), location=loc)],
+             loc),
+          varType("A", location=loc)),
+       functionEnvItem(toQName(stdLibName ++ ":head", loc),
+          toTypeList(
+             [listType(varType("A", location=loc), location=loc)],
+             loc),
+          listType(varType("A", location=loc), location=loc)),
+       functionEnvItem(toQName(stdLibName ++ ":null", loc),
+          toTypeList(
+             [listType(varType("A", location=loc), location=loc)],
+             loc),
+          boolType(location=loc))];
 
   top.buildsOns = [];
 
-  top.errorString = "";
+  --standard library should be error-free, so die if it isn't
+  top.errorString =
+      if files.errorString == ""
+      then ""
+      else error("Errors in standard library:\n" ++
+                 files.errorString);
 }
 
 
@@ -130,8 +128,9 @@ top::ModuleList ::= m::Module rest::ModuleList
 {
   top.nameList = m.modName::rest.nameList;
 
+  --Everything includes the standard library
   local fullBuildsOnDecls::[QName] =
-      toQName("sos-ext:stdLib", bogusLoc())::m.buildsOnDecls;
+      toQName(stdLibName, bogusLoc())::m.buildsOnDecls;
   --Reduce imported items in case something is imported by two
   --imported modules:  m imports A, B; A imports C; B imports C.
   --In that case, m would see everything from C twice.

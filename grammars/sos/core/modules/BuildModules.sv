@@ -4,7 +4,7 @@ grammar sos:core:modules;
 @{-
   - Given the module name we want to compile, build a list of modules based on imports
   - @param initialModule  name of the module we want to compile
-  - @param rootLoc  root location in the filesystem in which to find the modules
+  - @param rootLocs  directories in the filesystem in which to find the modules
   - @param abstractFileParse  parser to use for parsing each .sos file
   - @param concreteFileParse  parser to use for parsing each .conc file
   - @param mainFileParse  parser to use for parsing each .main file
@@ -13,20 +13,23 @@ grammar sos:core:modules;
 -}
 function buildModuleList
 IOVal<Either<String ModuleList>> ::=
-   initialModule::String rootLoc::String
+   initialModule::String rootLocs::[String]
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
    mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioIn::IOToken
 {
+  local stdLib::IOVal<ModuleList> =
+        buildStdLib(abstractFileParse, concreteFileParse,
+                    mainFileParse, ioIn);
   local firstModule::IOVal<Either<String Module>> =
-        buildModule(initialModule, rootLoc, abstractFileParse,
-                    concreteFileParse, mainFileParse, ioIn);
+        buildModule(initialModule, rootLocs, abstractFileParse,
+                    concreteFileParse, mainFileParse, stdLib.io);
   local built::IOVal<Either<String ModuleList>> =
         buildModuleList_helper(
            firstModule.iovalue.fromRight.buildsOnDecls,
-           rootLoc, abstractFileParse, concreteFileParse,
-           mainFileParse, nilModuleList(), firstModule.io);
+           rootLocs, abstractFileParse, concreteFileParse,
+           mainFileParse, stdLib.iovalue, firstModule.io);
 
   return case firstModule.iovalue of
          | left(err) -> ioval(firstModule.io, left(err))
@@ -40,7 +43,7 @@ IOVal<Either<String ModuleList>> ::=
 }
 function buildModuleList_helper
 IOVal<Either<String ModuleList>> ::=
-   buildsOn::[QName] rootLoc::String
+   buildsOn::[QName] rootLocs::[String]
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
    mainFileParse::(ParseResult<MainFile_c> ::= String String)
@@ -48,12 +51,12 @@ IOVal<Either<String ModuleList>> ::=
 {
   --Build the first module from the list of buildsOn
   local buildNextModule::IOVal<Either<String Module>> =
-        buildModule(head(buildsOn).pp, rootLoc, abstractFileParse,
+        buildModule(head(buildsOn).pp, rootLocs, abstractFileParse,
                     concreteFileParse, mainFileParse, ioIn);
   local nextModule::Module = buildNextModule.iovalue.fromRight;
   --Build its list of modules it builds on
   local subcallNextModule::IOVal<Either<String ModuleList>> =
-        buildModuleList_helper(nextModule.buildsOnDecls, rootLoc,
+        buildModuleList_helper(nextModule.buildsOnDecls, rootLocs,
            abstractFileParse, concreteFileParse, mainFileParse,
            thusFar, buildNextModule.io);
   local nextModuleList::ModuleList =
@@ -61,7 +64,7 @@ IOVal<Either<String ModuleList>> ::=
                        subcallNextModule.iovalue.fromRight);
   --Build the rest of the modules from buildsOn
   local subcallRestCurrent::IOVal<Either<String ModuleList>> =
-        buildModuleList_helper(tail(buildsOn), rootLoc, abstractFileParse,
+        buildModuleList_helper(tail(buildsOn), rootLocs, abstractFileParse,
            concreteFileParse, mainFileParse, nextModuleList,
            subcallNextModule.io);
 
@@ -72,7 +75,7 @@ IOVal<Either<String ModuleList>> ::=
        --If anything else built on mod, it would already be in thusFar
        --along with all the modules it builds on
        if contains(mod.pp, thusFar.nameList)
-       then buildModuleList_helper(r, rootLoc, abstractFileParse,
+       then buildModuleList_helper(r, rootLocs, abstractFileParse,
                concreteFileParse, mainFileParse, thusFar, ioIn)
        else case buildNextModule.iovalue of
             | left(err) -> ioval(buildNextModule.io, left(err))
@@ -87,9 +90,39 @@ IOVal<Either<String ModuleList>> ::=
 
 
 @{-
+  - Build the basic ModuleList for the standard library alone
+  - @param abstractFileParse  parser to use for parsing each .sos file
+  - @param concreteFileParse  parser to use for parsing each .conc file
+  - @param mainFileParse  parser to use for parsing each .main file
+  - @param ioIn  initial IO state
+  - @return  produces the ModuleList object for the standard library
+-}
+function buildStdLib
+IOVal<ModuleList> ::=
+   abstractFileParse::(ParseResult<File_c> ::= String String)
+   concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
+   ioIn::IOToken
+{
+  local readSOS_HOME::IOVal<String> = envVarT("SOS_HOME", ioIn);
+  local dir::String = readSOS_HOME.iovalue ++ "/stdLib";
+  local files::IOVal<Either<String Files>> =
+      buildAllFiles(dir, abstractFileParse, concreteFileParse,
+                    mainFileParse, readSOS_HOME.io);
+  return if readSOS_HOME.iovalue == ""
+         then error("Must run using provided script")
+         else case files.iovalue of
+              | right(f) -> ioval(files.io, stdLibModuleList(f))
+              | left(err) ->
+                error("Error reading standard library:  " ++ err)
+              end;
+}
+
+
+@{-
   - Build a Module object by reading and parsing the files in the module
   - @param moduleName  module to read and build (e.g. stlc:host)
-  - @param rootLoc  root location in the filesystem in which to find the module
+  - @param rootLocs  directories in the filesystem in which to find the module
   - @param abstractFileParse  parser to use for parsing each .sos file
   - @param concreteFileParse  parser to use for parsing each .conc file
   - @param mainFileParse  parser to use for parsing each .main file
@@ -98,26 +131,57 @@ IOVal<Either<String ModuleList>> ::=
 -}
 function buildModule
 IOVal<Either<String Module>> ::=
-   moduleName::String rootLoc::String
+   moduleName::String rootLocs::[String]
    abstractFileParse::(ParseResult<File_c> ::= String String)
    concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
    mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioIn::IOToken
 {
   local moduleParts::[String] = explode(":", moduleName);
-  local dirLoc::String =
-        if endsWith(rootLoc, "/")
-        then rootLoc ++ implode("/", moduleParts)
-        else implode("/", rootLoc::moduleParts);
-  local isDir::IOVal<Boolean> = isDirectoryT(dirLoc, ioIn);
-  local dirContents::IOVal<[String]> =
-        listContentsT(dirLoc, isDir.io);
+  local dirLoc::IOVal<Maybe<String>> =
+        findDir(moduleParts, rootLocs, ioIn);
+  local dir::String = dirLoc.iovalue.fromJust;
+  local finalFiles::IOVal<Either<String Files>> =
+        buildAllFiles(dir, abstractFileParse, concreteFileParse,
+                      mainFileParse, dirLoc.io);
+  --Combine
+  return
+     case dirLoc.iovalue of
+     | nothing() ->
+       ioval(dirLoc.io, left("Could not find module " ++ moduleName))
+     | _ -> case finalFiles.iovalue of
+            | left(err) -> ioval(finalFiles.io, left(err))
+            | right(f) ->
+              ioval(finalFiles.io, right(module(moduleName, f)))
+            end
+     end;
+}
+
+
+@{-
+  - Build a Files object by reading and parsing the files in the directory
+  - @param dir  directory to read files
+  - @param abstractFileParse  parser to use for parsing each .sos file
+  - @param concreteFileParse  parser to use for parsing each .conc file
+  - @param mainFileParse  parser to use for parsing each .main file
+  - @param ioIn  initial IO state
+  - @return  produces the Files object for the directory or an error message
+-}
+function buildAllFiles
+IOVal<Either<String Files>> ::=
+   dir::String
+   abstractFileParse::(ParseResult<File_c> ::= String String)
+   concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
+   ioIn::IOToken
+{
+  local dirContents::IOVal<[String]> = listContentsT(dir, ioIn);
   --Abstract files
   local sosFiles::[String] =
         filter(\ s::String -> splitFileNameAndExtension(s).2 == "sos",
                dirContents.iovalue);
   local files::IOVal<Either<String Files>> =
-        buildFiles(dirLoc, sosFiles, abstractFileParse,
+        buildFiles(dir, sosFiles, abstractFileParse,
                    consAbstractFiles, nilFiles(), dirContents.io);
   --Concrete files
   local concFiles::[String] =
@@ -127,7 +191,7 @@ IOVal<Either<String Module>> ::=
         case files.iovalue of
         | left(_) -> files
         | right(fs) ->
-          buildFiles(dirLoc, concFiles, concreteFileParse,
+          buildFiles(dir, concFiles, concreteFileParse,
                      consConcreteFiles, fs, files.io)
         end;
   --Main files
@@ -138,18 +202,36 @@ IOVal<Either<String Module>> ::=
         case stepFiles.iovalue of
         | left(_) -> stepFiles
         | right(fs) ->
-          buildFiles(dirLoc, mainFiles, mainFileParse,
+          buildFiles(dir, mainFiles, mainFileParse,
                      consMainFiles, fs, stepFiles.io)
         end;
   --Combine
-  return
-     if !isDir.iovalue
-     then ioval(isDir.io, left("Could not find module " ++ moduleName))
-     else case finalFiles.iovalue of
-          | left(err) -> ioval(finalFiles.io, left(err))
-          | right(f) ->
-            ioval(finalFiles.io, right(module(moduleName, f)))
-          end;
+  return finalFiles;
+}
+
+
+@{-
+  - Find the location of the module in the given root locations
+  - @param moduleParts  name of the module, split (e.g. [a, b, c] for a:b:c)
+  - @param rootLocs  directories in which to look for the module
+  - @param ioIn  initial IO state
+  - @return  produces the directory location of the module or nothing()
+-}
+function findDir
+IOVal<Maybe<String>> ::= moduleParts::[String] rootLocs::[String]
+                         ioIn::IOToken
+{
+  local dirLoc::String = implode("/", head(rootLocs)::moduleParts);
+  local isDir::IOVal<Boolean> = isDirectoryT(dirLoc, ioIn);
+
+  local rest::IOVal<Maybe<String>> =
+      findDir(moduleParts, tail(rootLocs), isDir.io);
+
+  return case rootLocs of
+         | [] -> ioval(ioIn, nothing())
+         | _::_ when isDir.iovalue -> ioval(isDir.io, just(dirLoc))
+         | _::_ -> rest
+         end;
 }
 
 

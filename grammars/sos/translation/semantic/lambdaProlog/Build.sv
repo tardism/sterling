@@ -66,7 +66,7 @@ top::CmdArgs ::= rest::CmdArgs
 
   top.generateModuleName = rest.generateModuleName;
 
-  top.rootLoc = rest.rootLoc;
+  top.rootLocs = rest.rootLocs;
 
   top.outputLambdaProlog = true;
 

@@ -58,7 +58,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
 
   top.generateModuleName = rest.generateModuleName;
 
-  top.rootLoc = rest.rootLoc;
+  top.rootLocs = rest.rootLocs;
 
   top.latexLocation = filename::rest.latexLocation;
 

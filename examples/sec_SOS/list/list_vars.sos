@@ -2,13 +2,13 @@ Module sec_SOS:list
 
 /*Expression Vars*/
 
--------------------- [V-Nil]
-vars nil emptyDomain
+----------- [V-Nil]
+vars nil []
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ------------------- [V-Cons]
 vars cons(E1, E2) D
 
@@ -30,7 +30,7 @@ vars tail(E) D
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 -------------------- [V-Index]
 vars index(E1, E2) D
 

@@ -8,8 +8,8 @@ import sos:core:main:abstractSyntax only MainFile;
 
 attribute ppLaTeX occurs on Module, ModuleList;
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
   top.ppLaTeX = "";
 }

@@ -2,7 +2,7 @@
 
 THIS_SCRIPT=$(readlink -f "${BASH_SOURCE[0]}")
 
-SOS_HOME=${THIS_SCRIPT/\/sos-ext}
+export SOS_HOME=${THIS_SCRIPT/\/sos-ext}
 export SOS_GRAMMARS=${SOS_HOME}/grammars/
 export SOS_GENERATED=${SOS_HOME}/generated/
 

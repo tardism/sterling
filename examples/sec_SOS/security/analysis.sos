@@ -1,24 +1,5 @@
 Module sec_SOS:security
 
-secctx ::= emptySec
-         | addSec(string, seclevel, secctx)
-Translation secctx :
-
-
-Judgment lookupSec : secctx* string seclevel
-
--------------------------------- [LS-Here]
-lookupSec addSec(X, S, Rest) X S
-
-
-lookupSec Rest X XS
-X != Y
----------------------------------- [LS-Later]
-lookupSec addSec(Y, YS, Rest) X XS
-
-
-
-
 /*Take two security levels and the get the higher one*/
 Judgment join : seclevel* seclevel seclevel
 
@@ -36,9 +17,9 @@ join S private private
 
 
 
-Judgment level : secctx e* seclevel
-Judgment rf_level : secctx recFieldExprs* seclevel
-Judgment secure : seclevel secctx c* secctx
+Judgment level : [(|string, seclevel|)] e* seclevel
+Judgment rf_level : [(|string, seclevel|)] recFieldExprs* seclevel
+Judgment secure : seclevel [(|string, seclevel|)] c* [(|string, seclevel|)]
 
 
 /*Expression Security Level*/
@@ -54,7 +35,7 @@ join S1 S2 S
 level G plus(E1, E2) S
 
 
-lookupSec G X S
+lookup G X S
 ----------------- [S-Name]
 level G name(X) S
 
@@ -145,32 +126,32 @@ secure PC G seq(C1, C2) G2
 
 
 level G E public
--------------------------------------------------- [S-Declare]
-secure PC G declare(X, Ty, E) addSec(X, public, G)
+---------------------------------------------- [S-Declare]
+secure PC G declare(X, Ty, E) (|X, public|)::G
 
 
 level G E S
 ---------------------------------------- [S-DeclareSecPrivate]
 secure PC G declareSec(X, private, Ty, E
-          ) addSec(X, private, G)
+          ) (|X, private|)::G
 
 
 level G E public
 ------------------------------------------- [S-DeclareSecPublic]
 secure public G declareSec(X, public, Ty, E
-                ) addSec(X, public, G)
+                ) (|X, public|)::G
 
 
 /*To assign to public var, need both PC and expr to be public*/
 level G E public
-lookupSec G X public
+lookup G X public
 ------------------------------ [S-AssignPublic]
 secure public G assign(X, E) G
 
 
 /*Can assign anything to a private var, anytime*/
 level G E S
-lookupSec G X private
+lookup G X private
 -------------------------- [S-AssignPrivate]
 secure PC G assign(X, E) G
 

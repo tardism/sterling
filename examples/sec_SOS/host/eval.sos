@@ -215,7 +215,7 @@ Fixed Judgment evalctx_eq : [(|string, value|)] [(|string, value|)]
 evalctx_eq [] []
 
 
-separate (|X, V2|) EC2 Rest2
+select (|X, V2|) EC2 Rest2
 val_eq V1 V2
 evalctx_eq Rest1 Rest2
 =============================== [ECEq-Add]

@@ -13,19 +13,51 @@ occurs on ModuleList;
 synthesized attribute defFileContents::String;
 synthesized attribute interfaceFileContents::String;
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.ebKinds = [];
-  top.ebConstrs = [];
-  top.ebRulesByModule = [];
-  top.ebJudgments = [];
-  top.ebTranslationRules = [];
+  top.ebKinds = files.ebKinds;
+  top.ebConstrs = files.ebConstrs;
+  top.ebRulesByModule = [(stdLibName, files.ebRules ++ isRules)];
+  top.ebJudgments = files.ebJudgments ++ isRels;
+  top.ebTranslationRules = files.ebTranslationRules;
+
+  --automatically generate is relations
+  local isRels::[(String, [ExtensibellaType])] =
+      map(\ t::TypeEnvItem ->
+            (t.name.ebIsName,
+             [extensibellaNameTy(t.name.ebTypeName)]),
+          files.tyDecls);
+  local isRules::[Def] =
+      map(\ c::ConstructorEnvItem ->
+            let children::[(String, Metaterm)] =
+                foldr(\ t::Type rest::[(String, Metaterm)] ->
+                        let newName::String =
+                            freshNameFromType(t, map(fst, rest))
+                        in
+                          (newName,
+                           relationMetaterm(t.ebIs,
+                              [nameExtensibellaTerm(newName)]))::rest
+                        end,
+                      [], c.types.toList)
+            in
+              if null(children)
+              then factDef(relationMetaterm(c.type.ebIs,
+                    [nameExtensibellaTerm(c.name.ebConstructorName)]))
+              else ruleDef(
+                      relationMetaterm(c.type.ebIs,
+                         [applicationExtensibellaTerm(
+                             c.name.ebConstructorName,
+                             map(nameExtensibellaTerm,
+                                 map(fst, children)))]),
+                      foldr1(andMetaterm, map(snd, children)))
+            end,
+          files.constructorDecls);
 
   top.defFileContents =
-      error("Should not access on empty module list");
+      error("Should not access on stdLib module list");
   top.interfaceFileContents =
-      error("Should not access on empty module list");
+      error("Should not access on stdLib module list");
 
   top.ebErrors = [];
 }

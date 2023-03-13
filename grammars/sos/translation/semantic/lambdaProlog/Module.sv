@@ -6,12 +6,12 @@ import sos:core:main:abstractSyntax only MainFile;
 
 attribute lpDecls, lpRules, lpTranslationRules occurs on ModuleList;
 
-aspect production nilModuleList
-top::ModuleList ::=
+aspect production stdLibModuleList
+top::ModuleList ::= files::Files
 {
-  top.lpDecls = [];
-  top.lpRules = [];
-  top.lpTranslationRules = [];
+  top.lpDecls = files.lpDecls;
+  top.lpRules = files.lpRules;
+  top.lpTranslationRules = files.lpTranslationRules;
 }
 
 
