@@ -8,30 +8,6 @@ status ::= private
          | public
 Translation status :
 
-secctx ::= emptysec
-         | addsec(string, status, secctx)
-Translation secctx :
-
-
-
-/*Lookup the security level of a variable in a security context*/
-Fixed Judgment slookup : secctx string status
-
-
-============================== [SL-Here]
-slookup addsec(X, S, Rest) X S
-
-
-slookup Rest X S
-Y != X
-============================== [SL-Later]
-slookup addsec(Y, T, Rest) X S
-
-
-/*Anything not contained in the context is assumed to be public*/
-========================== [SL-NotPresent]
-slookup emptysec X private
-
 
 
 /*Get the highest of two security levels*/
@@ -53,9 +29,9 @@ smax public public public
 
 
 /*Security Analysis*/
-Judgment sec_level_a : secctx a* status
-Judgment sec_level_b : secctx b* status
-Judgment is_secure : status secctx c* /*program counter, ctx, cmd*/
+Judgment sec_level_a : [(|string, status|)] a* status
+Judgment sec_level_b : [(|string, status|)] b* status
+Judgment is_secure : status [(|string, status|)] c* /*program counter, ctx, cmd*/
 
 
 
@@ -72,7 +48,7 @@ sec_level_a SC plus(A1, A2) S
 sec_level_a SC num(I) public
 
 
-slookup SC X S
+lookup SC X S
 ------------------------ [S-Name]
 sec_level_a SC name(X) S
 
@@ -144,14 +120,14 @@ is_secure PC SC seq(C1, C2)
 
 
 /*Can put anything into a private var, since it won't leak*/
-slookup SC X private
+lookup SC X private
 ---------------------------- [S-AssignPrivate]
 is_secure PC SC assign(X, A)
 
 
 /*Can only assign into public if private hasn't made us reach here (PC
   is public) and A doesn't have private information*/
-slookup SC X public
+lookup SC X public
 sec_level_a SC A public
 -------------------------------- [S-AssignPublic]
 is_secure public SC assign(X, A)

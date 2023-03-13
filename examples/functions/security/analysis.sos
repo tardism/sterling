@@ -1,30 +1,12 @@
 Module functions:security
 
-secctx ::= emptySec
-         | addSec(string, seclevel, secctx)
-Translation secctx :
-
-
-Judgment lookupSec : secctx* string seclevel
-
--------------------------------- [LS-Here]
-lookupSec addSec(X, S, Rest) X S
-
-
-lookupSec Rest X XS
-X != Y
----------------------------------- [LS-Later]
-lookupSec addSec(Y, YS, Rest) X XS
-
-
-
 funsecctx ::= emptyFunSec
-      | addFunSec(string, seclevel, seclevel, seclevelList, funsecctx)
+      | addFunSec(string, seclevel, seclevel, [seclevel], funsecctx)
            /*name, starting PC, return level, param sec levels, rest*/
 Translation funsecctx :
 
 
-Judgment lookupFunSec : funsecctx* string seclevel seclevel seclevelList
+Judgment lookupFunSec : funsecctx* string seclevel seclevel [seclevel]
 
 -------------------------------------------------------- [LFS-Here]
 lookupFunSec addFunSec(X, S, RetS, SL, Rest) X S RetS SL
@@ -36,26 +18,20 @@ X != Y
 lookupFunSec addFunSec(Y, YS, YRet, YSL, Rest) X XS XRet XSL
 
 
-seclevelList ::= endSeclevelList
-               | addSeclevelList(seclevel, seclevelList)
-Translation seclevelList :
+Judgment paramsToSecList : params* [seclevel]
 
-
-Judgment paramsToSecList : params* seclevelList
-
------------------------------------------ [PtSL-End]
-paramsToSecList endParams endSeclevelList
+---------------------------- [PtSL-End]
+paramsToSecList endParams []
 
 
 paramsToSecList Rest SRest
------------------------------------------------------------ [PtSL-Add]
-paramsToSecList addParams(X, Ty, Rest) addSeclevelList(public, SRest)
+---------------------------------------------------- [PtSL-Add]
+paramsToSecList addParams(X, Ty, Rest) public::SRest
 
 
 paramsToSecList Rest SRest
------------------------------------------------------- [PtSL-AddSec]
-paramsToSecList addSecParams(X, S, Ty, Rest
-                   ) addSeclevelList(S, SRest)
+----------------------------------------------------- [PtSL-AddSec]
+paramsToSecList addSecParams(X, S, Ty, Rest) S::SRest
 
 
 |{params}- P ~~> PT
@@ -84,18 +60,18 @@ join S private private
 
 
 /*Expressions*/
-Judgment level : seclevel funsecctx secctx e* seclevel
-Judgment rf_level : seclevel funsecctx secctx recFieldExprs* seclevel
-Judgment level_args : seclevel funsecctx secctx args* seclevelList
+Judgment level : seclevel funsecctx [(|string, seclevel|)] e* seclevel
+Judgment rf_level : seclevel funsecctx [(|string, seclevel|)] recFieldExprs* seclevel
+Judgment level_args : seclevel funsecctx [(|string, seclevel|)] args* [seclevel]
 /*Statements*/
-Judgment secure : seclevel funsecctx secctx c* secctx
+Judgment secure : seclevel funsecctx [(|string, seclevel|)] c* [(|string, seclevel|)]
 /*Functions*/
 Judgment secure_fun : funsecctx fun*
-Judgment paramsToSecCtx : params* secctx
+Judgment paramsToSecCtx : params* [(|string, seclevel|)]
 /*Program*/
 Judgment secure_program : funsecctx program*
 Judgment buildFunSecCtx : program* funsecctx
-Judgment getFunSec : fun* string seclevel seclevel seclevelList
+Judgment getFunSec : fun* string seclevel seclevel [seclevel]
                 /*name, starting level, return level, arg sec levels*/
 /*The actual check for the program*/
 Fixed Judgment programSecCheck : program
@@ -114,7 +90,7 @@ join S1 S2 S
 level PC FG G plus(E1, E2) S
 
 
-lookupSec G X S
+lookup G X S
 ----------------------- [S-Name]
 level PC FG G name(X) S
 
@@ -209,14 +185,14 @@ rf_level PC FG G RF S
 
 /*Argument Security Levels*/
 
------------------------------------------- [LA-End]
-level_args PC FG G endArgs endSeclevelList
+----------------------------- [LA-End]
+level_args PC FG G endArgs []
 
 
 level PC FG G E S
 level_args PC FG G Rest SRest
-------------------------------------------------------------- [LA-Add]
-level_args PC FG G addArgs(E, Rest) addSeclevelList(S, SRest)
+-------------------------------------------- [LA-Add]
+level_args PC FG G addArgs(E, Rest) S::SRest
 
 
 |{args}- A ~~> AT
@@ -239,32 +215,32 @@ secure PC FG G seq(C1, C2) G2
 
 
 level PC FG G E public
------------------------------------------------------ [S-Declare]
-secure PC FG G declare(X, Ty, E) addSec(X, public, G)
+------------------------------------------------- [S-Declare]
+secure PC FG G declare(X, Ty, E) (|X, public|)::G
 
 
 level PC FG G E S
 ------------------------------------------- [S-DeclareSecPrivate]
 secure PC FG G declareSec(X, private, Ty, E
-          ) addSec(X, private, G)
+          ) (|X, private|)::G
 
 
 level PC FG G E public
 ---------------------------------------------- [S-DeclareSecPublic]
 secure public FG G declareSec(X, public, Ty, E
-                ) addSec(X, public, G)
+                ) (|X, public|)::G
 
 
 /*To assign to public var, need both PC and expr to be public*/
 level PC FG G E public
-lookupSec G X public
+lookup G X public
 --------------------------------- [S-AssignPublic]
 secure public FG G assign(X, E) G
 
 
 /*Can assign anything to a private var, anytime*/
 level PC FG G E S
-lookupSec G X private
+lookup G X private
 ----------------------------- [S-AssignPrivate]
 secure PC FG G assign(X, E) G
 
@@ -309,7 +285,7 @@ secure_fun FG fun(Name, RetTy, RetName, Params, Body)
 
 
 paramsToSecCtx Params G
-secure PC FG addSec(RetName, RetSec, G) Body G2
+secure PC FG (|RetName, RetSec|)::G Body G2
 ------------------------------------------------------ [SF-Secfun]
 secure_fun FG secfun(Name, PC, RetTy, RetSec, RetName,
                      Params, Body)
@@ -322,18 +298,18 @@ secure_fun FG F
 
 
 
---------------------------------- [PtSC-End]
-paramsToSecCtx endParams emptySec
+--------------------------- [PtSC-End]
+paramsToSecCtx endParams []
 
 
 paramsToSecCtx Rest SRest
------------------------------------------------------------ [PtSC-Add]
-paramsToSecCtx addParams(X, Ty, Rest) addSec(X, public, SRest)
+---------------------------------------------------------- [PtSC-Add]
+paramsToSecCtx addParams(X, Ty, Rest) (|X, public|)::SRest
 
 
 paramsToSecCtx Rest SRest
 -------------------------------------------------------- [PtSC-AddSec]
-paramsToSecCtx addSecParams(X, S, Ty, Rest) addSec(X, S, SRest)
+paramsToSecCtx addSecParams(X, S, Ty, Rest) (|X, S|)::SRest
 
 
 |{params}- P ~~> PT

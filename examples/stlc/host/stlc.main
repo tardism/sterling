@@ -7,7 +7,7 @@ Function main : <Args : [string]> -> int {
    In
      If PSuccess
      Then
-       Let Success, Ty := Derive {typeOf nil Tm Ty} for Tm assigning [Ty]
+       Let Success, Ty := Derive {typeOf [] Tm Ty} for Tm assigning [Ty]
        In
          If Success
          Then

@@ -1,34 +1,12 @@
 Module functions:host
 
-evalctx ::= emptyEval
-          | addVal(string, value, evalctx)
-Translation evalctx :
-
-
-Judgment lookupVal : evalctx* string value
-
--------------------------------- [LV-Here]
-lookupVal addVal(X, V, Rest) X V
-
-
-lookupVal Rest X XV
-X != Y
----------------------------------- [LV-Later]
-lookupVal addVal(Y, YV, Rest) X XV
-
-
-
 functx ::= emptyFun
-         | addFun(string, string, nameList, c, functx)
+         | addFun(string, string, [string], c, functx)
                 /*fun name, ret name, params, body, rest*/
 Translation functx :
 
-nameList ::= endNames
-           | addNames(string, nameList)
-Translation nameList :
 
-
-Judgment lookupFun : functx* string string nameList c
+Judgment lookupFun : functx* string string [string] c
                    /*functx fun name, ret name, param names, body*/
 
 ------------------------------------------------------ [LF-Here]
@@ -41,15 +19,15 @@ X != Y
 lookupFun addFun(Y, YRet, YNL, YBody, Rest) X XRet XNL Body
 
 
-Judgment paramsToNameList : params* nameList
+Judgment paramsToNameList : params* [string]
 
------------------------------------ [PtNL-End]
-paramsToNameList endParams endNames
+----------------------------- [PtNL-End]
+paramsToNameList endParams []
 
 
 paramsToNameList Rest NRest
----------------------------------------------------------- [PtNL-Add]
-paramsToNameList addParams(X, Ty, Rest) addNames(X, NRest)
+------------------------------------------------ [PtNL-Add]
+paramsToNameList addParams(X, Ty, Rest) X::NRest
 
 
 
@@ -72,19 +50,19 @@ appendOutput O1 addOutput(O2, V) addOutput(O3, V)
 
 
 /*Expressions need output, functx because of function calls*/
-Judgment eval_e : functx evalctx e* value output
-Judgment eval_rf : functx evalctx recFieldExprs* evalctx output
+Judgment eval_e : functx [(|string, value|)] e* value output
+Judgment eval_rf : functx [(|string, value|)] recFieldExprs* [(|string, value|)] output
 /*given arguments and names, produce an eval ctx for the function*/
-Judgment eval_args : functx evalctx args* nameList evalctx output
+Judgment eval_args : functx [(|string, value|)] args* [string] [(|string, value|)] output
 /*Statements produce a new eval ctx and some output*/
-Judgment eval_c : functx evalctx c* evalctx output
+Judgment eval_c : functx [(|string, value|)] c* [(|string, value|)] output
 /*get the evaluation information from a function
   (name, return name, parameter names, body)*/
-Judgment eval_fun : fun* string string nameList c
+Judgment eval_fun : fun* string string [string] c
 /*evaluate a program to find its output under a fun ctx*/
-Judgment eval_program : valuelist functx program* output
+Judgment eval_program : [value] functx program* output
 /*Evaluate a full program to get its output*/
-Fixed Judgment full_eval : valuelist program output
+Fixed Judgment full_eval : [value] program output
 
 
 /*Expression Evaluation*/
@@ -101,7 +79,7 @@ appendOutput O1 O2 O
 eval_e FG G plus(E1, E2) intVal(I) O
 
 
-lookupVal G X V
+lookup G X V
 --------------------------------- [E-Name]
 eval_e FG G name(X) V emptyOutput
 
@@ -187,7 +165,7 @@ eval_e FG G false falseVal emptyOutput
 lookupFun FG Fun RetName ParamNames Body
 eval_args FG G Args ParamNames ArgsCtx O1
 eval_c FG ArgsCtx Body G2 O2
-lookupVal G2 RetName V
+lookup G2 RetName V
 appendOutput O1 O2 O
 ----------------------------------------- [E-Call]
 eval_e FG G call(F, Args) V O
@@ -199,7 +177,7 @@ eval_e FG G recBuild(Fields) recVal(FieldVals) O
 
 
 eval_e FG G Rec recVal(Fields) O
-lookupVal Fields Field V
+lookup Fields Field V
 ------------------------------------------ [E-RecField]
 eval_e FG G recFieldAccess(Rec, Field) V O
 
@@ -207,30 +185,29 @@ eval_e FG G recFieldAccess(Rec, Field) V O
 
 /*Record Field Evaluation*/
 
---------------------------------------------------- [ERF-End]
-eval_rf FG G endRecFieldExprs emptyEval emptyOutput
+-------------------------------------------- [ERF-End]
+eval_rf FG G endRecFieldExprs [] emptyOutput
 
 
 eval_e FG G E V O1
 eval_rf FG G Rest FVs O2
 appendOutput O1 O2 O
------------------------------------------------------------- [ERF-Add]
-eval_rf FG G addRecFieldExprs(L, E, Rest) addVal(L, V, FVs) O
+--------------------------------------------------------- [ERF-Add]
+eval_rf FG G addRecFieldExprs(L, E, Rest) (|L, V|)::FVs O
 
 
 
 /*Argument Evaluation*/
 
------------------------------------------------------ [EA-End]
-eval_args FG G endArgs endNames emptyEval emptyOutput
+---------------------------------------- [EA-End]
+eval_args FG G endArgs [] [] emptyOutput
 
 
 eval_e FG G E V O1
 eval_args FG G Rest NRest C O2
 appendOutput O1 O2 O
-------------------------------------------------------------- [EA-Add]
-eval_args FG G addArgs(E, Rest) addNames(
-                                   X, NRest) addVal(X, V, C) O
+------------------------------------------------------ [EA-Add]
+eval_args FG G addArgs(E, Rest) X::NRest (|X, V|)::C O
 
 
 
@@ -248,13 +225,13 @@ eval_c FG G seq(C1, C2) G2 O
 
 
 eval_e FG G E V O
------------------------------------------------ [E-Declare]
-eval_c FG G declare(X, Ty, E) addVal(X, V, G) O
+------------------------------------------- [E-Declare]
+eval_c FG G declare(X, Ty, E) (|X, V|)::G O
 
 
 eval_e FG G E V O
------------------------------------------- [E-Assign]
-eval_c FG G assign(X, E) addVal(X, V, G) O
+-------------------------------------- [E-Assign]
+eval_c FG G assign(X, E) (|X, V|)::G O
 
 
 eval_e FG G Cond trueVal O1
@@ -286,7 +263,7 @@ eval_c FG G while(Cond, Body) G2 O
 
 
 eval_e FG G E V O
-lookupVal G Rec recVal(Fields)
+lookup G Rec recVal(Fields)
 update_rec_fields RecFields Fields V Result
 ------------------------------------------------- [E-RecUpdate]
 eval_c FG G recUpdate(Rec, RecFields, E) Result O
@@ -300,17 +277,17 @@ eval_c FG G printVal(E) G addOutput(O, V)
 /*Update the associations in the first tyCtx for the fields,
   descending through it to place the value in the final one, producing
   the ending tyCtx*/
-Judgment update_rec_fields : recFields* evalctx value evalctx
+Judgment update_rec_fields : recFields* [(|string, value|)] value [(|string, value|)]
 
-------------------------------------------------------- [URF-One]
-update_rec_fields oneField(F) Init V addVal(F, V, Init)
+--------------------------------------------------- [URF-One]
+update_rec_fields oneField(F) Init V (|F, V|)::Init
 
 
-lookupVal Init F recVal(FFields)
+lookup Init F recVal(FFields)
 update_rec_fields Rest FFields V UpdatedFFields
---------------------------------------------------- [URF-Step]
-update_rec_fields addField(F, Rest) Init V addVal(
-                   F, recVal(UpdatedFFields), Init)
+---------------------------------------------------- [URF-Step]
+update_rec_fields addField(F, Rest) Init V (|
+                   F, recVal(UpdatedFFields)|)::Init
 
 
 
@@ -341,22 +318,16 @@ full_eval Args P O
 
 
 
-valuelist ::= emptyvals
-            | addVals(value, valuelist)
-Translation valuelist :
-
-
 /*Turn a list of names and a list of values into an evalctx*/
-Judgment buildEvalctx : nameList* valuelist evalctx
+Fixed Judgment buildEvalctx : [string] [value] [(|string, value|)]
 
------------------------------------------ [BEC-End]
-buildEvalctx endNames emptyvals emptyEval
+===================== [BEC-End]
+buildEvalctx [] [] []
 
 
 buildEvalctx PRest VRest ERest
------------------------------------------------------------- [BEC-Add]
-buildEvalctx addNames(N, PRest
-                     ) addVals(V, VRest) addVal(N, V, ERest)
+============================================== [BEC-Add]
+buildEvalctx N::PRest V::VRest (|N, V|)::ERest
 
 
 

@@ -9,19 +9,14 @@ term ::= app(term, term)
 type ::= arrow(type, type)
        | base
 
-ctx ::= nil
-      | add(string, type, ctx)
-
 
 
 /*Judgments*/
-Judgment typeOf : ctx term* type
-Fixed Judgment lookup : string ctx type
+Judgment typeOf : [(|string, type|)] term* type
 
 /*Translation Types*/
-Translation term : ctx /*ctx |- term ~~> term*/
-Translation type :     /*|- type ~~> type*/
-Translation ctx :      /*|- ctx ~~> ctx*/
+Translation term : [(|string, type|)] /*ctx |- term ~~> term*/
+Translation type :                    /*|- type ~~> type*/
 
 
 /*Typing Rules*/
@@ -32,25 +27,11 @@ typeOf G T2 Ty1
 typeOf G app(T1, T2) Ty2
 
 
-typeOf add(X, Ty1, G) Body Ty2
+typeOf (|X, Ty1|)::G Body Ty2
 ------------------------------------------ [T-Abs]
 typeOf G abs(X, Ty1, Body) arrow(Ty1, Ty2)
 
 
-lookup X G Ty
+lookup G X Ty
 ------------------ [T-Var]
 typeOf G var(X) Ty
-
-
-
-/*Lookup Rules*/
-
-lookup X G Ty
-X != Y
-========================== [L-Later]
-lookup X add(Y, YTy, G) Ty
-
-
-========================= [L-Here]
-lookup X add(X, Ty, G) Ty
-

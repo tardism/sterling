@@ -1,62 +1,62 @@
 Module functions:host
 
 
-Judgment vars : e* domain
-Judgment vars_rf : recFieldExprs* domain
-Judgment vars_args : args* domain
+Judgment vars : e* [string]
+Judgment vars_rf : recFieldExprs* [string]
+Judgment vars_args : args* [string]
 
 
 /*Vars in Expressions*/
 
------------------------ [V-Num]
-vars num(I) emptyDomain
+-------------- [V-Num]
+vars num(I) []
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ------------------- [V-Plus]
 vars plus(E1, E2) D
 
 
--------------------------------------- [V-Name]
-vars name(X) addDomain(X, emptyDomain)
+---------------- [V-Name]
+vars name(X) [X]
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ---------------------- [V-Greater]
 vars greater(E1, E2) D
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ------------------- [V-Eq]
 vars eq(E1, E2) D
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ------------------- [V-And]
 vars and(E1, E2) D
 
 
 vars E1 D1
 vars E2 D2
-joinDomains D1 D2 D
+D1 ++ D2 = D
 ------------------- [V-Or]
 vars or(E1, E2) D
 
 
---------------------- [V-True]
-vars true emptyDomain
+------------ [V-True]
+vars true []
 
 
----------------------- [V-False]
-vars false emptyDomain
+------------- [V-False]
+vars false []
 
 
 vars_args Args D
@@ -77,13 +77,13 @@ vars recFieldAccess(Rec, Field) D
 
 /*Vars in Record Fields*/
 
------------------------------------- [VRF-Empty]
-vars_rf endRecFieldExprs emptyDomain
+--------------------------- [VRF-Empty]
+vars_rf endRecFieldExprs []
 
 
 vars_rf Rest DRest
 vars E DE
-joinDomains DE DRest D
+DE ++ DRest = D
 -------------------------------------- [VRF-Add]
 vars_rf addRecFieldExprs(X, E, Rest) D
 
@@ -91,13 +91,13 @@ vars_rf addRecFieldExprs(X, E, Rest) D
 
 /*Vars in Args*/
 
------------------------------ [VA-Empty]
-vars_args endArgs emptyDomain
+-------------------- [VA-Empty]
+vars_args endArgs []
 
 
 vars_args Rest DRest
 vars E DE
-joinDomains DE DRest D
+DE ++ DRest = D
 ---------------------------- [VA-Add]
 vars_args addArgs(E, Rest) D
 

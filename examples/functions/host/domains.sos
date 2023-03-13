@@ -1,55 +1,25 @@
 Module functions:host
 
-domain ::= emptyDomain
-         | addDomain(string, domain)
-Translation domain :
-
-
-Judgment joinDomains : domain* domain domain
-
---------------------------- [JD-Empty]
-joinDomains emptyDomain D D
-
-
-joinDomains D1 D2 D3
------------------------------------------------- [JD-Add]
-joinDomains addDomain(X, D1) D2 addDomain(X, D3)
-
-
-
 /*Domain for Type Contexts*/
-Judgment domainTyctx : tyctx* domain
+Fixed Judgment domain : [(|A, B|)] [A]
 
-------------------------------- [DT-Empty]
-domainTyctx emptyTy emptyDomain
-
-
-domainTyctx Rest RestDomain
-------------------------------------------------------- [DT-Add]
-domainTyctx addTy(S, Ty, Rest) addDomain(S, RestDomain)
+============ [D-Empty]
+domain [] []
 
 
-
-/*Domain for Evaluation Contexts*/
-Judgment domainEvalctx : evalctx* domain
-
------------------------------------ [DE-Empty]
-domainEvalctx emptyEval emptyDomain
-
-
-domainEvalctx Rest RestDomain
---------------------------------------------------------- [DE-Add]
-domainEvalctx addVal(S, V, Rest) addDomain(S, RestDomain)
+domain Rest RestDomain
+==================================== [D-Add]
+domain (|S, Ty|)::Rest S::RestDomain
 
 
 
 /*Equality for Type Contexts*/
-Judgment tyctx_eq : tyctx* tyctx
+Fixed Judgment tyctx_eq : [(|string, ty|)] [(|string, ty|)]
 
 
 
 /*Equality for Evaluation Contexts*/
-Judgment evalctx_eq : evalctx* evalctx
+Fixed Judgment evalctx_eq : [(|string, value|)] [(|string, value|)]
 
 /*TODO write rules for these
   Probably take the domains and make sure they have the same names,

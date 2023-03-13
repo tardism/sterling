@@ -59,18 +59,14 @@ Translation program :
 /*Types*/
 ty ::= intTy
      | boolTy
-     | recTy(tyctx)
+     | recTy([(|string, ty|)])
 Translation ty :
-
-tyList ::= endTyList
-         | addTyList(ty, tyList)
-Translation tyList :
 
 
 /*Evaluation Values*/
 value ::= intVal(int)
         | trueVal
         | falseVal
-        | recVal(evalctx)
+        | recVal([(|string, value|)])
 Translation value :
 

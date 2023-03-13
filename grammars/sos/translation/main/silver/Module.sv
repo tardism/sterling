@@ -24,7 +24,8 @@ top::ModuleList ::= files::Files
             else if e.name.base == "null"
             then silverFunDef(e.name.silverFunName, [("l", "[a]")],
                               "Boolean", "return null(l);")
-            else error("Unexpected standard library function " ++
+            else error("Unexpected standard library function in " ++
+                       "Silver translation of main files:  " ++
                        e.name.pp),
           hardFunDefs);
 }
