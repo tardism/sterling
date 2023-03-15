@@ -19,9 +19,9 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
 {
   local letName::String = "let__" ++ toString(genInt());
   top.silverExpr =
-      buildLet(letName, "IOVal<" ++ e1.type.silverType ++ ">",
+      buildLet(letName, "IOVal<" ++ e1.finalType.silverType ++ ">",
          e1.silverExpr,
-         case e1.type, names of
+         case e1.finalType, names of
          | tupleType(tys), _::_::_ ->
            foldr(\ p::(String, Integer, Type) rest::String ->
                    buildLet(p.1, p.3.silverType,
@@ -30,7 +30,7 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
                  zipWith(pair, names,
                     zipWith(pair, range(1, tys.len + 1), tys.toList)))
          | _, [x] ->
-           buildLet(x, e1.type.silverType, letName ++ ".iovalue",
+           buildLet(x, e1.finalType.silverType, letName ++ ".iovalue",
                     e2.silverExpr)
          | _, _ -> error("Should not translate")
          end);
@@ -70,16 +70,19 @@ aspect production printExpr
 top::Expr ::= e::Expr
 {
   top.silverExpr =
-      buildLet(eName, "IOVal<" ++ e.type.silverType ++ ">",
+      buildLet(eName, "IOVal<" ++ e.finalType.silverType ++ ">",
                e.silverExpr, buildIOVal(printBody, "unit()"));
   local eName::String = "print_e__" ++ toString(genInt());
   local printBody::String =
       "printT(" ++
-      case e.type of
+      case e.finalType of
       | intType() -> "toInteger(" ++ eName ++ ".iovalue)"
       | stringType() -> eName ++ ".iovalue"
       | nameType(_) -> eName ++ ".iovalue.pp" --Term
-      | _ -> error("printExpr.printBody for " ++ e.type.pp)
+      | _ -> error("printExpr.printBody for " ++ e.finalType.pp ++
+                   " at " ++ top.location.filename ++ ":" ++
+                   toString(top.location.line) ++ ":" ++
+                   toString(top.location.column))
       end ++ ", " ++ eName ++ ".io)";
 
   e.precedingIO = top.precedingIO;
@@ -97,11 +100,11 @@ top::Expr ::= e::Expr file::Expr
   local fileName::String = "write_file__" ++ toString(genInt());
   local writeBody::String =
       "writeFileT(" ++ fileName ++ ".iovalue, " ++
-      case e.type of
+      case e.finalType of
       | intType() -> "toInteger(" ++ eName ++ ".iovalue)"
       | stringType() -> eName ++ ".iovalue"
       | nameType(_) -> eName ++ ".iovalue.pp" --Term
-      | _ -> error("writeExpr.writeBody for " ++ e.type.pp)
+      | _ -> error("writeExpr.writeBody for " ++ e.finalType.pp)
       end ++ ", " ++ fileName ++ ".io)";
 
   e.precedingIO = top.precedingIO;
@@ -281,9 +284,9 @@ aspect production eqExpr
 top::Expr ::= e1::Expr e2::Expr
 {
   top.silverExpr =
-      buildLet(e1Name, "IOVal<" ++ e1.type.silverType ++ ">",
+      buildLet(e1Name, "IOVal<" ++ e1.finalType.silverType ++ ">",
                e1.silverExpr,
-         buildLet(e2Name, "IOVal<" ++ e2.type.silverType ++ ">",
+         buildLet(e2Name, "IOVal<" ++ e2.finalType.silverType ++ ">",
                   e2.silverExpr,
             buildIOVal(e2Name ++ ".io",
                e1Name ++ ".iovalue == " ++ e2Name ++ ".iovalue")));
@@ -420,13 +423,14 @@ top::Expr ::= fun::QName args::Args
               buildLet(p.1, "IOVal<" ++ p.2.silverType ++ ">", p.3,
                        rest),
             call, args.silverArgs);
-  local funName::String = fun.fullFunction.name.silverFunName;
+  local funName::String =
+      "silverMain:" ++ fun.fullFunction.name.silverFunName;
   local call::String =
       funName ++ "(" ++
          implode(", ", map(\ p::(String, Type, String) ->
                              p.1 ++ ".iovalue",
                            args.silverArgs) ++
-                       ["parserFun__", "deriveFun__",
+                       ["parseFun__", "deriveFun__",
                         args.resultingIO]) ++
          ")";
   args.precedingIO = top.precedingIO;
@@ -451,7 +455,7 @@ aspect production listIndexExpr
 top::Expr ::= l::Expr i::Expr
 {
   top.silverExpr =
-      buildLet(lName, "IOVal<" ++ l.type.silverType ++ ">",
+      buildLet(lName, "IOVal<" ++ l.finalType.silverType ++ ">",
                l.silverExpr,
          buildLet(iName, "IOVal<Integer>", i.silverExpr,
             buildIOVal(iName ++ ".io",
@@ -490,7 +494,8 @@ aspect production consArgs
 top::Args ::= e::Expr rest::Args
 {
   local argName::String = "arg__" ++ toString(genInt());
-  top.silverArgs = (argName, e.type, e.silverExpr)::rest.silverArgs;
+  top.silverArgs =
+      (argName, e.finalType, e.silverExpr)::rest.silverArgs;
 
   e.precedingIO = top.precedingIO;
   rest.precedingIO = argName ++ ".io";

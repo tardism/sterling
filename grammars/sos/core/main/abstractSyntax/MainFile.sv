@@ -92,6 +92,8 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
            retTy.pp ++ " {\n" ++ body.pp ++ "}";
 
   body.downVarTypes = params.upVarTypes;
+  body.downSubst = emptySubst();
+  body.finalSubst = body.upSubst;
 
   production fullName::QName = addQNameBase(top.moduleName, name);
   top.funDecls = [functionEnvItem(fullName, params.types, retTy)];
@@ -110,7 +112,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
       end;
   --Check the return type
   top.errors <-
-      if body.type == retTy
+      if performSubstitutionType(body.type, body.upSubst) == retTy
       then []
       else [errorMessage("Expected function body to have type " ++
                retTy.pp ++ " but found " ++ body.type.pp,
@@ -124,11 +126,13 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
                                 "argument of type [string]",
                                 location=top.location)]
            end ++
-           if retTy == intType(location=bogusLoc())
+           if retTy == intType(location=top.location)
            then []
            else [errorMessage("Main function must return int",
                               location=top.location)]
       else [];
+  --typing errors
+  top.errors <- errorsFromSubst(body.upSubst);
 }
 
 

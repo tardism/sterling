@@ -16,7 +16,7 @@ top::Type ::= name::QName
 aspect production varType
 top::Type ::= name::String
 {
-  top.silverType = error("Should not translate varType");
+  top.silverType = "var_" ++ name;
 }
 
 

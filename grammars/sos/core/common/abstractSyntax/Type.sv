@@ -553,6 +553,14 @@ top::TypeUnify ::= ty1::Type ty2::Type
 }
 
 
+--for when we don't have types to unify, but still need the unify
+abstract production blankUnify
+top::TypeUnify ::=
+{
+  top.upSubst = top.downSubst;
+}
+
+
 
 function performSubstitutionType
 Type ::= t::Type s::Substitution

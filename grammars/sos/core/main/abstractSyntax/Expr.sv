@@ -4,12 +4,19 @@ nonterminal Expr with
    pp,
    tyEnv, constructorEnv, judgmentEnv, concreteEnv, funEnv,
    translationEnv, moduleName,
-   type, upSubst, downSubst, finalSubst,
-   downVarTypes, upVarTypes,
+   type, upSubst, downSubst, finalSubst, finalType,
+   downVarTypes,
    errors,
    location;
 propagate errors, funEnv, tyEnv, constructorEnv, judgmentEnv,
           concreteEnv, translationEnv, moduleName on Expr;
+propagate finalSubst on Expr excluding deriveExpr;
+
+synthesized attribute finalType::Type;
+aspect default production top::Expr ::=
+{
+  top.finalType = performSubstitutionType(top.type, top.finalSubst);
+}
 
 abstract production letExpr
 top::Expr ::= names::[String] e1::Expr e2::Expr
@@ -19,12 +26,27 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
 
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes =
-     case e1.type, names of
+     case namesTy, names of
+     | _, [x] -> (x, e1.type)::top.downVarTypes
      | tupleType(tys), _ ->
        zipWith(pair, names, tys.toList) ++ top.downVarTypes
-     | _, h::_ -> (h, e1.type)::top.downVarTypes
-     | _, _ -> top.downVarTypes
+     | _, _ -> error("Impossible")
      end;
+  local namesTy::Type =
+     tupleType(toTypeList(
+                  map(\ x::String -> varType(x ++ toString(genInt()),
+                                             location=top.location),
+                      names), top.location), location=top.location);
+
+  local unify::TypeUnify =
+      case names of
+      | [_] -> blankUnify(location=e1.location)
+      | _ -> typeUnify(e1.type, namesTy, location=top.location)
+      end;
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unify.downSubst = e2.upSubst;
+  top.upSubst = unify.upSubst;
 
   top.type = e2.type;
 
@@ -54,14 +76,15 @@ top::Expr ::= a::Expr b::Expr
   a.downVarTypes = top.downVarTypes;
   b.downVarTypes = top.downVarTypes;
 
-  top.type = b.type;
+  local unify::TypeUnify =
+      typeUnify(a.type, unitType(location=top.location),
+                location=top.location);
+  a.downSubst = top.downSubst;
+  b.downSubst = a.upSubst;
+  unify.downSubst = b.upSubst;
+  top.upSubst = unify.upSubst;
 
-  top.errors <-
-      if a.type == unitType(location=bogusLoc())
-      then []
-      else [errorMessage("Before expected first expression to have" ++
-               " type " ++ unitType(location=bogusLoc()).pp ++
-               " but found " ++ a.type.pp, location=top.location)];
+  top.type = b.type;
 }
 
 
@@ -78,17 +101,17 @@ top::Expr ::= cond::Expr th::Expr el::Expr
              then th.type
              else errorType(location=top.location);
 
-  top.errors <-
-      if cond.type == boolType(location=bogusLoc())
-      then []
-      else [errorMessage("Condition must have type bool; found " ++
-                         cond.type.pp, location=top.location)];
-  top.errors <-
-      if th.type == el.type
-      then []
-      else [errorMessage("Then and else branches must have same " ++
-               "type; found " ++ th.type.pp ++ " and " ++ el.type.pp,
-               location=top.location)];
+  local unifyCond::TypeUnify =
+      typeUnify(cond.type, boolType(location=top.location),
+                location=top.location);
+  local unifyBranches::TypeUnify =
+      typeUnify(th.type, el.type, location=top.location);
+  cond.downSubst = top.downSubst;
+  th.downSubst = cond.upSubst;
+  el.downSubst = th.upSubst;
+  unifyCond.downSubst = el.upSubst;
+  unifyBranches.downSubst = unifyCond.upSubst;
+  top.upSubst = unifyBranches.upSubst;
 }
 
 
@@ -98,11 +121,12 @@ top::Expr ::= e::Expr
   top.pp = "Print " ++ e.pp;
 
   e.downVarTypes = top.downVarTypes;
-
+  e.downSubst = top.downSubst;
+  top.upSubst = e.upSubst;
   top.type = unitType(location=top.location);
 
   top.errors <-
-      case e.type of
+      case performSubstitutionType(e.type, top.finalSubst) of
       | listType(_) ->
         [errorMessage("Cannot print lists", location=top.location)]
       | tupleType(_) ->
@@ -124,16 +148,17 @@ top::Expr ::= e::Expr file::Expr
 
   top.type = unitType(location=top.location);
 
-  top.errors <-
-      if e.type == stringType(location=bogusLoc())
-      then []
-      else [errorMessage("Can only write strings to files, not " ++
-                         e.type.pp, location=top.location)];
-  top.errors <-
-      if file.type == stringType(location=bogusLoc())
-      then []
-      else [errorMessage("Filenames being written must be strings," ++
-               " not " ++ file.type.pp, location=top.location)];
+  local unifyE::TypeUnify =
+      typeUnify(e.type, stringType(location=top.location),
+                location=top.location);
+  local unifyFile::TypeUnify =
+      typeUnify(file.type, stringType(location=top.location),
+                location=top.location);
+  e.downSubst = top.downSubst;
+  file.downSubst = e.upSubst;
+  unifyE.downSubst = file.upSubst;
+  unifyFile.downSubst = unifyE.upSubst;
+  top.upSubst = unifyFile.upSubst;
 }
 
 
@@ -146,11 +171,12 @@ top::Expr ::= file::Expr
 
   top.type = stringType(location=top.location);
 
-  top.errors <-
-      if file.type == stringType(location=bogusLoc())
-      then []
-      else [errorMessage("Filenames being read must be strings but" ++
-               " found " ++ file.type.pp, location=top.location)];
+  local unify::TypeUnify =
+      typeUnify(file.type, stringType(location=top.location),
+                location=top.location);
+  file.downSubst = top.downSubst;
+  unify.downSubst = file.upSubst;
+  top.upSubst = unify.upSubst;
 }
 
 
@@ -167,9 +193,13 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
   j.isExtensibleRule = false;
   j.isTranslationRule = false;
 
-  j.downVarTypes = top.downVarTypes;
+  j.downVarTypes =
+      map(\ p::(String, Type) ->
+            (p.1, performSubstitutionType(p.2, top.downSubst)),
+          top.downVarTypes);
   j.downSubst = emptySubst();
   j.finalSubst = j.upSubst;
+  top.upSubst = top.downSubst;
 
   local lkpVarsTys::[(String, Maybe<Type>)] =
       map(\ v::String -> (v, lookup(v, j.upVarTypes)), vars);
@@ -184,10 +214,10 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
   top.type =
       if null(vars)
       then boolType(location=top.location)
-      else tupleType(foldr(consTypeList(_, _, location=top.location),
-                           nilTypeList(location=top.location),
-                           boolType(location=top.location)::varsTys),
-                     location=top.location);
+      else tupleType(
+              toTypeList(boolType(location=top.location)::varsTys,
+                         top.location),
+              location=top.location);
 
   --check for duplicate var names being assigned
   top.errors <-
@@ -255,6 +285,13 @@ top::Expr ::= nt::QName parseString::Expr
                      location=top.location),
          location=top.location);
 
+  local unify::TypeUnify =
+      typeUnify(parseString.type, stringType(location=top.location),
+                location=top.location);
+  parseString.downSubst = top.downSubst;
+  unify.downSubst = parseString.upSubst;
+  top.upSubst = unify.upSubst;
+
   top.errors <-
       if !nt.concreteFound
       then [errorMessage("Unknown concrete nonterminal " ++ nt.pp,
@@ -263,12 +300,6 @@ top::Expr ::= nt::QName parseString::Expr
       then [errorMessage(nt.pp ++ " is not a concrete nonterminal " ++
                "but must be one to be parsed", location=nt.location)]
       else [];
-  top.errors <-
-      if parseString.type == stringType(location=bogusLoc())
-      then []
-      else [errorMessage("Expression being parsed must be of type " ++
-               "string but found " ++ parseString.type.pp,
-               location=top.location)];
 }
 
 
@@ -282,22 +313,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | boolType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Or (||) expected argument 1 to have type " ++
-            "bool but found type " ++ t.pp, location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | boolType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Or (||) expected argument 2 to have type " ++
-            "bool but found type " ++ t.pp, location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, boolType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, boolType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -311,22 +337,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | boolType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("And (&&) expected argument 1 to have type " ++
-            "bool but found type " ++ t.pp, location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | boolType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("And (&&) expected argument 2 to have type " ++
-            "bool but found type " ++ t.pp, location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, boolType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, boolType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -340,24 +361,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Less than (<) expected argument 1 to have " ++
-            "type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Less than (<) expected argument 2 to have " ++
-            "type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -371,24 +385,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Greater than (>) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Greater than (>) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -402,24 +409,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Less than or equal (<=) expected argument " ++
-            "1 to have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Less than or equal (<=) expected argument " ++
-            "2 to have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -433,24 +433,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Greater than or equal (>=) expected argument" ++
-            " 1 to have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Greater than or equal (>=) expected argument" ++
-            " 2 to have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -464,12 +457,12 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      if e1.type == e2.type
-      then []
-      else [errorMessage("Checking equality requires both sides " ++
-               "to have the same type; found " ++ e1.type.pp ++
-               " and " ++ e2.type.pp, location=top.location)];
+  local unify::TypeUnify =
+      typeUnify(e1.type, e2.type, location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unify.downSubst = e2.upSubst;
+  top.upSubst = unify.upSubst;
 }
 
 
@@ -483,24 +476,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Plus (+) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Plus (+) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -514,24 +500,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Minus (-) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Minus (-) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -545,24 +524,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Multiplication (*) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Multiplication (*) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -576,24 +548,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Division (/) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Division (/) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -607,24 +572,17 @@ top::Expr ::= e1::Expr e2::Expr
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
-  top.errors <-
-      case e1.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Modulus (%) expected argument 1 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | intType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Modulus (%) expected argument 2 to " ++
-            "have type int but found type " ++ t.pp,
-            location=top.location)]
-      end;
+  local unifyLeft::TypeUnify =
+      typeUnify(e1.type, intType(location=top.location),
+                location=top.location);
+  local unifyRight::TypeUnify =
+      typeUnify(e2.type, intType(location=top.location),
+                location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unifyLeft.downSubst = top.downSubst;
+  unifyRight.downSubst = unifyLeft.upSubst;
+  top.upSubst = unifyRight.upSubst;
 }
 
 
@@ -633,28 +591,27 @@ top::Expr ::= e1::Expr e2::Expr
 {
   top.pp = "(" ++ e1.pp ++ ") ++ (" ++ e2.pp ++ ")";
 
-  top.type = stringType(location=bogusLoc());
+  top.type =
+      varType("App" ++ toString(genInt()), location=top.location);
 
   e1.downVarTypes = top.downVarTypes;
   e2.downVarTypes = top.downVarTypes;
 
+  local unify::TypeUnify =
+      typeUnify(e1.type, e2.type, location=top.location);
+  e1.downSubst = top.downSubst;
+  e2.downSubst = e1.upSubst;
+  unify.downSubst = e2.upSubst;
+  top.upSubst = unify.upSubst;
+
   top.errors <-
-      case e1.type of
+      case performSubstitutionType(e1.type, top.finalSubst) of
       | stringType() -> []
+      | listType(_) -> []
       | errorType() -> []
       | t ->
-        [errorMessage("Append (++) expected argument 1 to " ++
-            "have type string but found type " ++ t.pp,
-            location=top.location)]
-      end;
-  top.errors <-
-      case e2.type of
-      | stringType() -> []
-      | errorType() -> []
-      | t ->
-        [errorMessage("Append (++) expected argument 2 to " ++
-            "have type string but found type " ++ t.pp,
-            location=top.location)]
+        [errorMessage("Can only append strings and lists, not " ++
+                      t.pp, location=top.location)]
       end;
 }
 
@@ -665,6 +622,7 @@ top::Expr ::= name::String
   top.pp = name;
 
   local lkp::Maybe<Type> = lookup(name, top.downVarTypes);
+  top.upSubst = top.downSubst;
   top.type =
       case lkp of
       | nothing() -> errorType(location=top.location)
@@ -686,6 +644,7 @@ top::Expr ::= i::Integer
 {
   top.pp = toString(i);
 
+  top.upSubst = top.downSubst;
   top.type = intType(location=top.location);
 }
 
@@ -695,6 +654,7 @@ top::Expr ::= s::String
 {
   top.pp = "\"" ++ s ++ "\"";
 
+  top.upSubst = top.downSubst;
   top.type = stringType(location=top.location);
 }
 
@@ -715,6 +675,9 @@ top::Expr ::= fun::QName args::Args
   args.lastFun = fun;
   args.downVarTypes = top.downVarTypes;
 
+  args.downSubst = top.downSubst;
+  top.upSubst = args.upSubst;
+
   top.errors <- fun.functionErrors;
 }
 
@@ -724,6 +687,7 @@ top::Expr ::=
 {
   top.pp = "true";
 
+  top.upSubst = top.downSubst;
   top.type = boolType(location=top.location);
 }
 
@@ -733,6 +697,7 @@ top::Expr ::=
 {
   top.pp = "false";
 
+  top.upSubst = top.downSubst;
   top.type = boolType(location=top.location);
 }
 
@@ -742,28 +707,24 @@ top::Expr ::= l::Expr i::Expr
 {
   top.pp = "(" ++ l.pp  ++ ")[" ++ i.pp ++ "]";
 
-  top.type =
-      case l.type of
-      | listType(ty) -> ty
-      | _ -> errorType(location=top.location)
-      end;
+  local varty::Type =
+      varType("X" ++ toString(genInt()), location=top.location);
+  local unifyList::TypeUnify =
+      typeUnify(listType(varty, location=top.location), l.type,
+                location=top.location);
+  local unifyInt::TypeUnify =
+      typeUnify(intType(location=top.location), i.type,
+                location=top.location);
+  top.type = varty;
+
+  l.downSubst = top.downSubst;
+  i.downSubst = l.upSubst;
+  unifyList.downSubst = i.upSubst;
+  unifyInt.downSubst = unifyList.upSubst;
+  top.upSubst = unifyInt.upSubst;
 
   l.downVarTypes = top.downVarTypes;
   i.downVarTypes = top.downVarTypes;
-
-  top.errors <-
-      case l.type of
-      | listType(_) -> []
-      | errorType() -> []
-      | _ ->
-        [errorMessage("Can only index list, not " ++ l.type.pp,
-                      location=top.location)]
-      end;
-  top.errors <-
-      if i.type == intType(location=bogusLoc())
-      then []
-      else [errorMessage("Can only index list using int, not " ++
-                         i.type.pp, location=top.location)];
 }
 
 
@@ -772,14 +733,15 @@ top::Expr ::= l::Expr i::Expr
 
 nonterminal Args with
    pp,
-   types,
+   types, upSubst, downSubst, finalSubst,
+   downVarTypes,
    tyEnv, constructorEnv, judgmentEnv, concreteEnv, translationEnv,
    moduleName,
-   funEnv, downVarTypes, expectedTypes, lastFun,
+   funEnv, expectedTypes, lastFun,
    errors,
    location;
 propagate errors, tyEnv, constructorEnv, judgmentEnv, concreteEnv,
-          translationEnv, funEnv, downVarTypes, lastFun, moduleName
+          translationEnv, funEnv, lastFun, moduleName, finalSubst
    on Args;
 
 abstract production nilArgs
@@ -787,6 +749,7 @@ top::Args ::=
 {
   top.pp = "";
 
+  top.upSubst = top.downSubst;
   top.types = nilTypeList(location=top.location);
 
   top.errors <-
@@ -805,8 +768,22 @@ top::Args ::= e::Expr rest::Args
 {
   top.pp = e.pp ++ if rest.pp == "" then "" else ", " ++ rest.pp;
 
+  e.downVarTypes = top.downVarTypes;
+  rest.downVarTypes = top.downVarTypes;
+
   top.types = consTypeList(e.type, nilTypeList(location=top.location),
                            location=top.location);
+
+  local unify::TypeUnify =
+      case top.expectedTypes of
+      | just(consTypeList(ty, _)) ->
+        typeUnify(e.type, ty, location=e.location)
+      | _ -> blankUnify(location=e.location)
+      end;
+  e.downSubst = top.downSubst;
+  rest.downSubst = e.upSubst;
+  unify.downSubst = rest.upSubst;
+  top.upSubst = unify.upSubst;
 
   rest.expectedTypes =
       case top.expectedTypes of
@@ -818,9 +795,6 @@ top::Args ::= e::Expr rest::Args
       | just(nilTypeList()) ->
         [errorMessage("Too many arguments to " ++ top.lastFun.pp,
                       location=top.location)]
-      | just(consTypeList(ty, _)) when ty != e.type ->
-        [errorMessage("Expected argument type " ++ ty.pp ++ " but " ++
-            "found type " ++ e.type.pp, location=top.location)]
       | _ -> []
       end;
 }

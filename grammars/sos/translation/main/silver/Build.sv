@@ -2,7 +2,7 @@ grammar sos:translation:main:silver;
 
 import silver:util:cmdargs;
 import sos:core;
-import sos:core:modules only ModuleList;
+import sos:core:modules only ModuleList, stdLibName;
 
 
 function main
@@ -64,6 +64,9 @@ IOVal<Boolean> ::= mods::[(String, [SilverFunDef])] genLoc::String
       "grammar " ++ grmmr ++ ";\n" ++
       "import sos:core:common:abstractSyntax;\n" ++
       "import sos:core:semanticDefs:abstractSyntax;\n" ++
+      (if head(mods).1 == stdLibName
+       then "" --don't import itself
+       else "import silverMain:" ++ stdLibName ++ ";\n") ++
       decls ++ "\n";
   local modSplit::[String] = explode(":", head(mods).1);
   local dir::String =
@@ -96,7 +99,8 @@ IOVal<Integer> ::= genLoc::String grmmrsLoc::String a::Decorated CmdArgs
 {
   --Silver imports
   local importGrammars::[String] =
-      map(\ s::String -> "import silverMain:" ++ s ++ ";", allGrmmrs);
+      map(\ s::String -> "import silverMain:" ++ s ++ ";",
+          stdLibName::allGrmmrs);
 
   --main function
   local mainFunction::String =
