@@ -17,6 +17,11 @@ Fixed Judgment member : Item [Item]
   select A Rest L*/
 Fixed Judgment select : Item [Item] [Item]
 
+/*Holds if the second list contains everything in the first list
+  Does not work with duplication:  subset [A, A] [A] will fail because
+     there is only copy of A in the second list*/
+Fixed Judgment subset : [A] [A]
+
 
 
 /*
@@ -66,3 +71,15 @@ select Item Rest Item::Rest
 select Item L1 L2
 ======================= [Slct-Later]
 select Item I::L1 I::L2
+
+
+
+
+=========== [Sbst-Empty]
+subset [] L
+
+
+select X SupRest Supset
+subset Rest SupRest
+======================= [Sbst-Cons]
+subset X::Rest Supset
