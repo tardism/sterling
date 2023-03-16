@@ -1,0 +1,28 @@
+Module stdlib.
+
+Theorem lookup_unique : forall L Key Value1 Value2,
+  lookup L Key Value1 -> lookup L Key Value2 -> Value1 = Value2.
+
+
+Theorem no_lookup : forall L Key Value,
+  no_lookup L Key -> lookup L Key Value -> false.
+
+
+Theorem lookup_member : forall L Key Value,
+  lookup L Key Value -> member L (Key, Value).
+
+
+Theorem lookup_select : forall L Key Value,
+  lookup L Key Value -> exists L', select (Key, Value) L' L.
+
+
+Theorem member_select : forall L X,
+  member L X -> exists L', select X L' L.
+
+
+Theorem select_member : forall L X L',
+  select X L' L -> member L X.
+
+
+Theorem domain_member_lookup : forall L D X,
+  domain L D -> member D X -> exists V, lookup L X V.

@@ -31,15 +31,18 @@ IOVal<Either<String ModuleList>> ::=
            rootLocs, abstractFileParse, concreteFileParse,
            mainFileParse, stdLib.iovalue, firstModule.io);
 
-  return case firstModule.iovalue of
-         | left(err) -> ioval(firstModule.io, left(err))
-         | right(mod) ->
-           case built.iovalue of
-           | left(err) -> ioval(built.io, left(err))
-           | right(modList) ->
-             ioval(built.io, right(consModuleList(mod, modList)))
-           end
-         end;
+  return
+      if initialModule == stdLibName
+      then ioval(stdLib.io, right(stdLib.iovalue))
+      else case firstModule.iovalue of
+           | left(err) -> ioval(firstModule.io, left(err))
+           | right(mod) ->
+             case built.iovalue of
+             | left(err) -> ioval(built.io, left(err))
+             | right(modList) ->
+               ioval(built.io, right(consModuleList(mod, modList)))
+             end
+           end;
 }
 function buildModuleList_helper
 IOVal<Either<String ModuleList>> ::=

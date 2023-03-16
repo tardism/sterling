@@ -55,9 +55,10 @@ top::ModuleList ::= files::Files
           files.constructorDecls);
 
   top.defFileContents =
-      error("Should not access on stdLib module list");
+      buildExtensibellaFile(top.ebKinds, top.ebConstrs,
+         top.ebJudgments, top.ebRulesByModule, []);
   top.interfaceFileContents =
-      error("Should not access on stdLib module list");
+      buildExtensibellaInterfaceFile(stdLibName, []);
 
   top.ebErrors = [];
 }
