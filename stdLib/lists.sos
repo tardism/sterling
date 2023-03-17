@@ -57,12 +57,12 @@ no_lookup (|K, V|)::Rest Key
 
 
 ====================== [Mem-Here]
-member Item::Rest Item
+member Item Item::Rest
 
 
-member Rest Item
+member Item Rest
 =================== [Mem-Later]
-member I::Rest Item
+member Item I::Rest
 
 
 

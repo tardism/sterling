@@ -49,12 +49,20 @@ top::Definition ::= jdgs::[(String, [ExtensibellaType])] rules::Defs
 
 
 
-nonterminal Defs with pp;
+--relations used by rules
+synthesized attribute usedRels::[String];
+--relation being defined
+synthesized attribute definedRel::String;
+
+
+nonterminal Defs with pp, usedRels;
 
 abstract production oneDefs
 top::Defs ::= d::Def
 {
   top.pp = d.pp ++ ".\n";
+
+  top.usedRels = d.usedRels;
 }
 
 
@@ -62,18 +70,23 @@ abstract production addDefs
 top::Defs ::= d::Def rest::Defs
 {
   top.pp = d.pp ++ ";\n" ++ rest.pp;
+
+  top.usedRels = nub(d.usedRels ++ rest.usedRels);
 }
 
 
 
 
 
-nonterminal Def with pp;
+nonterminal Def with pp, usedRels, definedRel;
 
 abstract production factDef
 top::Def ::= clausehead::Metaterm
 {
   top.pp = clausehead.pp;
+
+  top.usedRels = [];
+  top.definedRel = clausehead.definedRel;
 }
 
 
@@ -81,6 +94,9 @@ abstract production ruleDef
 top::Def ::= clausehead::Metaterm body::Metaterm
 {
   top.pp = clausehead.pp ++ " := " ++ body.pp;
+
+  top.usedRels = body.usedRels;
+  top.definedRel = clausehead.definedRel;
 }
 
 
@@ -95,6 +111,7 @@ synthesized attribute replaced<a>::a;
 
 nonterminal Metaterm with
    pp, vars,
+   usedRels, definedRel,
    replaceVar, replaceVal, replaced<Metaterm>;
 
 abstract production relationMetaterm
@@ -106,6 +123,8 @@ top::Metaterm ::= rel::String args::[ExtensibellaTerm]
                   args));
 
   top.vars = nub(flatMap((.vars), args));
+  top.usedRels = [rel];
+  top.definedRel = rel;
 
   top.replaced =
       relationMetaterm(rel,
@@ -124,6 +143,9 @@ top::Metaterm ::=
   top.pp = "true";
 
   top.vars = [];
+  top.usedRels = [];
+  top.definedRel =
+      error("trueMetaterm.definedRel should not be accessed");
 
   top.replaced = top;
 }
@@ -135,6 +157,9 @@ top::Metaterm ::=
   top.pp = "false";
 
   top.vars = [];
+  top.usedRels = [];
+  top.definedRel =
+      error("falseMetaterm.definedRel should not be accessed");
 
   top.replaced = top;
 }
@@ -146,6 +171,9 @@ top::Metaterm ::= t1::ExtensibellaTerm t2::ExtensibellaTerm
   top.pp = "(" ++ t1.pp ++ ") = (" ++ t2.pp ++ ")";
 
   top.vars = nub(t1.vars ++ t2.vars);
+  top.usedRels = [];
+  top.definedRel =
+      error("eqMetaterm.definedRel should not be accessed");
 
   t1.replaceVar = top.replaceVar;
   t2.replaceVar = top.replaceVar;
@@ -161,6 +189,9 @@ top::Metaterm ::= t1::Metaterm t2::Metaterm
   top.pp = "(" ++ t1.pp ++ ") -> (" ++ t2.pp ++ ")";
 
   top.vars = nub(t1.vars ++ t2.vars);
+  top.usedRels = nub(t1.usedRels ++ t2.usedRels);
+  top.definedRel =
+      error("impliesMetaterm.definedRel should not be accessed");
 
   t1.replaceVar = top.replaceVar;
   t2.replaceVar = top.replaceVar;
@@ -176,6 +207,9 @@ top::Metaterm ::= t1::Metaterm t2::Metaterm
   top.pp = "(" ++ t1.pp ++ ") /\\ (" ++ t2.pp ++ ")";
 
   top.vars = nub(t1.vars ++ t2.vars);
+  top.usedRels = nub(t1.usedRels ++ t2.usedRels);
+  top.definedRel =
+      error("andMetaterm.definedRel should not be accessed");
 
   t1.replaceVar = top.replaceVar;
   t2.replaceVar = top.replaceVar;
@@ -191,6 +225,9 @@ top::Metaterm ::= names::[String] body::Metaterm
   top.pp = "exists " ++ implode(" ", names) ++ ", " ++ body.pp;
 
   top.vars = body.vars;
+  top.usedRels = body.usedRels;
+  top.definedRel =
+      error("existsMetaterm.definedRel should not be accessed");
 
   body.replaceVar = top.replaceVar;
   body.replaceVal = top.replaceVal;
@@ -314,12 +351,21 @@ String ::= ord::Integer
 
 
 
-nonterminal ExtensibellaType with pp;
+nonterminal ExtensibellaType with pp, vars;
+
+abstract production extensibellaVarTy
+top::ExtensibellaType ::= name::String
+{
+  top.pp = name;
+  top.vars = [name];
+}
+
 
 abstract production extensibellaArrowTy
 top::ExtensibellaType ::= ty1::ExtensibellaType ty2::ExtensibellaType
 {
   top.pp = "(" ++ ty1.pp ++ ") -> " ++ ty2.pp;
+  top.vars = ty1.vars ++ ty2.vars;
 }
 
 
@@ -327,6 +373,7 @@ abstract production extensibellaNameTy
 top::ExtensibellaType ::= name::String
 {
   top.pp = name;
+  top.vars = [];
 }
 
 
@@ -334,6 +381,7 @@ abstract production extensibellaIntTy
 top::ExtensibellaType ::=
 {
   top.pp = "$lib__integer";
+  top.vars = [];
 }
 
 
@@ -341,6 +389,7 @@ abstract production extensibellaStringTy
 top::ExtensibellaType ::=
 {
   top.pp = "list $char";
+  top.vars = [];
 }
 
 
@@ -348,6 +397,7 @@ abstract production extensibellaListTy
 top::ExtensibellaType ::= ty::ExtensibellaType
 {
   top.pp = "list (" ++ ty.pp ++ ")";
+  top.vars = ty.vars;
 }
 
 
@@ -355,6 +405,7 @@ abstract production extensibellaPairTy
 top::ExtensibellaType ::= a::ExtensibellaType b::ExtensibellaType
 {
   top.pp = "$lib__pair (" ++ a.pp ++ ") (" ++ b.pp ++ ")";
+  top.vars = a.vars ++ b.vars;
 }
 
 
@@ -366,30 +417,77 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
    jdgs::[(String, [ExtensibellaType])] rules::[(String, [Def])]
    finalDefs::[Def] --rules that go at the end (unknown constructors)
 {
+  local expandedDefs::[(String, Def)] =
+      flatMap(\ p::(String, [Def]) ->
+                map(\ d::Def -> (p.1, d), p.2), rules);
+  --group it by the relation being defined
+  local relDefGroups::[[(String, Def)]] =
+      groupBy(\ p1::(String, Def) p2::(String, Def) ->
+                p1.2.definedRel == p2.2.definedRel,
+         sortBy(\ p1::(String, Def) p2::(String, Def) ->
+                  p1.2.definedRel <= p2.2.definedRel,
+                expandedDefs));
   {-
-    We sort these because we want the rules to be in a consestent
-    order even if they are imported by two different modules, then
-    a third module including both of those.  This is necessary for
-    putting the proofs together right.
+    We sort these by module because we want the rules to be in a
+    consistent order even if they are imported by two different
+    modules, then a third module including both of those.  This is
+    necessary for putting the proofs together right.
 
     All the rules within each module set should always end up in the
     same order in the list.
   -}
-  local sortedRules::[(String, [Def])] =
-      sortBy(\ p1::(String, [Def]) p2::(String, [Def]) ->
-               p1.1 < p2.1, rules);
-  local basicRules::[Def] =
-      flatMap(\ p::(String, [Def]) -> p.2, sortedRules) ++
-      finalDefs;
-  local defs::Definition =
-      definition(jdgs,
-         foldr(\ d::Def rest::Defs -> addDefs(d, rest),
-               oneDefs(last(basicRules)),
-               take(length(basicRules) - 1, basicRules)));
+  local sortedRules::[[(String, Def)]] =
+      map(\ l::[(String, Def)] ->
+            sortBy(\ p1::(String, Def) p2::(String, Def) ->
+                     p1.1 < p2.1, l),
+          relDefGroups);
+  --[(relation name, all def clauses)]
+  local basicRules::[(String, [Def])] =
+      map(\ l::[(String, Def)] ->
+            let rel::String = head(l).2.definedRel
+            in
+              (rel, map(snd, l) ++
+                    filter(\ d::Def -> d.definedRel == rel, finalDefs))
+            end,
+          sortedRules);
+  --gather up the dependencies to do the ordering
+  --use jdgs so we kept rule-less rels too
+  --[(relation name, names of relations it uses)]
+  local dependencies::[(String, [String])] =
+      map(\ p::(String, [ExtensibellaType]) ->
+            (p.1, flatMap(flatMap((.usedRels), _),
+                          lookupAll(p.1, basicRules))),
+          jdgs);
+  --relations in order, including mutually-recursive groups
+  local order::[[String]] = orderRelations(dependencies);
+
+  local defs::[Definition] =
+      map(\ l::[String] -> --list of mutual induction
+            let deflist::[Def] =
+                flatMap(snd,
+                   filter(\ p::(String, [Def]) -> contains(p.1, l),
+                          basicRules))
+            in
+            let defjdgs::[(String, [ExtensibellaType])] =
+                filter(\ p::(String, [ExtensibellaType]) ->
+                         contains(p.1, l), jdgs)
+            in
+              definition(defjdgs,
+                 foldrLastElem(addDefs, oneDefs, deflist))
+            end end,
+          order);
   return
      implode("", map((.pp), kinds)) ++ "\n\n" ++
      implode("", map((.pp), constrs)) ++ "\n\n" ++
-     defs.pp;
+     implode("", map((.pp), defs));
+}
+
+
+--put the relations in an order so all dependencies come earlier
+function orderRelations
+[[String]] ::= deps::[(String, [String])]
+{
+  return error("orderRelations");
 }
 
 

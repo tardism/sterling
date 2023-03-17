@@ -1,6 +1,6 @@
-Module stdlib.
+Module stdLib.
 
-Theorem lookup_unique : forall L Key Value1 Value2,
+Theorem lookup_unique[Key, Value] : forall L (Key : Key) (Value1 Value2 : Value),
   lookup L Key Value1 -> lookup L Key Value2 -> Value1 = Value2.
 
 

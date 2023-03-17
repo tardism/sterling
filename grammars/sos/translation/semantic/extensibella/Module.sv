@@ -58,7 +58,7 @@ top::ModuleList ::= files::Files
       buildExtensibellaFile(top.ebKinds, top.ebConstrs,
          top.ebJudgments, top.ebRulesByModule, []);
   top.interfaceFileContents =
-      buildExtensibellaInterfaceFile(stdLibName, []);
+      buildExtensibellaInterfaceFile(stdLibName, [(stdLibName, [])]);
 
   top.ebErrors = [];
 }
@@ -130,7 +130,8 @@ top::ModuleList ::= m::Module rest::ModuleList
          top.ebJudgments, top.ebRulesByModule,
          rulesImportedUnknown ++ rulesNewUnknown);
   top.interfaceFileContents =
-      buildExtensibellaInterfaceFile(m.modName, top.buildsOns);
+      buildExtensibellaInterfaceFile(m.modName,
+         (stdLibName, [])::top.buildsOns);
 
   top.ebErrors =
       case intersect(map((.name), m.constructorDecls),

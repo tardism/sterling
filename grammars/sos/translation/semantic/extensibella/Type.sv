@@ -21,7 +21,8 @@ top::Type ::= name::QName
 aspect production varType
 top::Type ::= name::String
 {
-  top.eb = error("varType.eb");
+  --add "Var_" to the beginning to be sure it is capitalized
+  top.eb = extensibellaVarTy("Var_" ++ name);
 
   top.ebIs = error("varType.ebIs");
 }
