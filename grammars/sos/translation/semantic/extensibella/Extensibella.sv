@@ -71,7 +71,7 @@ top::Defs ::= d::Def rest::Defs
 {
   top.pp = d.pp ++ ";\n" ++ rest.pp;
 
-  top.usedRels = nub(d.usedRels ++ rest.usedRels);
+  top.usedRels = union(d.usedRels, rest.usedRels);
 }
 
 
@@ -122,7 +122,7 @@ top::Metaterm ::= rel::String args::[ExtensibellaTerm]
               map(\ t::ExtensibellaTerm -> "(" ++ t.pp ++ ")",
                   args));
 
-  top.vars = nub(flatMap((.vars), args));
+  top.vars = unions(map((.vars), args));
   top.usedRels = [rel];
   top.definedRel = rel;
 
@@ -170,7 +170,7 @@ top::Metaterm ::= t1::ExtensibellaTerm t2::ExtensibellaTerm
 {
   top.pp = "(" ++ t1.pp ++ ") = (" ++ t2.pp ++ ")";
 
-  top.vars = nub(t1.vars ++ t2.vars);
+  top.vars = union(t1.vars, t2.vars);
   top.usedRels = [];
   top.definedRel =
       error("eqMetaterm.definedRel should not be accessed");
@@ -188,8 +188,8 @@ top::Metaterm ::= t1::Metaterm t2::Metaterm
 {
   top.pp = "(" ++ t1.pp ++ ") -> (" ++ t2.pp ++ ")";
 
-  top.vars = nub(t1.vars ++ t2.vars);
-  top.usedRels = nub(t1.usedRels ++ t2.usedRels);
+  top.vars = union(t1.vars, t2.vars);
+  top.usedRels = union(t1.usedRels, t2.usedRels);
   top.definedRel =
       error("impliesMetaterm.definedRel should not be accessed");
 
@@ -206,8 +206,8 @@ top::Metaterm ::= t1::Metaterm t2::Metaterm
 {
   top.pp = "(" ++ t1.pp ++ ") /\\ (" ++ t2.pp ++ ")";
 
-  top.vars = nub(t1.vars ++ t2.vars);
-  top.usedRels = nub(t1.usedRels ++ t2.usedRels);
+  top.vars = union(t1.vars, t2.vars);
+  top.usedRels = union(t1.usedRels, t2.usedRels);
   top.definedRel =
       error("andMetaterm.definedRel should not be accessed");
 
@@ -252,7 +252,7 @@ top::ExtensibellaTerm ::= name::String args::[ExtensibellaTerm]
            implode(" ", map(\ t::ExtensibellaTerm ->
                               "(" ++ t.pp ++ ")", args));
 
-  top.vars = nub(flatMap((.vars), args));
+  top.vars = unions(map((.vars), args));
 
   top.replaced =
       applicationExtensibellaTerm(name,
@@ -294,7 +294,7 @@ top::ExtensibellaTerm ::= hd::ExtensibellaTerm tl::ExtensibellaTerm
 {
   top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
 
-  top.vars = nub(hd.vars ++ tl.vars);
+  top.vars = union(hd.vars, tl.vars);
 
   hd.replaceVar = top.replaceVar;
   tl.replaceVar = top.replaceVar;
@@ -455,8 +455,8 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
   --[(relation name, names of relations it uses)]
   local dependencies::[(String, [String])] =
       map(\ p::(String, [ExtensibellaType]) ->
-            (p.1, flatMap(flatMap((.usedRels), _),
-                          lookupAll(p.1, basicRules))),
+            (p.1, remove(p.1, flatMap(flatMap((.usedRels), _),
+                                 lookupAll(p.1, basicRules)))),
           jdgs);
   --relations in order, including mutually-recursive groups
   local order::[[String]] = orderRelations(dependencies);
@@ -480,14 +480,6 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
      implode("", map((.pp), kinds)) ++ "\n\n" ++
      implode("", map((.pp), constrs)) ++ "\n\n" ++
      implode("", map((.pp), defs));
-}
-
-
---put the relations in an order so all dependencies come earlier
-function orderRelations
-[[String]] ::= deps::[(String, [String])]
-{
-  return error("orderRelations");
 }
 
 
@@ -572,7 +564,7 @@ function instantiateExtensibellaTransRules_help
             }.replaced, prems);
   local newPremVars::[String] =
       removeAll(newConc.vars,
-         nub(flatMap((.vars), newPrems)));
+         unions(map((.vars), newPrems)));
   local finalDef::Def =
       if null(newPrems)
       then factDef(newConc)
