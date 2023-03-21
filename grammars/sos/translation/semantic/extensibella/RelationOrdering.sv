@@ -2,9 +2,8 @@ grammar sos:translation:semantic:extensibella;
 
 import silver:util:graph as g;
 --need this because one graph function returns a set here
-import silver:util:treemap as tm;
+import silver:util:treeset as ts;
 
-type Node = [String];
 
 --put the relations in an order so all dependencies come earlier
 --input is [(relation name, relations it uses)]
@@ -12,85 +11,95 @@ type Node = [String];
 function orderRelations
 [[String]] ::= deps::[(String, [String])]
 {
-  --all the edges to go into the graph
-  local allEdges::[(Node, Node)] =
+  --All the edges to go into the graph
+  local allEdges::[(String, String)] =
       flatMap(\ p::(String, [String]) ->
-                map(\ x::String -> ([p.1], [x]), p.2),
+                map(\ x::String -> (p.1, x), p.2),
               deps);
-  local g::g:Graph<Node> =
-      g:add(allEdges, g:emptyWith(compareNodes));
-  return error("orderRelations");
+  local g::g:Graph<String> = g:add(allEdges, g:empty());
+
+  --Build strongly-connected components
+  --Conveniently, these are already topologically sorted in reverse
+  --   order as well
+  local comps::[[String]] = kosaraju(g, map(fst, deps));
+
+  return reverse(comps);
 }
 
 
-function eqNodes
-Boolean ::= l1::Node l2::Node
-{
-  return compareNodes(l1, l2) == 0;
-}
-function compareNodes
-Integer ::= l1::Node l2::Node
-{
-  return if subset(l1, l2)
-         then if subset(l2, l1)
-              then 0
-              else -1
-         else 1; --could be incomparable, but need an answer
-}
-function subset
-Boolean ::= sub::[String] super::[String]
-{
-  return all(map(\ x::String -> contains(x, super), sub));
-}
 
 
---Build a spanning forest for a graph
---https://en.wikipedia.org/wiki/Spanning_tree#Spanning_forests
-function spanningForest
-[Tree] ::= g::g:Graph<Node>
+--Find strongly-connected components
+--These will become mutual definitions
+--https://en.wikipedia.org/wiki/Kosaraju%27s_algorithm
+function kosaraju
+[[String]] ::= g::g:Graph<String> graphNodes::[String]
 {
-  return error("spanningForest");
-}
-function spanningTree
-Tree ::= currNode::Node g::g:Graph<Node> seen::[Node]
-{
-  local children::[Node] = tm:toList(g:edgesFrom(currNod, g));
-  local childTrees::TreeList =
-      foldr(\ child::Node rest::TreeList ->
-              consTreeList(
-                 spanningTree(child, g, unionBy(eqNodes, seen,
-                                                rest.nodes)),
-                 rest),
-            emptyTreeList(), children);
+  --build the stack by iterating the nodes because it might not be
+  --connected, so starting with a single node isn't enough
+  local stack::[String] =
+      foldr(\ node::String rest::[String] ->
+              if contains(node, rest)
+              then rest
+              else kosaraju_buildStack(node, g, rest, [node]),
+            [], graphNodes);
 
-  return error("spanningTree");
+  --build the transpose, the graph with the edges reversed
+  local newEdges::[(String, String)] =
+      map(\ p::(String, String) -> (p.2, p.1), g:toList(g));
+  local transpose::g:Graph<String> = g:add(newEdges, g:empty());
+
+  --build the strongly-connected components
+  local comps::[[String]] =
+      kosaraju_iterateStack(stack, transpose, []);
+  return comps;
 }
 
-
---https://en.wikipedia.org/wiki/Bridge_%28graph_theory%29
-
-
-
-
-nonterminal Tree with nodes;
-nonterminal TreeList with nodes;
-
-synthesized attribute nodes::[Node];
-
-abstract production tree
-top::Tree ::= node::Node children::TreeList
+--build the stack for node order
+function kosaraju_buildStack
+[String] ::= currNode::String g::g:Graph<String> thusFar::[String]
+             seen::[String]
 {
-  top.nodes = node::children.nodes;
+  local children::[String] = ts:toList(g:edgesFrom(currNode, g));
+  --build the stack by iterating through children
+  local outStack::[String] =
+      currNode::foldr(\ child::String rest::[String] ->
+                        if contains(child, rest ++ seen)
+                        then rest
+                        else kosaraju_buildStack(child, g,
+                                rest, child::seen),
+                      thusFar, children);
+  return outStack;
 }
 
-abstract production emptyTreeList
-top::Tree ::=
+--go through the stack and build components
+function kosaraju_iterateStack
+[[String]] ::= stack::[String] g::g:Graph<String> seen::[String]
 {
-  top.nodes = [];
+  local hereComp::[String] =
+      kosaraju_buildComponent(head(stack), g, [], seen);
+  return case stack of
+         | [] -> []
+         | h::t ->
+           if contains(h, seen)
+           then kosaraju_iterateStack(tail(stack), g, seen)
+           else hereComp::kosaraju_iterateStack(tail(stack), g,
+                                                hereComp ++ seen)
+         end;
 }
-
-abstract production consTreeList
-top::Tree ::= t::Tree rest::TreeList
+--Build a single component
+--thusFar is the current component
+function kosaraju_buildComponent
+[String] ::= currNode::String g::g:Graph<String> thusFar::[String]
+             alreadyDone::[String]
 {
-  top.nodes = t.nodes ++ rest.nodes;
+  local children::[String] = ts:toList(g:edgesFrom(currNode, g));
+  return
+      foldr(\ child::String rest::[String] ->
+              if contains(child, rest) ||
+                 contains(child, alreadyDone)
+              then rest
+              else kosaraju_buildComponent(child, g, rest,
+                      alreadyDone),
+            currNode::thusFar, children);
 }
