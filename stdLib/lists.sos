@@ -11,7 +11,7 @@ Fixed Judgment lookup : [(|Key, Item|)] Key Item
 Fixed Judgment no_lookup : [(|Key, Item|)] Key
 
 /*Holds if the item is in the list*/
-Fixed Judgment member : Item [Item]
+Fixed Judgment mem : Item [Item]
 
 /*Splits the list into the item plus the rest of the list around it:
   select A Rest L*/
@@ -56,13 +56,13 @@ no_lookup (|K, V|)::Rest Key
 
 
 
-====================== [Mem-Here]
-member Item Item::Rest
+=================== [Mem-Here]
+mem Item Item::Rest
 
 
-member Item Rest
-=================== [Mem-Later]
-member Item I::Rest
+mem Item Rest
+================ [Mem-Later]
+mem Item I::Rest
 
 
 

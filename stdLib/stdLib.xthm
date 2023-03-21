@@ -1,28 +1,70 @@
 Module stdLib.
 
-Theorem lookup_unique[Key, Value] : forall L (Key : Key) (Value1 Value2 : Value),
-  lookup L Key Value1 -> lookup L Key Value2 -> Value1 = Value2.
+Theorem lookup_unique[Key, Value] :
+  forall L (Key : Key) (Value1 Value2 : Value),
+    lookup L Key Value1 -> lookup L Key Value2 -> Value1 = Value2.
+induction on 1. intros Lkp1' Lkp2'. Lkp1: case Lkp1'.
+  %1:  Lkp-Later
+   Lkp2: case Lkp2'.
+     %1.1:  Lkp-Later
+      backchain IH.
+     %1.2:  Lkp-Here
+      apply Lkp1 to _.
+  %2:  Lkp-Horo
+   Lkp2: case Lkp2'.
+     %2.1:  Lkp-Later
+      apply Lkp2 to _.
+     %2.2:  Lkp-Here
+      search.
 
 
-Theorem no_lookup : forall L Key Value,
-  no_lookup L Key -> lookup L Key Value -> false.
+Theorem no_lookup [Key, Value] :
+  forall L (Key : Key) (Value : Value),
+    no_lookup L Key -> lookup L Key Value -> false.
+induction on 1. intros NLkp' Lkp'. NLkp: case NLkp'.
+  %1:  NLkp-Cons
+   Lkp: case Lkp'.
+     %1.1:  Lkp-Later
+      backchain IH.
+     %1.2:  Lkp-Here
+      backchain NLkp.
+  %2:  NLkp-Nil
+   Lkp: case Lkp'.
 
 
-Theorem lookup_member : forall L Key Value,
-  lookup L Key Value -> member L (Key, Value).
+Theorem lookup_member [Key, Value] :
+  forall L (Key : Key) (Value : Value),
+    lookup L Key Value -> mem (Key, Value) L.
+induction on 1. intros Lkp'. Lkp: case Lkp'.
+  %1:  Lkp-Later
+   apply IH to Lkp1. search.
+  %2:  Lkp-Here
+   search.
 
 
-Theorem lookup_select : forall L Key Value,
-  lookup L Key Value -> exists L', select (Key, Value) L' L.
+Theorem lookup_select [Key, Value] :
+  forall L (Key : Key) (Value : Value),
+    lookup L Key Value -> exists L', select (Key, Value) L' L.
+induction on 1. intros Lkp'. Lkp: case Lkp'.
+  %1:  Lkp-Later
+   apply IH to Lkp1. search.
+  %2:  Lkp-Here
+   search.
 
 
-Theorem member_select : forall L X,
-  member L X -> exists L', select X L' L.
+Theorem mem_select [Item] : forall L (X : Item),
+  mem X L -> exists L', select X L' L.
+induction on 1. intros Mem'. Mem: case Mem'.
+  %1:  Mem-Later
+   apply IH to Mem. search.
+  %2:  Mem-Here
+   search.
 
 
-Theorem select_member : forall L X L',
-  select X L' L -> member L X.
-
-
-Theorem domain_member_lookup : forall L D X,
-  domain L D -> member D X -> exists V, lookup L X V.
+Theorem select_mem [Item] : forall L (X : Item) L',
+  select X L' L -> mem X L.
+induction on 1. intros Slct'. Slct: case Slct'.
+  %1:  Slct-Later
+   apply IH to Slct. search.
+  %2:  Slct-First
+   search.
