@@ -34,179 +34,40 @@ Translation_Constraint trans_value_is : forall V V',
   |{value}- V ~~> V' -> is_value V -> is_value V'.
 
 
-Translation_Constraint trans_domain_mem_fwd : forall D D' X,
-  |{domain}- D ~~> D' -> memDomain X D -> memDomain X D'.
-
-Translation_Constraint trans_domain_mem_back : forall D D' X,
-  |{domain}- D ~~> D' -> memDomain X D' -> memDomain X D.
-
-
-Extensible_Theorem
-  joinDomains_unique : forall D1 D2 R1 R2,
-    J1 : joinDomains D1 D2 R1 ->
-    J2 : joinDomains D1 D2 R2 ->
-    R1 = R2
-  on J1.
-%JD-Empty
- case J2. search.
-%JD-Add
- J2: case J2. apply IH to J3 J2. search.
-
-
-Extensible_Theorem
-  joinDomains_total : forall D1 D2,
-    IsD1 : is_domain D1 ->
-    IsD2 : is_domain D2 ->
-    exists D, joinDomains D1 D2 D
-  on IsD1.
-%JD-Empty
- search.
-%JD-Add
- apply IH to IsD4 IsD2. search.
-
-
-Extensible_Theorem
-  joinDomains_empty_right : forall D1 D2,
-    J : joinDomains D1 emptyDomain D2 ->
-    D1 = D2
-  on J.
-%JD-Empty
- search.
-%JD-Add
- apply IH to J1. search.
-
-
-Extensible_Theorem
-  joinDomains_is : forall D1 D2 D,
-    IsD1 : is_domain D1 ->
-    IsD2 : is_domain D2 ->
-    J : joinDomains D1 D2 D ->
-    is_domain D
-  on J.
-%JD-Empty
- search.
-%JD-Add
- IsD1: case IsD1. apply IH to IsD3 IsD2 J1. search.
-
-
-Extensible_Theorem
-  joinDomains_assoc : forall D1 D2 D3 D12 D23 D D',
-    J1 : joinDomains D1 D2 D12 ->
-    J2 : joinDomains D12 D3 D ->
-    J3 : joinDomains D2 D3 D23 ->
-    J4 : joinDomains D1 D23 D' ->
-    D = D'
-  on J1.
-%JD-Empty
- case J4. apply joinDomains_unique to J2 J3. search.
-%JD-Add
- case J2. case J4. apply IH to J5 H1 J3 H2. search.
-
-
-Extensible_Theorem
-  join_something_join_anything : forall D1 D2 D D3,
-    J : joinDomains D1 D2 D ->
-    exists D', joinDomains D1 D3 D'
-  on J.
-%JD-Empty
- search.
-%JD-Add
- apply IH to J1 with D3 = D3. search.
-
-
-Extensible_Theorem
-  join_joined : forall D1 D11 D111 D2 D22 D222 D,
-    J1 : joinDomains D1 D11 D111 ->
-    J2 : joinDomains D2 D22 D222 ->
-    J3 : joinDomains D1 D2 D ->
-    exists D', joinDomains D D22 D'
-  on J1.
-%JD-Empty
- case J1. case J3. search.
-%JD-Add
- case J3. apply IH to J4 J2 H1. search.
-
-
-Extensible_Theorem
-  joinDomains_mem : forall D1 D2 D X,
-    J : joinDomains D1 D2 D ->
-    Mem : memDomain X D ->
-    memDomain X D1 \/ memDomain X D2
-  on J.
-%JD-Empty
- search.
-%JD-Add
- Mem: case Mem.
-   %mem here
-    search.
-   %mem later
-    Or: apply IH to J1 Mem. Mem': case Or.
-      %mem D3
-       search.
-      %mem D2
-       search.
-
-
-Extensible_Theorem
-  mem_joinDomains1 : forall D1 D2 D X,
-    J : joinDomains D1 D2 D ->
-    Mem : memDomain X D1 ->
-    memDomain X D
-  on J.
-%JD-Empty
- case Mem.
-%JD-Add
- Mem: case Mem.
-   %mem here
-    search.
-   %mem later
-    apply IH to J1 Mem. search.
-Extensible_Theorem
-  mem_joinDomains2 : forall D1 D2 D X,
-    J : joinDomains D1 D2 D ->
-    Mem : memDomain X D2 ->
-    memDomain X D
-  on J.
-%JD-Empty
- search.
-%JD-Add
- apply IH to J1 Mem. search.
-
-
 Extensible_Theorem
   vars_join : forall E V D,
     Vars : vars E V ->
-    exists D', joinDomains V D D'
+    exists D', V ++ D = D'
   on Vars,
   vars_rf_join : forall RF V D,
     Vars : vars_rf RF V ->
-    exists D', joinDomains V D D'
+    exists D', V ++ D = D'
   on Vars.
-%vars_unique
+%vars_join
  %V-Num
   search.
  %V-Plus
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %V-Name
   search.
  %V-Greater
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %V-Eq
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %V-And
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %V-Or
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %V-True
   search.
  %V-False
@@ -215,13 +76,13 @@ Extensible_Theorem
   apply IH1 to Vars1 with D = D. search.
  %V-RecAccess
   apply IH to Vars1 with D = D. search.
-%vars_rf_unique
+%vars_rf_join
  %VRF-Empty
   search.
  %VRF-Add
   J2: apply IH1 to Vars1 with D = D. J1: apply IH to Vars2 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
 
 
 Extensible_Theorem
@@ -240,21 +101,21 @@ Extensible_Theorem
   case Vars2. search.
  %V-Plus
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %V-Name
   case Vars2. search.
  %V-Greater
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %V-Eq
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %V-And
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %V-Or
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %V-True
   case Vars2. search.
  %V-False
@@ -268,7 +129,7 @@ Extensible_Theorem
   case Vars2. search.
  %VRF-Add
   Vars2: case Vars2. apply IH to Vars4 Vars6.
-  apply IH1 to Vars3 Vars2. apply joinDomains_unique to Vars5 Vars7.
+  apply IH1 to Vars3 Vars2. apply append_unique to Vars5 Vars7.
   search.
 
 
@@ -284,26 +145,36 @@ Translation_Constraint trans_e_vars_exist : forall E E' V,
 %unknown expression in particular contexts.
 Translation_Constraint trans_e_vars : forall E E' V V' X,
   |{e}- E ~~> E' -> vars E V -> vars E' V' ->
-  memDomain X V -> memDomain X V'.
+  mem X V -> mem X V'.
 
 Translation_Constraint trans_rf_vars_exist : forall RF RF' V,
   |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V ->
   exists V', vars_rf RF' V'.
 Translation_Constraint trans_rf_vars : forall RF RF' V V' X,
   |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V -> vars_rf RF' V' ->
-  memDomain X V -> memDomain X V'.
+  mem X V -> mem X V'.
 
+
+/*This should be built into Extensibella, but it isn't yet*/
+Theorem append__is_list__is_string : forall L1 L2 L,
+  is_list is_string L1 -> is_list is_string L2 -> L1 ++ L2 = L ->
+  is_list is_string L.
+induction on 1. intros IsL1 IsL2 App. IsL1': case IsL1.
+  %1:  is_list []
+   case App. search.
+  %2:  is_list (H::T)
+   App: case App. apply IH to IsL1'1 _ _. search.
 
 Extensible_Theorem
   vars_is : forall E V,
     IsE : is_e E ->
     Vars : vars E V ->
-    is_domain V
+    is_list is_string V
   on Vars,
   vars_rf_is : forall RF V,
     IsRF : is_recFieldExprs RF ->
     Vars : vars_rf RF V ->
-    is_domain V
+    is_list is_string V
   on Vars.
 %vars_is
   %V-Num
@@ -311,25 +182,25 @@ Extensible_Theorem
   %V-Plus
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %V-Name
    case IsE. search.
   %V-Greater
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %V-Eq
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %V-And
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %V-Or
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %V-True
    search.
   %V-False
@@ -344,8 +215,18 @@ Extensible_Theorem
   %VRF-Add
    IsRF: case IsRF. IsDE: apply IH to IsRF1 Vars2.
    IsDRest: apply IH1 to IsRF2 Vars1.
-   apply joinDomains_is to IsDE IsDRest Vars3. search.
+   apply append__is_list__is_string to IsDE IsDRest Vars3. search.
 
+
+/*This should also be built into Extensibella*/
+Theorem append__is_list__is_string__total : forall L1 L2,
+  is_list is_string L1 -> is_list is_string L2 ->
+  exists L, L1 ++ L2 = L.
+induction on 1. intros IsL1 IsL2. IsL1': case IsL1.
+  %1: L1 = []
+   search.
+  %2: L1 = H::T
+   apply IH to IsL1'1 _. search.
 
 Extensible_Theorem
   vars_exist : forall E,
@@ -363,29 +244,29 @@ Extensible_Theorem
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %name
    search.
   %greater
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %eq
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %and
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %or
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %true
    search.
   %false
@@ -401,27 +282,7 @@ Extensible_Theorem
    VarsE: apply IH to IsRF2. VarsRest: apply IH1 to IsRF3.
    IsV: apply vars_is to IsRF2 VarsE.
    IsV1: apply vars_rf_is to IsRF3 VarsRest.
-   apply joinDomains_total to IsV IsV1. search.
-
-
-Extensible_Theorem
-  lookupTy_unique : forall G X T1 T2,
-    Lkp1: lookupTy G X T1 ->
-    Lkp2: lookupTy G X T2 ->
-    T1 = T2
-  on Lkp1.
-%1 by LV-Here
- Lkp2: case Lkp2.
-   %2 by LV-Here
-    search.
-   %2 by LV-Later
-    apply Lkp3 to _.
-%1 by LV-Later
- Lkp2: case Lkp2.
-   %2 by LV-Here
-    apply Lkp4 to _.
-   %2 by LV-Later
-    apply IH to Lkp3 Lkp2. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
 
 
 Extensible_Theorem
@@ -441,7 +302,7 @@ Extensible_Theorem
   %T-Plus
    Ty2: case Ty2. search.
   %T-Name
-   Ty2: case Ty2. apply lookupTy_unique to Ty3 Ty2. search.
+   Ty2: case Ty2. apply lookup_unique to Ty3 Ty2. search.
   %T-Greater
    Ty2: case Ty2. search.
   %T-Eq
@@ -458,7 +319,7 @@ Extensible_Theorem
    Ty2: case Ty2. apply IH1 to Ty3 Ty2. search.
   %T-RecField
    Ty2: case Ty2. apply IH to Ty3 Ty2.
-   apply lookupTy_unique to Ty4 Ty5. search.
+   apply lookup_unique to Ty4 Ty5. search.
 %typeRecFields_unique
   %TRF-End
    case Ty2. search.
@@ -488,26 +349,6 @@ Extensible_Theorem
  Ty2: case Ty2. search.
 
 
-Extensible_Theorem
-  lookupVal_unique : forall G X V1 V2,
-    Lkp1: lookupVal G X V1 ->
-    Lkp2: lookupVal G X V2 ->
-    V1 = V2
-  on Lkp1.
-%1 by LV-Here
- Lkp2: case Lkp2.
-   %2 by LV-Here
-    search.
-   %2 by LV-Later
-    apply Lkp3 to _.
-%1 by LV-Later
- Lkp2: case Lkp2.
-   %2 by LV-Here
-    apply Lkp4 to _.
-   %2 by LV-Later
-    apply IH to Lkp3 Lkp2. search.
-
-
 Translation_Constraint trans_eval_e : forall G E E' V,
   |{e}- E ~~> E' -> eval_e G E V ->
   exists V', eval_e G E' V'.
@@ -531,7 +372,7 @@ Extensible_Theorem
    Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev6.
    apply plus_integer_unique to Ev5 Ev7. search.
   %1.3:  1 by E-Name
-   Ev2: case Ev2. apply lookupVal_unique to Ev3 Ev2. search.
+   Ev2: case Ev2. apply lookup_unique to Ev3 Ev2. search.
   %1.4:  1 by E-GreaterTrue
    Ev2: case Ev2.
      %1.4.1:  2 by E-GreaterTrue
@@ -614,12 +455,25 @@ Extensible_Theorem
    Ev2: case Ev2. apply IH1 to Ev3 Ev2. search.
   %1.17:  1 by E-RecField
    Ev2: case Ev2. apply IH to Ev3 Ev2.
-   apply lookupVal_unique to Ev4 Ev5. search.
+   apply lookup_unique to Ev4 Ev5. search.
 %2:  eval_rf_unique
  %2.1:  ERF-End
   case Ev2. search.
  %2.2:  ERF-Add
   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH1 to Ev4 Ev5. search.
+
+
+Extensible_Theorem
+  update_rec_fields_unique : forall F G V G1 G2,
+    U1: update_rec_fields F G V G1 ->
+    U2: update_rec_fields F G V G2 ->
+    G1 = G2
+  on U1.
+%1 by URF-One
+ case U2. search.
+%1 by URF-Step
+ U2: case U2. apply lookup_unique to U3 U2. apply IH to U4 U5.
+ search.
 
 
 Translation_Constraint trans_c_eval : forall C C' G G2,
@@ -631,108 +485,77 @@ Extensible_Theorem
     Ev1 : eval_c G C G1 ->
     Ev2 : eval_c G C G2 ->
     G1 = G2
-  on Ev1,
-  update_rec_fields_unique : forall F G V G1 G2,
-    U1: update_rec_fields F G V G1 ->
-    U2: update_rec_fields F G V G2 ->
-    G1 = G2
-  on U1.
-%eval_c_unique
-  %1 by E-Noop
-   case Ev2. search.
-  %1 by E-Seq
-   Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev5. search.
-  %1 by E-Declare
-   Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
-  %1 by E-Assign
-   Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
-  %1 by E-IfThenElseTrue
-   Ev2: case Ev2.
-     %2 by E-IfThenElseTrue
-      apply IH to Ev4 Ev5. search.
-     %2 by E-IfThenElseFalse
-      apply eval_e_unique to Ev3 Ev2.
-  %1 by E-IfThenElseFalse
-   Ev2: case Ev2.
-     %2 by E-IfThenElseTrue
-      apply eval_e_unique to Ev3 Ev2.
-     %2 by E-IfThenElseFalse
-      apply IH to Ev4 Ev5. search.
-  %1 by E-WhileFalse
-   Ev2: case Ev2.
-     %2 by E-WhileFalse
-      search.
-     %2 by E-WhileTrue
-      apply eval_e_unique to Ev3 Ev2.
-  %1 by E-WhileTrue
-   Ev2: case Ev2.
-     %2 by E-WhileFalse
-      apply eval_e_unique to Ev3 Ev2.
-     %2 by E-WhileTrue
-      apply IH to Ev4 Ev6. apply IH to Ev5 Ev7. search.
-  %1 by E-RecUpdate
-   Ev2: case Ev2. apply lookupVal_unique to Ev4 Ev6.
-   apply eval_e_unique to Ev3 Ev2. apply IH1 to Ev5 Ev7. search.
-%update_rec_fields_unique
-  %1 by URF-One
-   case U2. search.
-  %1 by URF-Step
-   U2: case U2. apply lookupVal_unique to U3 U2. apply IH1 to U4 U5.
-   search.
+  on Ev1.
+%1 by E-Noop
+ case Ev2. search.
+%1 by E-Seq
+ Ev2: case Ev2. apply IH to Ev3 Ev2. apply IH to Ev4 Ev5. search.
+%1 by E-Declare
+ Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
+%1 by E-Assign
+ Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
+%1 by E-IfThenElseTrue
+ Ev2: case Ev2.
+   %2 by E-IfThenElseTrue
+    apply IH to Ev4 Ev5. search.
+   %2 by E-IfThenElseFalse
+    apply eval_e_unique to Ev3 Ev2.
+%1 by E-IfThenElseFalse
+ Ev2: case Ev2.
+   %2 by E-IfThenElseTrue
+    apply eval_e_unique to Ev3 Ev2.
+   %2 by E-IfThenElseFalse
+    apply IH to Ev4 Ev5. search.
+%1 by E-WhileFalse
+ Ev2: case Ev2.
+   %2 by E-WhileFalse
+    search.
+   %2 by E-WhileTrue
+    apply eval_e_unique to Ev3 Ev2.
+%1 by E-WhileTrue
+ Ev2: case Ev2.
+   %2 by E-WhileFalse
+    apply eval_e_unique to Ev3 Ev2.
+   %2 by E-WhileTrue
+    apply IH to Ev4 Ev6. apply IH to Ev5 Ev7. search.
+%1 by E-RecUpdate
+ Ev2: case Ev2. apply lookup_unique to Ev4 Ev6.
+ apply eval_e_unique to Ev3 Ev2.
+ apply update_rec_fields_unique to Ev5 Ev7. search.
 
 
 Translation_Constraint trans_c_eval_results :
   forall C C' G G1 G2 X V,
     |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
-    lookupVal G1 X V -> lookupVal G2 X V.
+    lookup G1 X V -> lookup G2 X V.
 
 
-Extensible_Theorem
-  memDomain_joinDomains_left : forall X D1 D2 D,
-    Mem : memDomain X D1 ->
-    J : joinDomains D1 D2 D ->
-    memDomain X D
-  on Mem.
-%MD-Here
- case J. search.
-%MD-Later
- J: case J. apply IH to Mem1 J. search.
-Extensible_Theorem
-  memDomain_joinDomains_right : forall X D1 D2 D,
-    Mem : memDomain X D2 ->
-    J : joinDomains D1 D2 D ->
-    memDomain X D
-  on J.
-%JD-Empty
- search.
-%JD-Add
- apply IH to Mem J1. search.
-
-
-Theorem vars_equiv_left : forall G1 G2 D D1 D2,
-  (forall X U1 U2, memDomain X D -> lookupVal G1 X U1 ->
-                   lookupVal G2 X U2 -> U1 = U2) ->
-  joinDomains D1 D2 D ->
-  (forall X U1 U2, memDomain X D1 -> lookupVal G1 X U1 ->
-                   lookupVal G2 X U2 -> U1 = U2).
+Theorem vars_equiv_left :
+  forall (G1 : list (pair string value)) G2 D D1 D2,
+    (forall X U1 U2, mem X D -> lookup G1 X U1 ->
+                     lookup G2 X U2 -> U1 = U2) ->
+    D1 ++ D2 = D ->
+    (forall X U1 U2, mem X D1 -> lookup G1 X U1 ->
+                     lookup G2 X U2 -> U1 = U2).
 intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
-backchain memDomain_joinDomains_left.
-Theorem vars_equiv_right : forall G1 G2 D D1 D2,
-  (forall X U1 U2, memDomain X D -> lookupVal G1 X U1 ->
-                   lookupVal G2 X U2 -> U1 = U2) ->
-  joinDomains D1 D2 D ->
-  (forall X U1 U2, memDomain X D2 -> lookupVal G1 X U1 ->
-                   lookupVal G2 X U2 -> U1 = U2).
+backchain mem_append_left.
+Theorem vars_equiv_right :
+  forall (G1 : list (pair string value)) G2 D D1 D2,
+    (forall X U1 U2, mem X D -> lookup G1 X U1 ->
+                     lookup G2 X U2 -> U1 = U2) ->
+    D1 ++ D2 = D ->
+    (forall X U1 U2, mem X D2 -> lookup G1 X U1 ->
+                     lookup G2 X U2 -> U1 = U2).
 intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
-backchain memDomain_joinDomains_right.
+backchain mem_append_right.
 
 
 Extensible_Theorem
   vars_eval_same_result : forall G1 G2 E D V1 V2,
     Equiv : (forall X U1 U2,
-                memDomain X D ->
-                lookupVal G1 X U1 ->
-                lookupVal G2 X U2 -> U1 = U2) ->
+                mem X D ->
+                lookup G1 X U1 ->
+                lookup G2 X U2 -> U1 = U2) ->
     Vars : vars E D ->
     Ev1 : eval_e G1 E V1 ->
     Ev2 : eval_e G2 E V2 ->
@@ -740,9 +563,9 @@ Extensible_Theorem
   on Ev1,
   vars_equal_rf_same_result : forall G1 G2 RF D V1 V2,
     Equiv : (forall X U1 U2,
-                memDomain X D ->
-                lookupVal G1 X U1 ->
-                lookupVal G2 X U2 -> U1 = U2) ->
+                mem X D ->
+                lookup G1 X U1 ->
+                lookup G2 X U2 -> U1 = U2) ->
     Vars : vars_rf RF D ->
     Ev1 : eval_rf G1 RF V1 ->
     Ev2 : eval_rf G2 RF V2 ->
@@ -849,7 +672,7 @@ Extensible_Theorem
    search.
   %1 by E-RecField
    Vars: case Vars. Ev2: case Ev2. apply IH to _ Vars Ev3 Ev2.
-   apply lookupVal_unique to Ev4 Ev5. search.
+   apply lookup_unique to Ev4 Ev5. search.
 %vars_equal_rf_same_result
   %1 by ERF-End
    case Ev2. search.

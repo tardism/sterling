@@ -46,7 +46,7 @@ Prove_Constraint sec_SOS:host:trans_ty_unique.
  case Hyp1. search.
 Prove_Constraint sec_SOS:host:trans_ty_is.
 %listTy
- case Hyp1. search 10.
+ case Hyp1. search 11.
 
 
 Prove_Constraint sec_SOS:host:trans_value_unique.
@@ -56,25 +56,9 @@ Prove_Constraint sec_SOS:host:trans_value_unique.
  case Hyp1. search.
 Prove_Constraint sec_SOS:host:trans_value_is.
 %nilVal
- search 8.
+ search 9.
 %consVal
- case Hyp1. search 10.
-
-
-Prove_Constraint sec_SOS:host:trans_domain_mem_fwd.
-Prove_Constraint sec_SOS:host:trans_domain_mem_back.
-
-
-Prove sec_SOS:host:joinDomains_unique.
-Prove sec_SOS:host:joinDomains_total.
-Prove sec_SOS:host:joinDomains_empty_right.
-Prove sec_SOS:host:joinDomains_is.
-Prove sec_SOS:host:joinDomains_assoc.
-Prove sec_SOS:host:join_something_join_anything.
-Prove sec_SOS:host:join_joined.
-Prove sec_SOS:host:joinDomains_mem.
-Prove sec_SOS:host:mem_joinDomains1.
-Prove sec_SOS:host:mem_joinDomains2.
+ case Hyp1. search 11.
 
 Prove sec_SOS:host:vars_join,
       sec_SOS:host:vars_rf_join.
@@ -83,8 +67,8 @@ Prove sec_SOS:host:vars_join,
   search.
  %cons
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %null
   apply IH to Vars1 with D = D. search.
  %head
@@ -93,10 +77,11 @@ Prove sec_SOS:host:vars_join,
   apply IH to Vars1 with D = D. search.
  %index
   J2: apply IH to Vars2 with D = D. J1: apply IH to Vars1 with D = D'.
-  apply join_joined to J1 J2 Vars3.
-  apply join_something_join_anything to H1 with D3 = D. search.
+  JApp: apply append_associative_back to J2 J1.
+  apply append_unique to Vars3 JApp. search.
  %length
   apply IH to Vars1 with D = D. search.
+
 
 Prove sec_SOS:host:vars_unique,
       sec_SOS:host:vars_rf_unique.
@@ -105,7 +90,7 @@ Prove sec_SOS:host:vars_unique,
   case Vars2. search.
  %cons
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %null
   Vars2: case Vars2. apply IH to Vars3 Vars2. search.
  %head
@@ -114,7 +99,7 @@ Prove sec_SOS:host:vars_unique,
   Vars2: case Vars2. apply IH to Vars3 Vars2. search.
  %index
   Vars2: case Vars2. apply IH to Vars3 Vars2. apply IH to Vars4 Vars6.
-  apply joinDomains_unique to Vars5 Vars7. search.
+  apply append_unique to Vars5 Vars7. search.
  %length
   Vars2: case Vars2. apply IH to Vars3 Vars2. search.
 
@@ -123,12 +108,12 @@ Prove_Constraint sec_SOS:host:trans_e_vars_exist.
 %nil
  search.
 %cons
- case Hyp1. exists V. unfold. unfold. exists V, emptyDomain. split.
+ case Hyp1. exists V. unfold. unfold. exists V, []. split.
    %vars_rf {head: E1; tail: E2} V
     unfold. exists D2, D1. split.
       %vars {tail: E2} D1
-       unfold. exists emptyDomain, D2. split. search. search.
-       apply vars_join to H2 with D = emptyDomain.
+       unfold. exists [], D2. split. search. search.
+       apply vars_join to H2 with D = [].
        apply joinDomains_empty_right to H4. search.
       %vars E1 D1
        search.
