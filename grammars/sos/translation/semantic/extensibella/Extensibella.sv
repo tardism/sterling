@@ -425,7 +425,7 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
       groupBy(\ p1::(String, Def) p2::(String, Def) ->
                 p1.2.definedRel == p2.2.definedRel,
          sortBy(\ p1::(String, Def) p2::(String, Def) ->
-                  p1.2.definedRel <= p2.2.definedRel,
+                  p1.2.definedRel < p2.2.definedRel,
                 expandedDefs));
   {-
     We sort these by module because we want the rules to be in a
