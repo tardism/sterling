@@ -473,7 +473,16 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
                          contains(p.1, l), jdgs)
             in
               definition(defjdgs,
-                 foldrLastElem(addDefs, oneDefs, deflist))
+                 if null(deflist) --e.g. translation rels in host
+                 then oneDefs(
+                         ruleDef(
+                            relationMetaterm(head(defjdgs).1,
+                               map(\ x::ExtensibellaType ->
+                                     varExtensibellaTerm(
+                                        "X" ++ toString(genInt())),
+                                   head(defjdgs).2)),
+                            falseMetaterm()))
+                 else foldrLastElem(addDefs, oneDefs, deflist))
             end end,
           order);
   return

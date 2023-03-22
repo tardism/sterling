@@ -11,17 +11,23 @@ import silver:util:treeset as ts;
 function orderRelations
 [[String]] ::= deps::[(String, [String])]
 {
+  --Filter out any relations in the dependencies not defined here
+  local rels::[String] = map(fst, deps);
+  local filteredDeps::[(String, [String])] =
+      map(\ p::(String, [String]) ->
+            (p.1, filter(contains(_, rels), p.2)),
+          deps);
   --All the edges to go into the graph
   local allEdges::[(String, String)] =
       flatMap(\ p::(String, [String]) ->
                 map(\ x::String -> (p.1, x), p.2),
-              deps);
+              filteredDeps);
   local g::g:Graph<String> = g:add(allEdges, g:empty());
 
   --Build strongly-connected components
   --Conveniently, these are already topologically sorted in reverse
   --   order as well
-  local comps::[[String]] = kosaraju(g, map(fst, deps));
+  local comps::[[String]] = kosaraju(g, rels);
 
   return reverse(comps);
 }
