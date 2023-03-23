@@ -114,7 +114,7 @@ Prove_Constraint sec_SOS:host:trans_e_vars_exist.
       %vars {tail: E2} D1
        unfold. exists [], D2. split. search. search.
        apply vars_join to H2 with D = [].
-       apply joinDomains_empty_right to H4. search.
+       apply append_nil_right to H4. search.
       %vars E1 D1
        search.
       %D1 ++ D2 = V
@@ -140,12 +140,12 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
  VarsCons: case Hyp1. case Hyp2. case H1. case H3. case H2. case H5.
  case H8. apply vars_unique to VarsCons H6.
  apply vars_unique to VarsCons1 H9.
- apply joinDomains_empty_right to H10. case H4.
- Or: apply joinDomains_mem to VarsCons2 Hyp3. MemOr: case Or.
+ apply append_nil_right to H10. case H4.
+ Or: apply mem_append to Hyp3 VarsCons2. MemOr: case Or.
    %mem X DE1
-    apply mem_joinDomains1 to H7 MemOr. search.
+    apply mem_append_left to MemOr H7. search.
    %mem X DRest1
-    apply mem_joinDomains2 to H7 MemOr. search.
+    apply mem_append_right to MemOr H7. search.
 %null
  case Hyp1. apply vars_unique to H1 Hyp2. search.
 %head
@@ -155,7 +155,7 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
 %index
  VI: case Hyp1. VT: case Hyp2. VIdx2: case VT1. case VIdx2.
  VLst2: case VT. case VIdx3. apply vars_unique to VI VLst2.
- apply vars_unique to VI1 VIdx1. apply joinDomains_unique to VI2 VT2.
+ apply vars_unique to VI1 VIdx1. apply append_unique to VI2 VT2.
  search.
 %length
  case Hyp1. apply vars_unique to Hyp2 H1. search.
@@ -171,7 +171,7 @@ Prove sec_SOS:host:vars_is,
   %cons list
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %null check
    IsE1: case IsE. apply IH to IsE1 Vars1. search.
   %head of list
@@ -181,7 +181,7 @@ Prove sec_SOS:host:vars_is,
   %index into list
    IsE1: case IsE. IsD1: apply IH to IsE1 Vars1.
    IsD2: apply IH to IsE2 Vars2.
-   apply joinDomains_is to IsD1 IsD2 Vars3. search.
+   apply append__is_list__is_string to IsD1 IsD2 Vars3. search.
   %length of list
    IsE1: case IsE. apply IH to IsE1 Vars1. search.
 
@@ -195,7 +195,7 @@ Prove sec_SOS:host:vars_exist,
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %null check
    apply IH to IsE1. search.
   %head of list
@@ -206,12 +206,9 @@ Prove sec_SOS:host:vars_exist,
    Vars1: apply IH to IsE1. Vars2: apply IH to IsE2.
    IsV: apply vars_is to IsE1 Vars1.
    IsV1: apply vars_is to IsE2 Vars2.
-   apply joinDomains_total to IsV IsV1. search.
+   apply append__is_list__is_string__total to IsV IsV1. search.
   %length of list
    apply IH to IsE1. search.
-
-
-Prove sec_SOS:host:lookupTy_unique.
 
 
 Prove sec_SOS:host:typeOf_unique,
@@ -234,9 +231,6 @@ Prove sec_SOS:host:typeOf_unique,
 
 
 Prove sec_SOS:host:typeOK_unique.
-
-
-Prove sec_SOS:host:lookupVal_unique.
 
 
 Prove_Constraint sec_SOS:host:trans_eval_e.
@@ -370,20 +364,16 @@ Prove sec_SOS:host:eval_e_unique,
    apply sec_SOS:list:length_unique to Ev4 Ev5. search.
 
 
+Prove sec_SOS:host:update_rec_fields_unique.
+
+
 Prove_Constraint sec_SOS:host:trans_c_eval.
 
 
-Prove sec_SOS:host:eval_c_unique,
-      sec_SOS:host:update_rec_fields_unique.
+Prove sec_SOS:host:eval_c_unique.
 
 
 Prove_Constraint sec_SOS:host:trans_c_eval_results.
-
-
-Prove sec_SOS:host:memDomain_joinDomains_left.
-
-
-Prove sec_SOS:host:memDomain_joinDomains_right.
 
 
 Prove sec_SOS:host:vars_eval_same_result,

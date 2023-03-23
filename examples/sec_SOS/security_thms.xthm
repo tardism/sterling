@@ -16,19 +16,6 @@ Prove_Constraint sec_SOS:host:trans_ty_unique.
 Prove_Constraint sec_SOS:host:trans_ty_is.
 Prove_Constraint sec_SOS:host:trans_value_unique.
 Prove_Constraint sec_SOS:host:trans_value_is.
-Prove_Constraint sec_SOS:host:trans_domain_mem_fwd.
-Prove_Constraint sec_SOS:host:trans_domain_mem_back.
-
-Prove sec_SOS:host:joinDomains_unique.
-Prove sec_SOS:host:joinDomains_total.
-Prove sec_SOS:host:joinDomains_empty_right.
-Prove sec_SOS:host:joinDomains_is.
-Prove sec_SOS:host:joinDomains_assoc.
-Prove sec_SOS:host:join_something_join_anything.
-Prove sec_SOS:host:join_joined.
-Prove sec_SOS:host:joinDomains_mem.
-Prove sec_SOS:host:mem_joinDomains1.
-Prove sec_SOS:host:mem_joinDomains2.
 
 Prove sec_SOS:host:vars_join,
       sec_SOS:host:vars_rf_join.
@@ -44,25 +31,23 @@ Prove_Constraint sec_SOS:host:trans_rf_vars.
 Prove sec_SOS:host:vars_is, sec_SOS:host:vars_rf_is.
 Prove sec_SOS:host:vars_exist, sec_SOS:host:vars_rf_exist.
 
-Prove sec_SOS:host:lookupTy_unique.
 Prove sec_SOS:host:typeOf_unique, sec_SOS:host:typeRecFields_unique.
 Prove sec_SOS:host:typeOK_unique.
 %declareSec
  Ty2: case Ty2. apply typeOf_unique to Ty4 Ty5. search.
-
-Prove sec_SOS:host:lookupVal_unique.
 
 Prove_Constraint sec_SOS:host:trans_eval_e.
 
 Prove sec_SOS:host:eval_e_unique,
       sec_SOS:host:eval_rf_unique.
 
+Prove sec_SOS:host:update_rec_fields_unique.
+
 Prove_Constraint sec_SOS:host:trans_c_eval.
 %declareSec
  Ev: case Hyp1. search.
 
-Prove sec_SOS:host:eval_c_unique,
-      sec_SOS:host:update_rec_fields_unique.
+Prove sec_SOS:host:eval_c_unique.
 %declareSec
  Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
 
@@ -71,8 +56,6 @@ Prove_Constraint sec_SOS:host:trans_c_eval_results.
  Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
  search.
 
-Prove sec_SOS:host:memDomain_joinDomains_left.
-Prove sec_SOS:host:memDomain_joinDomains_right.
 Prove sec_SOS:host:vars_eval_same_result,
       sec_SOS:host:vars_equal_rf_same_result.
 
@@ -81,26 +64,6 @@ Prove sec_SOS:host:vars_eval_same_result,
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %                         SECURITY THEOREMS                          %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-Extensible_Theorem
-  lookupSec_unique : forall G X L1 L2,
-    Lkp1 : lookupSec G X L1 ->
-    Lkp2 : lookupSec G X L2 ->
-    L1 = L2
-  on Lkp1.
-%1 by LS-Here
- Lkp2: case Lkp2.
-   %2 by LS-Here
-    search.
-   %2 by LS-Later
-    apply Lkp3 to _.
-%1 by LS-Later
- Lkp2: case Lkp2.
-   %2 by LS-Here
-    apply Lkp4 to _.
-   %2 by LS-Later
-    apply IH to Lkp3 Lkp2. search.
-
 
 %We need this to make join_unique below possible
 %Problem arises due to disallowed case analysis
@@ -138,21 +101,21 @@ Extensible_Theorem
   level_public_vars : forall SG E V X,
     Lev : level SG E public ->
     Vars : vars E V ->
-    Mem : memDomain X V ->
-    lookupSec SG X public
+    Mem : mem X V ->
+    lookup SG X public
   on Lev,
   level_public_vars_rf : forall SG RF V X,
     Lev : rf_level SG RF public ->
     Vars : vars_rf RF V ->
-    Mem : memDomain X V ->
-    lookupSec SG X public
+    Mem : mem X V ->
+    lookup SG X public
   on Lev.
 %level_public_vars
   %S-Num
    case Vars. case Mem.
   %S-Plus
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem D1
       apply IH to Lev1 Vars1 Mem'. search.
      %mem D2
@@ -161,28 +124,28 @@ Extensible_Theorem
    case Vars. Mem': case Mem. search. case Mem'.
   %S-Greater
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem D1
       apply IH to Lev1 Vars1 Mem'. search.
      %mem D2
       apply IH to Lev2 Vars2 Mem'. search.
   %S-Eq
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem D1
       apply IH to Lev1 Vars1 Mem'. search.
      %mem D2
       apply IH to Lev2 Vars2 Mem'. search.
   %S-And
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem D1
       apply IH to Lev1 Vars1 Mem'. search.
      %mem D2
       apply IH to Lev2 Vars2 Mem'. search.
   %S-Or
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem D1
       apply IH to Lev1 Vars1 Mem'. search.
      %mem D2
@@ -204,7 +167,7 @@ Extensible_Theorem
    case Vars. case Mem.
   %S-RfAdd
    Vars1: case Vars. apply join_public to Lev3.
-   Or: apply joinDomains_mem to Vars3 Mem. Mem': case Or.
+   Or: apply mem_append to Mem Vars3. Mem': case Or.
      %mem DE
       apply IH to Lev1 Vars2 Mem'. search.
      %mem DRest
@@ -214,11 +177,13 @@ Extensible_Theorem
    Mem: apply trans_rf_vars to Lev1 Vars V Mem.
    apply IH1 to Lev2 V Mem1. search.
 
-Define public_equiv : secctx -> evalctx -> evalctx -> prop by
+Define public_equiv :
+   list (pair string seclevel) -> list (pair string value) ->
+   list (pair string value) -> prop by
 public_equiv S G1 G2 :=
   forall X V1 V2,
-    lookupSec S X public ->
-    lookupVal G1 X V1 -> lookupVal G2 X V2 -> V1 = V2.
+    lookup S X public ->
+    lookup G1 X V1 -> lookup G2 X V2 -> V1 = V2.
 
 
 Theorem level_secure : forall SG G1 G2 E V1 V2,

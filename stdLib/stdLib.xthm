@@ -86,3 +86,20 @@ induction on 2. intros Mem App. App: case App.
    search.
   %2:  L1 = H::T
    apply IH to Mem App. search.
+
+
+Theorem mem_append [A] : forall L1 L2 L (A : A),
+  mem A L -> L1 ++ L2 = L -> mem A L1 \/ mem A L2.
+induction on 1. intros Mem' App'. Mem: case Mem'.
+  %1:  Mem-Here
+   App: case App'.
+     %1.1:  L1 = []
+      search.
+     %1.2:  L1 = A::T
+      search.
+  %2:  Mem-Later
+   App: case App'.
+     %2.1:  L1 = []
+      search.
+     %2.2:  L1 = I::T
+      Or: apply IH to Mem App. case Or. search. search.
