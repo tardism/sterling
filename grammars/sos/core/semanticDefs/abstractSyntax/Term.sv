@@ -278,7 +278,7 @@ top::Term ::= hd::Term tl::Term
 abstract production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {
-  top.pp = "<" ++ tm.pp ++ " : " ++ ty.pp ++ ">";
+  top.pp = "{" ++ tm.pp ++ " : " ++ ty.pp ++ "}";
 
   tm.moduleName = top.moduleName;
 
