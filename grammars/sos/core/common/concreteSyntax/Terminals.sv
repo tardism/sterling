@@ -20,10 +20,14 @@ terminal RBanana_t    '|)';
 terminal Comma_t      ',';
 
 
---We don't need the \r in this to make it work, since \r is part of
---the ignore terminal for whitespace.  However, we get a warning that
---we have \n but not \r here without it.
-terminal Newline_t        /\r?\n/;
+{-
+  We roll single-line comments into our newlines because we need to
+  know when lines end a lot of the time, which precludes making them
+  ignore terminals.  However, since every line end uses Newline_t,
+  this allows us to treat them as if they were ignored and only the
+  actual newline were important.
+-}
+terminal Newline_t        /(\/\/[^\n]*)?\r?\n/;
 
 
 terminal LowerId_t      /[a-z][a-z0-9A-Z_]*/;

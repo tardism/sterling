@@ -131,15 +131,15 @@ secure PC G declare(X, Ty, E) (|X, public|)::G
 
 
 level G E S
----------------------------------------- [S-DeclareSecPrivate]
-secure PC G declareSec(X, private, Ty, E
-          ) (|X, private|)::G
+------------------------------------------ [S-DeclareSecPrivate]
+{secure PC G declareSec(X, private, Ty, E)
+        (|X, private|)::G}
 
 
 level G E public
-------------------------------------------- [S-DeclareSecPublic]
-secure public G declareSec(X, public, Ty, E
-                ) (|X, public|)::G
+--------------------------------------------- [S-DeclareSecPublic]
+{secure public G declareSec(X, public, Ty, E)
+        (|X, public|)::G}
 
 
 /*To assign to public var, need both PC and expr to be public*/

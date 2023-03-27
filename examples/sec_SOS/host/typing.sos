@@ -61,7 +61,7 @@ typeOf G recBuild(Fields) recTy(FTys)
 
 typeOf G Rec recTy(Fields)
 lookup Fields Field FTy
------------------------------------------- [T-RecField]
+--------------------------------------- [T-RecField]
 typeOf G recFieldAccess(Rec, Field) FTy
 
 

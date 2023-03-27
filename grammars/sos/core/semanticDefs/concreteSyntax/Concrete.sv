@@ -160,7 +160,12 @@ concrete productions top::Rule_c
 
 
 
+{-New productions added to either Judgment_c or JudgmentArbitrarySpace_c
+  should have a corresponding production added to the other-}
 closed nonterminal Judgment_c layout {Spacing_t, Comment_t}
+   with ast<Judgment>, location;
+--Productions for JudgmentArbitrarySpace_c should end with EmptyNewlines
+closed nonterminal JudgmentArbitrarySpace_c layout {Spacing_t, Comment_t}
    with ast<Judgment>, location;
 
 concrete productions top::Judgment_c
@@ -220,6 +225,83 @@ concrete productions top::Judgment_c
                             t1.ast, t2.ast,
                             location=top.location); }
 | t1::Term_c op::BinOp_c t2::Term_c '=' t3::Term_c
+  { top.ast = binOpJudgment(t1.ast, op.ast, t2.ast, t3.ast,
+                            location=top.location); }
+{-
+  Sometimes judgments get really long and you need to split across
+  lines.  However, the whitespace-sensitive nature of our language
+  means you can't do that.  So we have this grouping construct using
+  curly braces allowing arbitrary line breaks in a judgment.
+-}
+| '{' x1::EmptyNewlines j::JudgmentArbitrarySpace_c '}'
+  { top.ast = j.ast; }
+
+concrete productions top::JudgmentArbitrarySpace_c
+| '!' x2::EmptyNewlines rel::LowerId_t x3::EmptyNewlines
+  args::TermListArbitrarySpace_c
+  { top.ast = negationRelation(toQName(rel.lexeme, rel.location),
+                               args.ast, location=top.location); }
+| '!' x2::EmptyNewlines rel::LowerQName_t x3::EmptyNewlines
+  args::TermListArbitrarySpace_c
+  { top.ast = negationRelation(toQName(rel.lexeme, rel.location),
+                               args.ast, location=top.location); }
+| '!' x2::EmptyNewlines rel::LowerId_t x3::EmptyNewlines
+  { top.ast = negationRelation(toQName(rel.lexeme, rel.location),
+                               nilTermList(location=top.location),
+                               location=top.location); }
+| '!' x2::EmptyNewlines rel::LowerQName_t x3::EmptyNewlines
+  { top.ast = negationRelation(toQName(rel.lexeme, rel.location),
+                               nilTermList(location=top.location),
+                               location=top.location); }
+| rel::LowerId_t x2::EmptyNewlines args::TermListArbitrarySpace_c
+  { top.ast = relation(toQName(rel.lexeme, rel.location),
+                       args.ast, location=top.location); }
+| rel::LowerQName_t x2::EmptyNewlines args::TermListArbitrarySpace_c
+  { top.ast = relation(toQName(rel.lexeme, rel.location),
+                       args.ast, location=top.location); }
+| rel::LowerId_t x::EmptyNewlines
+  { top.ast = relation(toQName(rel.lexeme, rel.location),
+                       nilTermList(location=top.location),
+                       location=top.location); }
+| rel::LowerQName_t x::EmptyNewlines
+  { top.ast = relation(toQName(rel.lexeme, rel.location),
+                       nilTermList(location=top.location),
+                       location=top.location); }
+| t1::Term_c x2::EmptyNewlines op::TopBinOp_c x3::EmptyNewlines
+  t2::Term_c x4::EmptyNewlines
+  { top.ast = topBinOpJudgment(t1.ast, op.ast, t2.ast,
+                               location=top.location); }
+| '|{' ty::LowerId_t '}-' x2::EmptyNewlines
+   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
+   x5::EmptyNewlines
+  { top.ast = transJudgment(nilTermList(location=top.location),
+                            toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| '|{' ty::LowerQName_t '}-' x2::EmptyNewlines
+  t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
+  x5::EmptyNewlines
+  { top.ast = transJudgment(nilTermList(location=top.location),
+                            toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| args::ContainedCommaTermList_c
+  '|{' ty::LowerId_t '}-' x3::EmptyNewlines t1::Term_c
+  x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
+  x6::EmptyNewlines
+  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| args::ContainedCommaTermList_c
+  '|{' ty::LowerQName_t '}-' x3::EmptyNewlines t1::Term_c
+  x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
+  x6::EmptyNewlines
+  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                            t1.ast, t2.ast,
+                            location=top.location); }
+| t1::Term_c x2::EmptyNewlines op::BinOp_c
+  x3::EmptyNewlines t2::Term_c x4::EmptyNewlines '='
+  x5::EmptyNewlines t3::Term_c x6::EmptyNewlines
   { top.ast = binOpJudgment(t1.ast, op.ast, t2.ast, t3.ast,
                             location=top.location); }
 
@@ -362,6 +444,19 @@ concrete productions top::TermList_c
   { top.ast = consTermList(t.ast, nilTermList(location=top.location),
                            location=top.location); }
 | t::Term_c rest::TermList_c
+  { top.ast = consTermList(t.ast, rest.ast, location=top.location); }
+
+
+
+--Allows arbitrary line breaks in a term list
+closed nonterminal TermListArbitrarySpace_c layout {Spacing_t, Comment_t}
+   with ast<TermList>, location;
+
+concrete productions top::TermListArbitrarySpace_c
+| t::Term_c x::EmptyNewlines
+  { top.ast = consTermList(t.ast, nilTermList(location=top.location),
+                           location=top.location); }
+| t::Term_c x::EmptyNewlines rest::TermListArbitrarySpace_c
   { top.ast = consTermList(t.ast, rest.ast, location=top.location); }
 
 

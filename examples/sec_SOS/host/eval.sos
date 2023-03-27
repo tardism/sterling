@@ -182,9 +182,9 @@ update_rec_fields oneField(F) Init V (|F, V|)::Init
 
 lookup Init F recVal(FFields)
 update_rec_fields Rest FFields V UpdatedFFields
---------------------------------------------------- [URF-Step]
-update_rec_fields addField(F, Rest) Init V (|
-                   F, recVal(UpdatedFFields)|)::Init
+----------------------------------------------- [URF-Step]
+{update_rec_fields addField(F, Rest) Init V
+    (|F, recVal(UpdatedFFields)|)::Init}
 
 
 
