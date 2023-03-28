@@ -27,57 +27,48 @@
 
 
 
+(setq sos-ext-conc-keywords-list '("Module" "ignore"))
+(setq sos-ext-conc-built-in-list '("$to_int"))
+
 (defvar sos-ext-conc-font-lock-keywords
   (list
    ;;Keywords
    (cons
-    "\\(Module\\)\\|\\(ignore\\)\\|\\(~~>\\)\\|\\(\\.\\.\\.\\)"
+    (regexp-opt sos-ext-conc-keywords-list 'words)
+    font-lock-keyword-face)
+   (cons ; '...'  |  '~~>'
+    "\\(\\.\\.\\.\\)\\|\\(~~>\\)"
     font-lock-keyword-face)
    ;;Built-in
    (cons
-    "\\($to_int\\)"
+    (regexp-opt sos-ext-conc-built-in-list 'words)
     font-lock-builtin-face)
-
-   ;; /regex/
+   ;;Regular /regex/
    (cons
-    ;;regex is a copy for each delimiter
-    ;;opener ( ((not (opener or newline)) or (backslash opener))
-    ;;          (not (newline or backslash)) ) optional opener
-    ;;matches single-line strings with backslash-escaped quotes/slashes
-    (concat "\\(" ;;start forward slash group
-            "/\\(\\([^/\n]\\|\\(\\\\/\\)\\)*[^\n\\\\]\\)?/"
-            "\\)") ;;end forward slash group
+    "/\\([^/\n]\\|\\(\\\\/\\)\\)+/"
     font-lock-string-face)
+   ;;Types
+   '("<\\([a-zA-Z0-9_-]+\\)>" (1 font-lock-type-face)) ;AST type
+   '("\\([a-zA-Z0-9_-]+\\) *<" (1 font-lock-type-face)) ;concrete NT
+   '("\\([a-zA-Z0-9_-]+\\) *::=" (1 font-lock-type-face)) ;concrete NT
+   '("\[A-Z][a-zA-Z0-9_]*[ \n\t\r]*::[ \n\t\r]*\\([a-z][a-zA-Z0-9_]*\\)"
+     (1 font-lock-type-face)) ;type for a production member
+   ;;Terminal name
+   '("\\(ignore\\) */.*/" (1 font-lock-keyword-face))
+   '("\\([a-zA-Z0-9_-]+\\) */.*/" (1 font-lock-variable-name-face))
+   ;;Production members
+   '("[ \n\r\t(]\\(\[A-Z][a-zA-Z0-9_]*\\)"
+     (1 font-lock-variable-name-face))
+   '("\[A-Z][a-zA-Z0-9_]*[ \n\t\r]*::[ \n\t\r]*\\([a-z][a-zA-Z0-9_]*\\)"
+     (1 font-lock-type-face)) ;type for a production member
    )
   )
-;;Regex
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\\(/\\(\\([^/\n]\\|\\(\\\\/\\)\\)*[^\n\\\\]\\)?/\\)"
-     1 font-lock-string-face t)))
-;;Type for concrete nonterminal
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("<\\([a-zA-Z0-9_-]+\\)>" 1 font-lock-type-face t)))
-;;Nonterminal name
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\\([a-zA-Z0-9_-]+\\) *<" 1 font-lock-type-face t)))
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\\([a-zA-Z0-9_-]+\\) *::=" 1 font-lock-type-face t)))
-;;Terminal name
-(font-lock-add-keywords 'sos-ext-conc-mode ;;override terminal name
-  '(("\\(ignore\\) */.*/" 1 font-lock-keyword-face t)))
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\\([a-zA-Z0-9_-]+\\) */.*/" 1 font-lock-variable-name-face t)))
-;;Type for a production member
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("\[A-Z][a-zA-Z0-9_]*[ \n\t\r]*::[ \n\t\r]*\\([a-z][a-zA-Z0-9_]*\\)" 1 font-lock-type-face t)))
-;;Production-member references---try to make it take only names with separators
-(font-lock-add-keywords 'sos-ext-conc-mode
-  '(("[ \n\r\t(]\\(\[A-Z][a-zA-Z0-9_]*\\)" 1 font-lock-variable-name-face t)))
 
 
 (defvar sos-ext-conc-syntax-table
   (let ((table (make-syntax-table (standard-syntax-table))))
-    (modify-syntax-entry ?/ ". 14n" table)
-    (modify-syntax-entry ?* ". 23n" table)
+    (modify-syntax-entry ?/ ". 124" table)
+    (modify-syntax-entry ?* ". 23bn" table)
+    (modify-syntax-entry ?. ">" table)
     table))
 

@@ -27,23 +27,39 @@
 
 
 
+(setq sos-ext-main-keyword-list
+      '("Module" "Function" "Print" "Before" "Let" "In" "Parse" "from"
+        "If" "Then" "Else" "Derive" "for" "assigning" "Read"))
+(setq sos-ext-main-type-list '("int" "string" "bool"))
+
 (defvar sos-ext-main-font-lock-keywords
   (list
    ;;Keywords
    (cons
-    "\\(Module\\)\\|\\(Function\\)\\|\\(Print\\)\\|\\(Before\\)\\|\\(Let\\)\\|\\(In\\)\\|\\(Parse\\)\\|\\(from\\)\\|\\(If\\)\\|\\(Then\\)\\|\\(Else\\)\\|\\(Derive\\)\\|\\(for\\)\\|\\(assigning\\)\\|\\(Read\\)"
+    (regexp-opt sos-ext-main-keyword-list 'words)
     font-lock-keyword-face)
-   ;;Known types
-   (cons
-    "\\(int\\)\\|\\(string\\)\\|\\(list\\)\\|\\(bool\\)"
-    font-lock-type-face)
-    )
+   ;;Types
+   '(":[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[(|)]\\|\\]\\)+\\)[ \t\n]*>"
+     (1 font-lock-type-face))
+   '("Parse[ \t\n]+\\([a-zA-Z0-9_:]+\\)" (1 font-lock-type-face))
+   '("->[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[(|)]\\|\\]\\)+\\){"
+     (1 font-lock-type-face))
+   ;;Variable names
+   '("<[ \t\n]*\\([a-zA-Z0-9_]+\\)[ \t\n]*:" ;function parameters
+     (1 font-lock-variable-name-face))
+   '("\\(\\([a-zA-Z0-9_]+,[ \t\n]*\\)*[a-zA-Z0-9_]+\\)[ \t\n]*:="
+     (1 font-lock-variable-name-face)) ;assigned in Let
+   ;;Function names
+   '("Function[ \t\n]+\\([a-zA-Z0-9_]+\\)[ \t\n]*:"
+     (1 font-lock-function-name-face))
+   )
   )
 
 
 (defvar sos-ext-main-syntax-table
   (let ((table (make-syntax-table (standard-syntax-table))))
-    (modify-syntax-entry ?/ ". 14n" table)
-    (modify-syntax-entry ?* ". 23n" table)
+    (modify-syntax-entry ?/ ". 124" table)
+    (modify-syntax-entry ?* ". 23bn" table)
+    (modify-syntax-entry ?. ">" table)
     table))
 
