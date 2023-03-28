@@ -60,16 +60,47 @@ concrete productions top::JudgmentDecl_c
   { top.ast = translationTypeDecl(tyname.lexeme, type.ast,
                                   location=top.location);
   }
+{-
+  Sometimes judgment types get really long and you need to split
+  across lines.  However, the whitespace-sensitive nature of our
+  language means you can't do that.  So we have this grouping
+  construct using curly braces allowing arbitrary line breaks in a
+  judgment's type.
+-}
+| 'Judgment' name::LowerId_t ':' '{' x::EmptyNewlines
+  type::TypeListArbitrarySpace_c '}'
+  { top.ast = extJudgmentDecl(name.lexeme, type.ast,
+                              location=top.location);
+  }
+| 'Fixed' 'Judgment' name::LowerId_t ':' '{' x::EmptyNewlines
+  type::TypeListArbitrarySpace_c '}'
+  { top.ast = fixedJudgmentDecl(name.lexeme, type.ast,
+                                location=top.location);
+  }
+| 'Translation' tyname::LowerId_t ':' '{' x::EmptyNewlines
+  type::TypeListArbitrarySpace_c '}'
+  { top.ast = translationTypeDecl(tyname.lexeme, type.ast,
+                                  location=top.location);
+  }
 
 
 
 closed nonterminal TypeList_c layout {Spacing_t, Comment_t}
+   with ast<TypeList>, location;
+--allow any spacing, since this is used in delimited places
+closed nonterminal TypeListArbitrarySpace_c layout {Spacing_t, Comment_t}
    with ast<TypeList>, location;
 
 concrete productions top::TypeList_c
 |
   { top.ast = nilTypeList(location=top.location); }
 | ty::Type_c rest::TypeList_c
+  { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
+
+concrete productions top::TypeListArbitrarySpace_c
+|
+  { top.ast = nilTypeList(location=top.location); }
+| ty::Type_c x::EmptyNewlines rest::TypeList_c
   { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
 
 
