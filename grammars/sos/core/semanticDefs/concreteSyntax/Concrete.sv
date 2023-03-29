@@ -100,7 +100,7 @@ concrete productions top::TypeList_c
 concrete productions top::TypeListArbitrarySpace_c
 |
   { top.ast = nilTypeList(location=top.location); }
-| ty::Type_c x::EmptyNewlines rest::TypeList_c
+| ty::Type_c x::EmptyNewlines rest::TypeListArbitrarySpace_c
   { top.ast = consTypeList(ty.ast, rest.ast, location=top.location); }
 
 

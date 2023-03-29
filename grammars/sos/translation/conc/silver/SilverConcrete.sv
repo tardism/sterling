@@ -110,11 +110,8 @@ abstract production applicationSilverConcTerm
 top::SilverConcTerm ::= constr::String args::[SilverConcTerm]
 {
   top.pp = "appTerm(toQName(\"" ++ constr ++ "\", bogusLoc()), " ++
-           foldr(\ t::SilverConcTerm rest::String ->
-                   "consTermList(" ++ t.pp ++ ", " ++ rest ++
-                                 ", location=bogusLoc())",
-                 "nilTermList(location=bogusLoc())", args) ++
-           ", location=bogusLoc())";
+                    toTermList(args) ++
+                 ", location=bogusLoc())";
 }
 
 
@@ -192,19 +189,37 @@ top::SilverConcTerm ::= a::SilverConcTerm b::SilverConcTerm
 abstract production nilSilverConcTerm
 top::SilverConcTerm ::=
 {
-  top.pp = "[]";
+  top.pp = "nilTerm(location=bogusLoc())";
 }
 
 
 abstract production consSilverConcTerm
 top::SilverConcTerm ::= hd::SilverConcTerm tl::SilverConcTerm
 {
-  top.pp = "(" ++ hd.pp ++ ")::(" ++ tl.pp ++ ")";
+  top.pp = "consTerm(" ++ hd.pp ++ ", " ++ tl.pp ++
+                  ", location=bogusLoc())";
 }
 
 
 abstract production tupleSilverConcTerm
 top::SilverConcTerm ::= contents::[SilverConcTerm]
 {
-  top.pp = "(" ++ implode(", ", map((.pp), contents)) ++ ")";
+  top.pp = "tupleTerm(" ++ toTermList(contents) ++
+                   ", location=bogusLoc())";
+}
+
+
+
+
+{-
+  Turn a list of SilverConcTerms into a string representing an
+  SOS-Ext TermList
+-}
+function toTermList
+String ::= args::[SilverConcTerm]
+{
+  return foldr(\ t::SilverConcTerm rest::String ->
+                 "consTermList(" ++ t.pp ++ ", " ++ rest ++
+                               ", location=bogusLoc())",
+               "nilTermList(location=bogusLoc())", args);
 }
