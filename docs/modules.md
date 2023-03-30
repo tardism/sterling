@@ -3,7 +3,8 @@ Extensible languages in SOS-Ext are built by modules.  Each module can
 introduce new concrete and abstract syntax, new semantic relations,
 new rules defining semantic relations, and new functions for running
 the language.  All modules are treated the same, whether they
-conceptually represent a host language or extension.
+conceptually represent a base (host) language or extension, as the
+distinction is blurry in SOS-Ext.
 
 A module is a collection of files in a single directory.  When
 building a module, all files with SOS-Ext file extensions in the

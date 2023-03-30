@@ -203,7 +203,9 @@ top::CmdArgs ::= l::[String]
 
   top.generateModuleName = head(l);
 
-  top.rootLocs = [];
+  {-include current directory always, but last, so it comes after any
+    locations given by the user-}
+  top.rootLocs = ["."];
   top.outputName = [];
 
   top.helpRequest = false;

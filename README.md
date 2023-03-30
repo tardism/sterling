@@ -22,6 +22,9 @@ analyses.  When we combine multiple extensions, these new analyses are
 defined on constructors from other extensions by using the definition
 on the translation.
 
+A more in-depth discussion of language extension can be found [in the
+documentation](docs/extensibleLanguages.md).
+
 
 ## Required Software and Set-up
 SOS-Ext is written in [Silver](github.com/melt-umn/silver) and
@@ -44,3 +47,8 @@ you rebuild using the `build` script.
 
 SOS-Ext has been tested on Linux, but may run on MacOS or the Windows
 Subsystem for Linux (WSL).
+
+
+## Documentation
+Documentation for writing languages in SOS-Ext and running them can be
+found in the [docs directory](docs/).
