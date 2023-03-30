@@ -1,6 +1,7 @@
 grammar sos:testing:abstractSyntax;
 
-imports sos:core:files:abstractSyntax;
+imports sos:core:common:abstractSyntax;
+imports sos:core:semanticDefs:abstractSyntax;
 
 
 abstract production errorExpectedDecls

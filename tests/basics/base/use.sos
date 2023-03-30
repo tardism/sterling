@@ -18,7 +18,7 @@ Translation ctx :
 
 
 Judgment typeOf : ctx term* type
-Fixed Judgment lookup : ctx string type
+Fixed Judgment lkp : ctx string type
 
 
 typeOf G T1 arrowTy(Ty1, Ty2)
@@ -32,20 +32,20 @@ typeOf cons(X, Ty1, G) T Ty2
 typeOf G abs(X, Ty1, T) arrowTy(Ty1, Ty2)
 
 
-lookup G X Ty
+lkp G X Ty
 ------------------ [T-Var]
 typeOf G var(X) Ty
 
 
 
-============================= [L-Here]
-lookup cons(X, Ty, Rest) X Ty
+========================== [L-Here]
+lkp cons(X, Ty, Rest) X Ty
 
 
-lookup Rest X Ty
+lkp Rest X Ty
 X != Y
-============================== [L-Later]
-lookup cons(Y, YTy, Rest) X Ty
+=========================== [L-Later]
+lkp cons(Y, YTy, Rest) X Ty
 
 
 

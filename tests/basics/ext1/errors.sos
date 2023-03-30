@@ -10,8 +10,8 @@ Error Expected "this module" {
 
 /*Adding to imported fixed rules*/
 Error Expected "imported" {
-  ================= [L-Bad]
-  lookup G X baseTy
+  ============== [L-Bad]
+  lkp G X baseTy
 }
 
 

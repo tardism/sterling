@@ -16,3 +16,5 @@ Documentation is available on several topics:
   [running.md](running.md)
 * The definitions included in the standard library:
   [stdLib.md](stdLib.md)
+* Some extensions included as part of SOS-Ext:
+  [extensions.md](extensions.md)

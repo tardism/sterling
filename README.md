@@ -52,3 +52,6 @@ Subsystem for Linux (WSL).
 ## Documentation
 Documentation for writing languages in SOS-Ext and running them can be
 found in the [docs directory](docs/).
+
+Additionally the [examples directory](examples/) contains a number of
+languages to peruse to learn about SOS-Ext.

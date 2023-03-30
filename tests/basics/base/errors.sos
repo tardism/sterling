@@ -44,14 +44,6 @@ Error Expected "multiple declarations" {
   Fixed Judgment doubleJudgment : term type
 }
 
-/*Judgment with var args*/
-Error Expected "contain variable" {
-  Judgment judgmentVarTy : A term*
-}
-Error Expected "contain variable" {
-  Fixed Judgment fixedJudgmentVarTy : A term
-}
-
 
 /*Multiple translation rules*/
 Error Expected "only define one" {

@@ -1,6 +1,7 @@
 grammar sos:testing:concreteSyntax;
 
-imports sos:core:files:concreteSyntax;
+imports sos:core:common:concreteSyntax;
+imports sos:core:semanticDefs:concreteSyntax;
 imports sos:testing:abstractSyntax;
 
 terminal Error_t      'Error'      lexer classes {KEYWORD};

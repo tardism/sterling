@@ -48,4 +48,6 @@ sos-ext --help
 ```
 to list the available flags.  In particular, SOS-Ext does not produce
 an executable by default.  The right combination of flags must be
-passed to tell it to produce some sort of executable.
+passed to tell it to produce some sort of executable.  More can be
+read about this in [the extensions
+documentation](extensions.md#translations).

@@ -177,12 +177,38 @@ concrete productions top::RegexGroup_c
 
 closed nonterminal Term_c layout {Spacing_t, Comment_t}
    with ast<Term>, location;
+closed nonterminal Term2_c layout {Spacing_t, Comment_t}
+   with ast<Term>, location;
+closed nonterminal Term3_c layout {Spacing_t, Comment_t}
+   with ast<Term>, location;
 closed nonterminal TermList_c layout {Spacing_t, Comment_t}
    with ast<TermList>, listAST, location;
 
 synthesized attribute listAST::Term;
 
 concrete productions top::Term_c
+| hd::Term2_c '::' tl::Term_c
+  { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
+| t::Term2_c
+  { top.ast = t.ast; }
+
+concrete productions top::Term2_c
+| t::Term2_c '[' x1::EmptyNewlines i::Integer_t x2::EmptyNewlines ':'
+  x3::EmptyNewlines j::Integer_t x4::EmptyNewlines ']'
+  { top.ast = substringTerm(t.ast, just(toInteger(i.lexeme)),
+                 just(toInteger(j.lexeme)), location=top.location); }
+| t::Term2_c '[' x1::EmptyNewlines i::Integer_t x2::EmptyNewlines ':'
+  x3::EmptyNewlines ']'
+  { top.ast = substringTerm(t.ast, just(toInteger(i.lexeme)),
+                 nothing(), location=top.location); }
+| t::Term2_c '[' x1::EmptyNewlines ':' x2::EmptyNewlines j::Integer_t
+  x3::EmptyNewlines ']'
+  { top.ast = substringTerm(t.ast, nothing(), just(toInteger(j.lexeme)),
+                 location=top.location); }
+| t::Term3_c
+  { top.ast = t.ast; }
+
+concrete productions top::Term3_c
 | constant::LowerId_t
   { top.ast = nameTerm(toQName(constant.lexeme, constant.location),
                        location=top.location); }
@@ -207,18 +233,6 @@ concrete productions top::Term_c
   { top.ast = prodIndex(index.lexeme, location=top.location); }
 | '$to_int' '(' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ')'
   { top.ast = toIntTerm(t.ast, location=top.location); }
-| t::Term_c '[' x1::EmptyNewlines i::Integer_t x2::EmptyNewlines ':'
-  x3::EmptyNewlines j::Integer_t x4::EmptyNewlines ']'
-  { top.ast = substringTerm(t.ast, just(toInteger(i.lexeme)),
-                 just(toInteger(j.lexeme)), location=top.location); }
-| t::Term_c '[' x1::EmptyNewlines i::Integer_t x2::EmptyNewlines ':'
-  x3::EmptyNewlines ']'
-  { top.ast = substringTerm(t.ast, just(toInteger(i.lexeme)),
-                 nothing(), location=top.location); }
-| t::Term_c '[' x1::EmptyNewlines ':' x2::EmptyNewlines j::Integer_t
-  x3::EmptyNewlines ']'
-  { top.ast = substringTerm(t.ast, nothing(), just(toInteger(j.lexeme)),
-                 location=top.location); }
 | i::Integer_t
   { top.ast = intTerm(toInteger(i.lexeme), location=top.location); }
 | s::String_t
@@ -228,8 +242,6 @@ concrete productions top::Term_c
   { top.ast = nilTerm(location=top.location); }
 | '[' tms::TermList_c ']'
   { top.ast = tms.listAST; }
-| hd::Term_c '::' tl::Term_c
-  { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
 | '(|' tms::TermList_c '|)'
   { top.ast = tupleTerm(tms.ast, location=top.location); }
 

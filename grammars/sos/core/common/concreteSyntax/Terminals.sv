@@ -27,7 +27,7 @@ terminal Comma_t      ',';
   this allows us to treat them as if they were ignored and only the
   actual newline were important.
 -}
-terminal Newline_t        /(\/\/[^\n]*)?\r?\n/;
+terminal Newline_t        /(\/\/[^\n]*)?\r?\n/   precedence=10;
 
 
 terminal LowerId_t      /[a-z][a-z0-9A-Z_]*/;

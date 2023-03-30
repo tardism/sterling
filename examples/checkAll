@@ -1,0 +1,7 @@
+#!/bin/bash
+
+sos-ext functions:composed
+sos-ext imp:composed
+sos-ext sec_SOS:composed
+sos-ext sos_imp_proc:composed
+sos-ext stlc:letPair

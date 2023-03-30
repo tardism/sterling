@@ -36,8 +36,8 @@ We also have terms building our built-in types:
   anything.
 
 Finally, we have one last type of term, an ascription, written as
-`{<term> : <type>}`, asserting the term has the given type
-(e.g. `{3 : int}`).  Sometimes it is difficult to understand why a
+`(|<term> : <type>|)`, asserting the term has the given type
+(e.g. `(|3 : int|)`).  Sometimes it is difficult to understand why a
 rule is ill-typed, and asserting the types of variables or larger
 terms in strategic places can improve the type error messages given.
 Other than possibly improving the error messages from typing, an

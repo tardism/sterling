@@ -24,7 +24,7 @@ terminal Colon_t    ':';
 terminal Period_t   '.';
 terminal Slash_t    '/';
 
-terminal DoubleColon_t   '::';
+terminal DoubleColon_t   '::'   association=right;
 
 --Regex
 lexer class REGEX_SYMBOL dominates {Char_t};
