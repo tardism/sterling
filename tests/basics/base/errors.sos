@@ -14,8 +14,29 @@ Error Expected "Found multiple declarations" {
   Translation doubleConstructorTy :
 }
 
+/*We can't check this error because it gives a syntax error instead
+Error Expected "only define new constructors for user-defined types" {
+  int ::= newInt
+}*/
 
-/*PC not extensible:  I can't try this based on the concrete syntax*/
+/*Translation for non-existent type*/
+Error Expected "Translation declared for unknown type" {
+  Translation nonexistentType : [(|string, type|)]
+}
+
+
+/*Bad PC for judgment*/
+Error Expected "Invalid primary component" {
+  Judgment invalidPrimaryComponent : type term
+}
+Error Expected "must be an extensible type" {
+  Error Expected "primary component is not extensible" {
+    Judgment nonExtensiblePC : [(|string, type|)] string* type
+  }
+}
+Error Expected "Two primary components" {
+  Judgment twoPC : type* term*
+}
 
 
 /*Translation type not declared*/
@@ -57,11 +78,6 @@ Error Expected "only define one" {
 }
 
 
-/*Translation declared for unknown type*/
-Error Expected "for unknown" {
-  Translation unknownType :
-}
-
 /*Translation declared with variable args*/
 Error Expected "contain variable" {
   varTransType ::= varTransTypeA
@@ -83,6 +99,11 @@ Error Expected "fixed" {
 
   ======================= [ExtAndFixed]
   extAndFixedJudgment G T
+}
+
+/*Fixed judgment cannot have a PC*/
+Error Expected "has a primary component but cannot" {
+  Fixed Judgment fixedWithPC : type*
 }
 
 
@@ -114,10 +135,14 @@ Error Expected "relation" {
 
 
 /*Not enough args to constructor*/
-Error Expected "arguments" {
+Error Expected "Too few arguments" {
   typeOf G X Ty
   ------------------ [ConstructorShortArgsRule]
   typeOf G app(X) Ty
+}
+Error Expected "Too few arguments" {
+  --------------- [ConstrMissingArgsRule]
+  typeOf G app Ty
 }
 
 /*Not enough args to judgment*/
@@ -128,7 +153,7 @@ Error Expected "arguments" {
 }
 
 /*Too many args to constructor*/
-Error Expected "arguments" {
+Error Expected "Too many arguments" {
   typeOf G X Ty
   ------------------------ [ConstructorExtraArgsRule]
   typeOf G app(X, Y, Z) Ty
@@ -160,4 +185,30 @@ Error Expected "multiple declarations" {
   fixed
 
   Fixed Judgment fixed :
+}
+
+
+/*Rule with undefined judgment*/
+Error Expected "Unknown judgment" {
+  ===================== [UnknownJudgmentRule]
+  unknownJudgment X Y Z
+}
+
+
+/*Invalid conclusion*/
+Error Expected "Cannot have a negation as a conclusion" {
+  ------------- [NegationConclusion]
+  !typeOf G X T
+}
+Error Expected "either a relation or translation as its conclusion" {
+  Error Expected "found binary operation" {
+    --------- [BinOpConc]
+    3 + 4 = 7
+  }
+}
+Error Expected "either a relation or translation as its conclusion" {
+  Error Expected "found binary operation" {
+    ----- [TopBinOpConc]
+    3 < 4
+  }
 }

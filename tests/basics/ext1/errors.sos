@@ -21,24 +21,64 @@ Error Expected "imported" {
   |{type}- baseTy ~~> baseTy
 }*/
 
+/*Translation of a variable*/
+Error Expected "translation for an unspecified constructor" {
+  ----------------- [Trans-VariableConstructor]
+  |{term}- T ~~> T2
+}
+
 
 /*Define a generic rule for imported relation*/
-Error Expected "imported" {
+Error Expected "in rule conclusion must be a constructor" {
   ----------------- [T-Generic]
   typeOf G X baseTy
 }
 
 
 /*Define a rule for an imported constructor as PC*/
-Error Expected "imported" {
+Error Expected "must be a constructor introduced in this module" {
   ------------------------ [T-VarX]
   typeOf G var("X") baseTy
 }
 
 
 
+/*Translation rules:  to few or too many*/
+Error Expected "Must define translation rule" {
+  Judgment noTransRule : type* string
+}
+Error Expected "Can only define one translation rule" {
+  Judgment twoTransRule : type* string
+
+  ------------------ [TwoTransRule-1]*
+  twoTransRule T "1"
+
+  ------------------ [TwoTransRule-2]*
+  twoTransRule T "2"
+}
+
+/*Translation rule with non-variable PC*/
+Error Expected "in translation rule must be variable" {
+  Judgment transRuleSolidPC : type*
+
+  ----------------------- [TransRuleSolidPC]*
+  transRuleSolidPC baseTy
+}
+
+/*Translation rule for translation judgment*/
+Error Expected "translation for an unspecified constructor" {
+  Error Expected "extensible relation judgment as its conclusion" {
+    Error Expected "translation rule for translation judgment" {
+      ----------------- [Trans-Trans]*
+      |{term}- T ~~> T2
+    }
+  }
+}
+
+
+
 /*Add same short type name; error when using short name*/
-Error Expected "Indeterminate" {
+Error Expected "Indeterminate type" {
   shortTy ::= shortTyConstructor2
   Translation shortTy : ctx
 
@@ -46,7 +86,7 @@ Error Expected "Indeterminate" {
 }
 
 /*Add same short judgment name; error when using short name*/
-Error Expected "Indeterminate" {
+Error Expected "Indeterminate judgment" {
   Fixed Judgment judgment :
 
   ======== [Judgment]
@@ -54,7 +94,7 @@ Error Expected "Indeterminate" {
 }
 
 /*Add same short constructor name; error when using short name*/
-Error Expected "Indeterminate" {
+Error Expected "Indeterminate constructor" {
   doubleConstructorTyExt ::= shortTyConstructor
   Translation doubleConstructorTyExt :
 
@@ -62,6 +102,12 @@ Error Expected "Indeterminate" {
 
   -------------------------------------------- [DCTE-Rule]
   doubleConstructorJudgment shortTyConstructor
+}
+
+
+/*New constructor but no translation*/
+Error Expected "Missing rule for translating" {
+  term ::= ... | noTranslationConstructor
 }
 
 
