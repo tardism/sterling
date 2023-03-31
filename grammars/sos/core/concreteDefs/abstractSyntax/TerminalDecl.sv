@@ -143,7 +143,7 @@ top::RegexGroup ::= c1::String c2::String
   top.errors <-
       if unescapeString(c1) < unescapeString(c2)
       then []
-      else [errorMessage("Character range lower bonud is higher " ++
+      else [errorMessage("Character range lower bound is higher " ++
                          "than upper bound", location=top.location)];
 }
 

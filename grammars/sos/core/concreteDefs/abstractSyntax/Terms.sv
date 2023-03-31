@@ -65,7 +65,7 @@ top::Term ::= name::QName args::TermList
       | nothing() -> []
       | just([]) -> []
       | just(l) ->
-        [errorMessage("Too many arguments to " ++
+        [errorMessage("Wrong number of arguments to " ++
             name.fullConstrName.pp ++ ":  Expected " ++
             toString(name.constrTypeArgs.len) ++ " but found " ++
             toString(name.constrTypeArgs.len - length(l)),
@@ -305,7 +305,7 @@ top::TermList ::= t::Term
       case top.expectedTypes of
       | nothing() -> []
       | just([]) ->
-        [errorMessage("Too few arguments to constructor " ++
+        [errorMessage("Too many arguments to constructor " ++
             top.lastConstructor.pp, location=top.location)]
       | just(h::tl) when h == t.type -> []
       | just(h::tl) ->

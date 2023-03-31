@@ -1,0 +1,103 @@
+Module basics:base
+
+ignore   /[\ \t\r\n]+/
+
+arrow_t   /\->/
+base_t    /base/
+
+lparen_t   /\(/
+rparen_t   /\)/
+
+lambda_t   /\\/
+colon_t    /:/
+dot_t      /\./
+name_t     /[a-zA-Z0-9_]+/
+
+
+term_c<term> ::=
+   | lambda_t X::name_t colon_t Ty::type_c dot_t Body::term_c ~~>
+     abs(X, Ty, Body)
+   | T::term2_c ~~> T
+term2_c<term> ::= X::name_t ~~> var(X)
+                | lparen_t T::term_c rparen_t ~~> T
+                | T1::term2_c T2::term_c ~~> app(T1, T2)
+
+type_c<type> ::= Ty::type2_c ~~> Ty
+               | Ty1::type_c arrow_t Ty2::type2_c ~~>
+                 arrowTy(Ty1, Ty2)
+type2_c<type> ::= base_t ~~> baseTy
+                | lparen_t Ty::type_c rparen_t ~~> Ty
+
+
+
+/********************************************************************
+ *                            TERMINALS                             *
+ ********************************************************************/
+/*Bad character range*/
+Error Expected "Character range lower bound is higher" {
+  rangeBounds1_t   /[z-a]/
+}
+Error Expected "Character range lower bound is higher" {
+  rangeBounds2_t   /[a-Z]+/
+}
+
+
+
+/********************************************************************
+ *                         CONCRETE SYNTAX                          *
+ ********************************************************************/
+/*Double declaration*/
+Error Expected "multiple declarations" {
+  doubleDecl   /dd/
+}
+Error Expected "multiple declarations" {
+  doubleDecl<int> ::= ~~> 3
+}
+
+/*Not a concrete nonterminal*/
+Error Expected "Unknown terminal or concrete nonterminal" {
+  term ::= ...
+         | base_t ~~> var("bad construction")
+}
+Error Expected "is not a concrete nonterminal" {
+  colon_t ::= ...
+            | base_t ~~> var("bad construction")
+}
+
+
+/*Two uses of same name*/
+Error Expected "Multiple definitions of variable" {
+  doubleVariable_c<int> ::= T::term_c dot_t T::type_c ~~> 0
+}
+
+
+
+/********************************************************************
+ *                              TERMS                               *
+ ********************************************************************/
+/*Not enough arguments*/
+Error Expected "Too few arguments" {
+  term_c ::= ... | base_t ~~> var
+}
+Error Expected "Wrong number of arguments" {
+  term_c ::= ... | dot_t ~~> app(var("."))
+}
+
+/*Too many arguments*/
+Error Expected "Too many arguments" {
+   term_c ::= ... | arrow_t ~~> app(var("a"), var("b"), var("c"))
+}
+
+
+/*$to_int needs string (two errors)*/
+Error Expected "Cannot unify" {
+  Error Expected "$to_int argument must be of type string" {
+    toInt_c<int> ::= base_t ~~> $to_int(3)
+  }
+}
+
+
+/*Nonexistent production member*/
+Error Expected "does not exist" {
+  noSuchVar_c<int> ::= colon_t ~~> $to_int(X)
+}
