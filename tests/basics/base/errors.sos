@@ -1,5 +1,8 @@
 Module basics:base
 
+/********************************************************************
+ *                              SYNTAX                              *
+ ********************************************************************/
 /*Type declared twice*/
 Error Expected "Found multiple declarations" {
   doubleTy ::= doubleTyA
@@ -14,30 +17,23 @@ Error Expected "Found multiple declarations" {
   Translation doubleConstructorTy :
 }
 
+/*Constructor with var args*/
+Error Expected "cannot contain variable types" {
+  constructorVarTy ::= constructorVarTy(int, A)
+  Translation constructorVarTy :
+}
+
+
 /*We can't check this error because it gives a syntax error instead
 Error Expected "only define new constructors for user-defined types" {
   int ::= newInt
 }*/
 
+
 /*Translation for non-existent type*/
 Error Expected "Translation declared for unknown type" {
   Translation nonexistentType : [(|string, type|)]
 }
-
-
-/*Bad PC for judgment*/
-Error Expected "Invalid primary component" {
-  Judgment invalidPrimaryComponent : type term
-}
-Error Expected "must be an extensible type" {
-  Error Expected "primary component is not extensible" {
-    Judgment nonExtensiblePC : [(|string, type|)] string* type
-  }
-}
-Error Expected "Two primary components" {
-  Judgment twoPC : type* term*
-}
-
 
 /*Translation type not declared*/
 Error Expected "Must define translation relation type" {
@@ -51,11 +47,33 @@ Error Expected "multiple translation relation type" {
   Translation twoTransRelTy : term
 }
 
+/*Translation declared with variable args*/
+Error Expected "contain variable" {
+  varTransType ::= varTransTypeA
+  Translation varTransType : A int string
+}
 
-/*Constructor with var args*/
-Error Expected "cannot contain variable types" {
-  constructorVarTy ::= constructorVarTy(int, A)
-  Translation constructorVarTy :
+
+
+/********************************************************************
+ *                      JUDGMENT DECLARATIONS                       *
+ ********************************************************************/
+/*Bad PC for judgment*/
+Error Expected "Invalid primary component" {
+  Judgment invalidPrimaryComponent : type term
+}
+Error Expected "must be an extensible type" {
+  Error Expected "primary component is not extensible" {
+    Judgment nonExtensiblePC : [(|string, type|)] string* type
+  }
+}
+Error Expected "Two primary components" {
+  Judgment twoPC : type* term*
+}
+
+/*Fixed judgment cannot have a PC*/
+Error Expected "has a primary component but cannot" {
+  Fixed Judgment fixedWithPC : type*
 }
 
 
@@ -66,25 +84,10 @@ Error Expected "multiple declarations" {
 }
 
 
-/*Multiple translation rules*/
-Error Expected "only define one" {
-  Judgment multipleTranslationRules : ctx term*
 
-  ------------------ [Trans-MultipleTranslationRules1]*
-  multipleTranslationRules G T
-
-  ------------------ [Trans-MultipleTranslationRules2]*
-  multipleTranslationRules G T
-}
-
-
-/*Translation declared with variable args*/
-Error Expected "contain variable" {
-  varTransType ::= varTransTypeA
-  Translation varTransType : A int string
-}
-
-
+/********************************************************************
+ *                              RULES                               *
+ ********************************************************************/
 /*Extensible rule for fixed judgment*/
 Error Expected "extensible" {
   Fixed Judgment fixedAndExtJudgment : ctx term
@@ -101,11 +104,17 @@ Error Expected "fixed" {
   extAndFixedJudgment G T
 }
 
-/*Fixed judgment cannot have a PC*/
-Error Expected "has a primary component but cannot" {
-  Fixed Judgment fixedWithPC : type*
-}
 
+/*Multiple translation rules*/
+Error Expected "only define one" {
+  Judgment multipleTranslationRules : ctx term*
+
+  ------------------ [Trans-MultipleTranslationRules1]*
+  multipleTranslationRules G T
+
+  ------------------ [Trans-MultipleTranslationRules2]*
+  multipleTranslationRules G T
+}
 
 /*Translation rule for translation*/
 Error Expected "relation" { /*It causes two errors*/
@@ -115,55 +124,10 @@ Error Expected "relation" { /*It causes two errors*/
    }
 }
 
-
 /*Translation with unspecified form*/
 Error Expected "constructor" {
   ----------------- [Translate-Var]
   |{type}- A ~~> A
-}
-
-
-/*Invalid conclusion forms*/
-Error Expected "relation" {
-  ----- [GreaterRule]
-  X > Y
-}
-Error Expected "relation" {
-  --------- [PlusRule]
-  X + Y = Z
-}
-
-
-/*Not enough args to constructor*/
-Error Expected "Too few arguments" {
-  typeOf G X Ty
-  ------------------ [ConstructorShortArgsRule]
-  typeOf G app(X) Ty
-}
-Error Expected "Too few arguments" {
-  --------------- [ConstrMissingArgsRule]
-  typeOf G app Ty
-}
-
-/*Not enough args to judgment*/
-Error Expected "arguments" {
-  typeOf G X
-  --------------------- [JudgmentShortArgsRule]
-  typeOf G app(X, Y) Ty
-}
-
-/*Too many args to constructor*/
-Error Expected "Too many arguments" {
-  typeOf G X Ty
-  ------------------------ [ConstructorExtraArgsRule]
-  typeOf G app(X, Y, Z) Ty
-}
-
-/*Too many args to judgment*/
-Error Expected "arguments" {
-  typeOf G X Ty V
-  --------------------- [JudgmentExtraArgsRule]
-  typeOf G app(X, Y) Ty
 }
 
 
@@ -188,27 +152,118 @@ Error Expected "multiple declarations" {
 }
 
 
-/*Rule with undefined judgment*/
+/*Invalid conclusion forms*/
+Error Expected "relation" {
+  ----- [GreaterRule]
+  X > Y
+}
+Error Expected "relation" {
+  --------- [PlusRule]
+  X + Y = Z
+}
+Error Expected "Cannot have a negation as a conclusion" {
+  ------------- [NegationConclusion]
+  !typeOf G X T
+}
+
+
+
+/********************************************************************
+ *                            JUDGMENTS                             *
+ ********************************************************************/
+/*Not enough args to judgment*/
+Error Expected "arguments" {
+  typeOf G X
+  --------------------- [JudgmentShortArgsRule]
+  typeOf G app(X, Y) Ty
+}
+
+/*Too many args to judgment*/
+Error Expected "arguments" {
+  typeOf G X Ty V
+  --------------------- [JudgmentExtraArgsRule]
+  typeOf G app(X, Y) Ty
+}
+
+
+
+/********************************************************************
+ *                              TERMS                               *
+ ********************************************************************/
+/*Not enough args to constructor*/
+Error Expected "Too few arguments" {
+  typeOf G X Ty
+  ------------------ [ConstructorShortArgsRule]
+  typeOf G app(X) Ty
+}
+Error Expected "Too few arguments" {
+  --------------- [ConstrMissingArgsRule]
+  typeOf G app Ty
+}
+
+/*Too many args to constructor*/
+Error Expected "Too many arguments" {
+  typeOf G X Ty
+  ------------------------ [ConstructorExtraArgsRule]
+  typeOf G app(X, Y, Z) Ty
+}
+
+
+
+/********************************************************************
+ *                         NAME RESOLUTION                          *
+ ********************************************************************/
+Error Expected "Unknown type" {
+  Fixed Judgment unknownTypeArg : unknownTy [int]
+}
+
+Error Expected "Unknown constructor" {
+  Fixed Judgment unknownConstructorRel : term
+
+  ============================================ [UnknownConstructor]
+  unknownConstructorRel unknownTermConstructor
+}
+
 Error Expected "Unknown judgment" {
   ===================== [UnknownJudgmentRule]
   unknownJudgment X Y Z
 }
 
 
-/*Invalid conclusion*/
-Error Expected "Cannot have a negation as a conclusion" {
-  ------------- [NegationConclusion]
-  !typeOf G X T
+
+/********************************************************************
+ *                        TYPE UNIFICATION                          *
+ ********************************************************************/
+Fixed Judgment typeErrors : A
+Error Expected "Cannot unify" {
+  3 = "3"
+  ============ [TE-Rule1]
+  typeErrors A
 }
-Error Expected "either a relation or translation as its conclusion" {
-  Error Expected "found binary operation" {
-    --------- [BinOpConc]
-    3 + 4 = 7
-  }
+Error Expected "Cannot unify" {
+  [3, 4] = (|3, 4|)
+  ================= [TE-Rule2]
+  typeErrors A
 }
-Error Expected "either a relation or translation as its conclusion" {
-  Error Expected "found binary operation" {
-    ----- [TopBinOpConc]
-    3 < 4
-  }
+Error Expected "Cannot unify" {
+  baseTy = var(X)
+  =============== [TE-Rule3]
+  typeErrors A
+}
+Error Expected "Cannot unify" {
+  [3, 4] ++ "list" = X
+  ==================== [TE-Rule4]
+  typeErrors A
+}
+Error Expected "Cannot unify" {
+  [] ++ [1] = X
+  "" ++ "1" = X
+  ============= [TE-Rule5]
+  typeErrors A
+}
+Error Expected "Cannot unify" {
+  (|W : string|) = X
+  X - Y = Z
+  ================== [TE-Rule6]
+  typeErrors A
 }

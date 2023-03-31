@@ -1,20 +1,24 @@
 Module basics:ext1
 
-
-/*Translation rule for imported relation*/
-Error Expected "this module" {
-  ------------- [T-Trans]*
-  typeOf G A Ty
+/********************************************************************
+ *                              SYNTAX                              *
+ ********************************************************************/
+/*New constructor but no translation*/
+Error Expected "Missing rule for translating" {
+  term ::= ... | noTranslationConstructor
 }
 
 
-/*Adding to imported fixed rules*/
-Error Expected "imported" {
-  ============== [L-Bad]
-  lkp G X baseTy
+/*Redefine translation relation*/
+Error Expected "unknown" {
+  Translation ctx :
 }
 
 
+
+/********************************************************************
+ *                              RULES                               *
+ ********************************************************************/
 /*Define translation of imported constructor*/
 /*Error Expected "z" {
   -------------------------- [Trans-BaseTy]
@@ -27,35 +31,6 @@ Error Expected "translation for an unspecified constructor" {
   |{term}- T ~~> T2
 }
 
-
-/*Define a generic rule for imported relation*/
-Error Expected "in rule conclusion must be a constructor" {
-  ----------------- [T-Generic]
-  typeOf G X baseTy
-}
-
-
-/*Define a rule for an imported constructor as PC*/
-Error Expected "must be a constructor introduced in this module" {
-  ------------------------ [T-VarX]
-  typeOf G var("X") baseTy
-}
-
-
-
-/*Translation rules:  to few or too many*/
-Error Expected "Must define translation rule" {
-  Judgment noTransRule : type* string
-}
-Error Expected "Can only define one translation rule" {
-  Judgment twoTransRule : type* string
-
-  ------------------ [TwoTransRule-1]*
-  twoTransRule T "1"
-
-  ------------------ [TwoTransRule-2]*
-  twoTransRule T "2"
-}
 
 /*Translation rule with non-variable PC*/
 Error Expected "in translation rule must be variable" {
@@ -75,8 +50,50 @@ Error Expected "translation for an unspecified constructor" {
   }
 }
 
+/*Translation rules:  to few or too many*/
+Error Expected "Must define translation rule" {
+  Judgment noTransRule : type* string
+}
+Error Expected "Can only define one translation rule" {
+  Judgment twoTransRule : type* string
+
+  ------------------ [TwoTransRule-1]*
+  twoTransRule T "1"
+
+  ------------------ [TwoTransRule-2]*
+  twoTransRule T "2"
+}
 
 
+/*Define a generic rule for imported relation*/
+Error Expected "in rule conclusion must be a constructor" {
+  ----------------- [T-Generic]
+  typeOf G X baseTy
+}
+
+/*Define a rule for an imported constructor as PC*/
+Error Expected "must be a constructor introduced in this module" {
+  ------------------------ [T-VarX]
+  typeOf G var("X") baseTy
+}
+
+/*Translation rule for imported relation*/
+Error Expected "this module" {
+  ------------- [T-Trans]*
+  typeOf G A Ty
+}
+
+/*Adding to imported fixed rules*/
+Error Expected "imported" {
+  ============== [L-Bad]
+  lkp G X baseTy
+}
+
+
+
+/********************************************************************
+ *                         NAME RESOLUTION                          *
+ ********************************************************************/
 /*Add same short type name; error when using short name*/
 Error Expected "Indeterminate type" {
   shortTy ::= shortTyConstructor2
@@ -102,16 +119,4 @@ Error Expected "Indeterminate constructor" {
 
   -------------------------------------------- [DCTE-Rule]
   doubleConstructorJudgment shortTyConstructor
-}
-
-
-/*New constructor but no translation*/
-Error Expected "Missing rule for translating" {
-  term ::= ... | noTranslationConstructor
-}
-
-
-/*Redefine translation relation*/
-Error Expected "unknown" {
-  Translation ctx :
 }

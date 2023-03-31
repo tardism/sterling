@@ -72,3 +72,8 @@ We currently have one runnable concrete translation:
 
 
 ## Testing
+The testing extension is used for testing SOS-Ext itself behaves in
+the expected way, ensuring the expected error messages are given when
+incorrect code is written.  Because the constructs in this extension
+hide error messages as part of testing, it should not be used in
+composed versions of SOS-Ext other than one used to run the tests.
