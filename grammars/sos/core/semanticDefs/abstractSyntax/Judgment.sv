@@ -225,6 +225,15 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
       else if t.isVariable
       then [errorMessage("Cannot write a rule for translation for " ++
                "an unspecified constructor", location=t.location)]
+      else if ty.tyFound &&
+              sameModule(top.moduleName, ty.fullTy.name)
+      then [errorMessage("Cannot write a rule for translation for " ++
+               "a constructor from the module declaring the type " ++
+               "it builds", location=top.location)]
+      else if t.headIsConstructor && !t.headConstructorCurrentModule
+      then [errorMessage("Cannot write a rule for translation for " ++
+               "a constructor from another module",
+               location=top.location)]
       else [];
 }
 

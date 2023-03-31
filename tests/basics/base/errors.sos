@@ -116,18 +116,16 @@ Error Expected "only define one" {
   multipleTranslationRules G T
 }
 
-/*Translation rule for translation*/
-Error Expected "relation" { /*It causes two errors*/
-  Error Expected "translation rule" {
-    --------------------- [Translate-Translation]*
-    |{type}- baseTy ~~> A
-   }
-}
-
 /*Translation with unspecified form*/
 Error Expected "constructor" {
   ----------------- [Translate-Var]
   |{type}- A ~~> A
+}
+
+/*Translation of base construct*/
+Error Expected "for a constructor from the module declaring" {
+  -------------------------- [TranslateBaseConstruct]
+  |{type}- baseTy ~~> baseTy
 }
 
 

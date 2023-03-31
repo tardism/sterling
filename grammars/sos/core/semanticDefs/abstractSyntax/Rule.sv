@@ -74,13 +74,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                     "as its conclusion",
                     location=conclusion.location)]
            else [] --trans judgment is OK as conclusion
-           else if !conclusion.headRel.isError &&
-                   conclusion.headRel.isExtensible
-                then []
-                else [errorMessage("Extensible rule " ++ name ++
-                         " must have an extensible relation as " ++
-                         "its conclusion",
-                         location=conclusion.location)];
+      else if !conclusion.headRel.isError &&
+              conclusion.headRel.isExtensible
+           then []
+           else [errorMessage("Extensible rule " ++ name ++
+                    " must have an extensible relation as " ++
+                    "its conclusion",
+                    location=conclusion.location)];
 
   --Check there is only one declaration of this rule
   local possibleRules::[RuleEnvItem] =

@@ -20,10 +20,10 @@ Error Expected "unknown" {
  *                              RULES                               *
  ********************************************************************/
 /*Define translation of imported constructor*/
-/*Error Expected "z" {
+Error Expected "translation for a constructor from another module" {
   -------------------------- [Trans-BaseTy]
   |{type}- baseTy ~~> baseTy
-}*/
+}
 
 /*Translation of a variable*/
 Error Expected "translation for an unspecified constructor" {

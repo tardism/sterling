@@ -18,6 +18,7 @@ synthesized attribute containsVars::Boolean;
 
 nonterminal Type with
    pp,
+   name,
    tyEnv, errors, isError,
    type, --full type (e.g. ty becomes mod:ule:ty)
    subst, substituted<Type>,
@@ -54,6 +55,8 @@ top::Type ::= name::QName
 
   top.pp = name.pp;
 
+  top.name = name;
+
   name.tyEnv = top.tyEnv;
   top.errors <- name.tyErrors;
   top.isError = !name.tyFound;
@@ -78,6 +81,7 @@ abstract production varType
 top::Type ::= name::String
 {
   top.pp = name;
+  top.name = error("Should not access varType.name");
 
   top.substituted =
       case lookupSubst(name, top.subst) of
@@ -118,6 +122,7 @@ abstract production intType
 top::Type ::=
 {
   top.pp = "int";
+  top.name = error("Should not access intType.name");
 
   top.substituted = intType(location=top.location);
 
@@ -152,6 +157,7 @@ abstract production stringType
 top::Type ::=
 {
   top.pp = "string";
+  top.name = error("Should not access stringType.name");
 
   top.substituted = stringType(location=top.location);
 
@@ -186,6 +192,7 @@ abstract production listType
 top::Type ::= ty::Type
 {
   top.pp = "[" ++ ty.pp ++ "]";
+  top.name = error("Should not access listType.name");
 
   top.substituted = listType(ty.substituted, location=top.location);
 
@@ -237,6 +244,7 @@ abstract production tupleType
 top::Type ::= tys::TypeList
 {
   top.pp = "(|" ++ tys.pp_comma ++ "|)";
+  top.name = error("Should not access tupleType.name");
 
   tys.subst = top.subst;
   top.substituted = tupleType(tys.substituted, location=top.location);
@@ -286,6 +294,7 @@ abstract production errorType
 top::Type ::=
 {
   top.pp = "<error>";
+  top.name = error("Should not access errorType.name");
 
   top.substituted = errorType(location=top.location);
 
