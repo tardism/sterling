@@ -1,4 +1,4 @@
-grammar sos:testing:concreteSyntax;
+grammar sos:testing:semConcreteSyntax;
 
 imports sos:core:common:concreteSyntax;
 imports sos:core:semanticDefs:concreteSyntax;
@@ -21,4 +21,3 @@ concrete productions top::TopDecl_c
   { top.ast = warningExpectedDecls(
                  substring(1, length(s.lexeme) - 1, s.lexeme),
                  decls.ast, location=top.location); }
-
