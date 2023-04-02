@@ -1,0 +1,20 @@
+Module basics:ext1
+
+new_t   /new/
+dot_t   /./
+
+/*Error because we have term_c from both here and imported*/
+Error Expected "Indeterminate terminal or concrete nonterminal" {
+  term_c<term> ::= new_t T::term_c ~~> T
+}
+
+/*Error because we have doc_t from both here and imported*/
+Error Expected "Indeterminate terminal or concrete nonterminal" {
+  type_c ::= ... | dot_t ~~> baseTy
+}
+
+
+/*Unknown terminal*/
+Error Expected "Unknown terminal or concrete nonterminal" {
+  type_c ::= ... | unknown_t ~~> baseTy
+}

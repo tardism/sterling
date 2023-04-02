@@ -101,3 +101,12 @@ Error Expected "Cannot unify" {
 Error Expected "does not exist" {
   noSuchVar_c<int> ::= colon_t ~~> $to_int(X)
 }
+
+
+/*Substring types*/
+substring<string> ::= ~~> "set-up"
+Error Expected "Cannot unify" {
+  Error Expected "substring of a string" {
+    substring ::= ... | dot_t ~~> 1[1:2]
+  }
+}
