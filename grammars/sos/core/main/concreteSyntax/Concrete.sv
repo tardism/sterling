@@ -195,6 +195,8 @@ concrete productions top::FactorExpr_c
   { top.ast = funCall(toQName(name.lexeme, name.location),
                       nilArgs(location=top.location),
                       location=top.location); }
+| '(|' a::Args_c '|)'
+  { top.ast = tupleExpr(a.ast, location=top.location); }
 | s::String_t
   { top.ast = stringExpr(substring(1, length(s.lexeme) - 1, s.lexeme),
                          location=top.location); }

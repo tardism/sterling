@@ -1,0 +1,67 @@
+Module basics:base
+
+Error Expected "Found multiple declarations for function" {
+  Function doubleDecl : <X : string> -> int {
+    3
+  }
+  Function doubleDecl : <Y : int> -> string {
+    "3"
+  }
+}
+Error Expected "Indeterminate function" {
+  Function doubleDeclCall : <X : int> -> string {
+    doubleDecl(X)
+  }
+}
+
+Error Expected "Unknown function" {
+  Function callUnknown : <X : int> -> int {
+    unknownFunction(X, 3)
+  }
+}
+
+Error Expected "Expected function body to have type" {
+  Function badReturnType : <X : string> -> int {
+    X
+  }
+}
+
+Error Expected "Main function must take one argument of type [string]" {
+  Error Expected "Main function must return int" {
+    Function main : <X : string> -> string {
+      X
+    }
+  }
+}
+
+Error Expected "Duplicate parameters" {
+  Function doubleParams : <A : int> <B : string> <A : int> -> int {
+    A * 2
+  }
+}
+
+/*Too many names for let*/
+Error Expected "Cannot unify" {
+  Error Expected "names but found" {
+    Function tooManyLetNames : <X : int> -> int {
+      Let A, B, C := (|1, 2|) In A
+    }
+  }
+}
+
+/*Too few names for let*/
+Error Expected "Cannot unify []" {
+  Error Expected "Expected 1 names but found 2" {
+    Function tooFewLetNames : <X : int> -> int {
+      Let A, B := (|1, 2, 3|) In B
+    }
+  }
+}
+
+
+/*Sequence not unit first*/
+Error Expected "Cannot unify unit" {
+  Function sequenceUnitFirst : <X : int> -> int {
+    "words" Before X
+  }
+}

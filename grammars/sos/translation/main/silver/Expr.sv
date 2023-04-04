@@ -415,6 +415,23 @@ top::Expr ::= s::String
 }
 
 
+aspect production tupleExpr
+top::Expr ::= contents::Args
+{
+  top.silverExpr =
+      foldr(\ p::(String, Type, String) rest::String ->
+              buildLet(p.1, "IOVal<" ++ p.2.silverType ++ ">", p.3,
+                       rest),
+            tuple, contents.silverArgs);
+  local tuple::String =
+      buildIOVal(contents.resultingIO,
+         "(" ++ implode(", ", map(\ p::(String, Type, String) ->
+                                    p.1 ++ ".iovalue",
+                                  contents.silverArgs)) ++ ")");
+  contents.precedingIO = top.precedingIO;
+}
+
+
 aspect production funCall
 top::Expr ::= fun::QName args::Args
 {

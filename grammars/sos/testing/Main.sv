@@ -26,6 +26,7 @@ parser testingParseConc::ConcreteFile_c {
 
 parser testingParseMain::MainFile_c {
   sos:core:common:concreteSyntax;
+  sos:core:semanticDefs:concreteSyntax;
   sos:core:main:concreteSyntax;
   sos:testing:mainConcreteSyntax;
 }

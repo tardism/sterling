@@ -228,6 +228,13 @@ top::Expr ::= s::String
 }
 
 
+aspect production tupleExpr
+top::Expr ::= contents::Args
+{
+  top.parsedTypes = contents.parsedTypes;
+}
+
+
 aspect production funCall
 top::Expr ::= fun::QName args::Args
 {

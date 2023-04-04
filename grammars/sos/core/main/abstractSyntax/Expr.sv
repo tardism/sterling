@@ -56,7 +56,7 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
         if tys.len == length(names)
         then []
         else [errorMessage("Expected " ++ toString(tys.len) ++
-                 " name but found " ++ toString(length(names)),
+                 " names but found " ++ toString(length(names)),
                  location=top.location)]
       | _ ->
         if length(names) > 1
@@ -659,6 +659,25 @@ top::Expr ::= s::String
 }
 
 
+abstract production tupleExpr
+top::Expr ::= contents::Args
+{
+  top.pp = "(|" ++ contents.pp ++ "|)";
+
+  contents.downVarTypes = top.downVarTypes;
+  contents.lastFun = toQName("<tuple>", top.location);
+  contents.expectedTypes =
+      just(toTypeList(
+              map(\ x::Integer ->
+                    varType("X" ++ toString(genInt()),
+                            location=top.location),
+                  repeat(0, contents.len)), top.location));
+  contents.downSubst = top.downSubst;
+  top.upSubst = contents.upSubst;
+  top.type = tupleType(contents.types, location=top.location);
+}
+
+
 abstract production funCall
 top::Expr ::= fun::QName args::Args
 {
@@ -733,6 +752,7 @@ top::Expr ::= l::Expr i::Expr
 
 nonterminal Args with
    pp,
+   len,
    types, upSubst, downSubst, finalSubst,
    downVarTypes,
    tyEnv, constructorEnv, judgmentEnv, concreteEnv, translationEnv,
@@ -748,6 +768,8 @@ abstract production nilArgs
 top::Args ::=
 {
   top.pp = "";
+
+  top.len = 0;
 
   top.upSubst = top.downSubst;
   top.types = nilTypeList(location=top.location);
@@ -767,6 +789,8 @@ abstract production consArgs
 top::Args ::= e::Expr rest::Args
 {
   top.pp = e.pp ++ if rest.pp == "" then "" else ", " ++ rest.pp;
+
+  top.len = rest.len + 1;
 
   e.downVarTypes = top.downVarTypes;
   rest.downVarTypes = top.downVarTypes;
