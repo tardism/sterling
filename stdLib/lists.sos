@@ -25,6 +25,9 @@ Fixed Judgment subset : [A] [A]
 /*Domain of a list (first element of each pair)*/
 Fixed Judgment domain : [(|A, B|)] [A]
 
+/*Values of a pair list (second element of each pair)*/
+Fixed Judgment values : [(|A, B|)] [B]
+
 
 
 /*
@@ -97,3 +100,14 @@ domain [] []
 domain Rest DRest
 ============================== [Dmn-Cons]
 domain (|A, B|)::Rest A::DRest
+
+
+
+
+============ [Vals-Nil]
+values [] []
+
+
+values Rest VRest
+============================== [Vals-Cons]
+values (|A, B|)::Rest B::VRest
