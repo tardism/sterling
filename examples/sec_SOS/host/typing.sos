@@ -1,8 +1,7 @@
 Module sec_SOS:host
 
 Judgment typeOf : [(string, ty)] e* ty
-Judgment typeRecFields : {[(string, ty)] recFieldExprs*
-                          [(string, ty)]}
+Judgment typeRecFields : [(string, ty)] recFieldExprs* [(string, ty)]
 Judgment typeOK : [(string, ty)] c* [(string, ty)]
 
 

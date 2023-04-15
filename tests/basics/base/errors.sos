@@ -32,7 +32,7 @@ Error Expected "only define new constructors for user-defined types" {
 
 /*Translation for non-existent type*/
 Error Expected "Translation declared for unknown type" {
-  Translation nonexistentType : [(|string, type|)]
+  Translation nonexistentType : [(string, type)]
 }
 
 /*Translation type not declared*/
@@ -64,7 +64,7 @@ Error Expected "Invalid primary component" {
 }
 Error Expected "must be an extensible type" {
   Error Expected "primary component is not extensible" {
-    Judgment nonExtensiblePC : [(|string, type|)] string* type
+    Judgment nonExtensiblePC : [(string, type)] string* type
   }
 }
 Error Expected "Two primary components" {
@@ -239,8 +239,8 @@ Error Expected "Cannot unify" {
   typeErrors A
 }
 Error Expected "Cannot unify" {
-  [3, 4] = (|3, 4|)
-  ================= [TE-Rule2]
+  [3, 4] = (3, 4)
+  =============== [TE-Rule2]
   typeErrors A
 }
 Error Expected "Cannot unify" {
@@ -260,8 +260,8 @@ Error Expected "Cannot unify" {
   typeErrors A
 }
 Error Expected "Cannot unify" {
-  (|W : string|) = X
+  (W : string) = X
   X - Y = Z
-  ================== [TE-Rule6]
+  ================ [TE-Rule6]
   typeErrors A
 }

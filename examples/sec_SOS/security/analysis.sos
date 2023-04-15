@@ -19,8 +19,7 @@ join S private private
 
 Judgment level : [(string, seclevel)] e* seclevel
 Judgment rf_level : [(string, seclevel)] recFieldExprs* seclevel
-Judgment secure : {seclevel [(string, seclevel)] c*
-                   [(string, seclevel)]}
+Judgment secure : seclevel [(string, seclevel)] c* [(string, seclevel)]
 
 
 /*Expression Security Level*/

@@ -1,8 +1,7 @@
 Module sec_SOS:host
 
 Judgment eval_e : [(string, value)] e* value
-Judgment eval_rf : {[(string, value)] recFieldExprs*
-                    [(string, value)]}
+Judgment eval_rf : [(string, value)] recFieldExprs* [(string, value)]
 Judgment eval_c : [(string, value)] c* [(string, value)]
 
 

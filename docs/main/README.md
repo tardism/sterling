@@ -71,7 +71,7 @@ We have some other simple expressions:
 * Let bindings, written `Let <var> := <bound> In <body>`, bind the
   result of `<bound>` to the variable `<var>` for use in `<body>`.
   This can bind multiple variables if the bound expression is a tuple,
-  such as `Let A, B, C := (|1, 2, 3|) In A + B + C`, which will give a
+  such as `Let A, B, C := (1, 2, 3) In A + B + C`, which will give a
   result of 6.  All bound variables must be capitalized.
 * Variables, which may refer to arguments to the function or variables
   bound by a let binding
@@ -98,7 +98,7 @@ Parse <nonterminal> from <string>
 ```
 where `<nonterminal>` is a concrete nonterminal name and `<string>` is
 an expression of type `string`.  A parsing expression produces a
-three-tuple of type `(|bool, <abstract syntax>, string|)`.  The
+three-tuple of type `(bool, <abstract syntax>, string)`.  The
 members of the tuple are as follows:
 * `bool`:  Whether the parse was successful (`true`) or not.
 * `<abstract syntax>`:  The abstract syntax produced from the parsed
@@ -146,5 +146,5 @@ whether the derivation was successful or not.  The remaining elements
 in the tuple are the terms found for the output variables, which are
 only defined if the derivation was successful (the first element of
 the tuple is `true`).  In the example above, the derivation expression
-has type `(|bool, ty|)` where `ty` is a user-defined syntactic
+has type `(bool, ty)` where `ty` is a user-defined syntactic
 category.

@@ -61,7 +61,7 @@ We also have two built-in type constructors that can contain any
 types, lists and tuples:
 * The list type is written with the inner type in square brackets,
   such as `[int]`, which is a list of integers.
-* Tuples are written as comma-separated lists in bananas, such as
-  `(|int, string|)`, which is a pair of an integer and a string.  As
-  another example, we could also have `(|int, expr, [int]|)`, a triple
+* Tuples are written as comma-separated lists in parentheses, such as
+  `(int, string)`, which is a pair of an integer and a string.  As
+  another example, we could also have `(int, expr, [int])`, a triple
   of an integer, an expression, and a list of integers.
