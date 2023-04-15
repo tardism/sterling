@@ -662,7 +662,7 @@ top::Expr ::= s::String
 abstract production tupleExpr
 top::Expr ::= contents::Args
 {
-  top.pp = "(|" ++ contents.pp ++ "|)";
+  top.pp = "(" ++ contents.pp ++ ")";
 
   contents.downVarTypes = top.downVarTypes;
   contents.lastFun = toQName("<tuple>", top.location);

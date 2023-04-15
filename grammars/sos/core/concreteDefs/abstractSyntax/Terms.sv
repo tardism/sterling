@@ -230,7 +230,7 @@ top::Term ::= hd::Term tl::Term
 abstract production tupleTerm
 top::Term ::= contents::TermList
 {
-  top.pp = "(|" ++ contents.pp ++ "|)";
+  top.pp = "(" ++ contents.pp ++ ")";
 
   top.type = tupleType(toTypeList(contents.typeList, top.location),
                        location=top.location);

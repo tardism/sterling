@@ -181,22 +181,29 @@ concrete productions top::FactorExpr_c
   { top.ast = varExpr(name.lexeme, location=top.location); }
 | num::Integer_t
   { top.ast = intExpr(toInteger(num.lexeme), location=top.location); }
-| name::LowerQName_t '(' args::Args_c ')'
-  { top.ast = funCall(toQName(name.lexeme, name.location), args.ast,
+| name::LowerQNameParen_t --'(' is part of this
+  args::Args_c ')'
+  { top.ast = funCall(toQName(dropNameParen(name.lexeme),
+                              name.location), args.ast,
                       location=top.location); }
-| name::LowerId_t '(' args::Args_c ')'
-  { top.ast = funCall(toQName(name.lexeme, name.location), args.ast,
+| name::LowerIdParen_t --'(' is part of this
+  args::Args_c ')'
+  { top.ast = funCall(toQName(dropNameParen(name.lexeme),
+                              name.location), args.ast,
                       location=top.location); }
-| name::LowerQName_t '(' ')'
-  { top.ast = funCall(toQName(name.lexeme, name.location),
+| name::LowerQNameParen_t ')' --'(' is part of LowerQNameParen_t
+  { top.ast = funCall(toQName(dropNameParen(name.lexeme),
+                              name.location),
                       nilArgs(location=top.location),
                       location=top.location); }
-| name::LowerId_t '(' ')'
-  { top.ast = funCall(toQName(name.lexeme, name.location),
+| name::LowerIdParen_t ')' --'(' is part of LowerId_t
+  { top.ast = funCall(toQName(dropNameParen(name.lexeme),
+                              name.location),
                       nilArgs(location=top.location),
                       location=top.location); }
-| '(|' a::Args_c '|)'
-  { top.ast = tupleExpr(a.ast, location=top.location); }
+| '(' e::MainExpr_c ',' a::Args_c ')'
+  { top.ast = tupleExpr(consArgs(e.ast, a.ast, location=top.location),
+                        location=top.location); }
 | s::String_t
   { top.ast = stringExpr(substring(1, length(s.lexeme) - 1, s.lexeme),
                          location=top.location); }

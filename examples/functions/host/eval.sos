@@ -50,12 +50,12 @@ appendOutput O1 addOutput(O2, V) addOutput(O3, V)
 
 
 /*Expressions need output, functx because of function calls*/
-Judgment eval_e : functx [(|string, value|)] e* value output
-Judgment eval_rf : functx [(|string, value|)] recFieldExprs* [(|string, value|)] output
+Judgment eval_e : functx [(string, value)] e* value output
+Judgment eval_rf : functx [(string, value)] recFieldExprs* [(string, value)] output
 /*given arguments and names, produce an eval ctx for the function*/
-Judgment eval_args : functx [(|string, value|)] args* [string] [(|string, value|)] output
+Judgment eval_args : functx [(string, value)] args* [string] [(string, value)] output
 /*Statements produce a new eval ctx and some output*/
-Judgment eval_c : functx [(|string, value|)] c* [(|string, value|)] output
+Judgment eval_c : functx [(string, value)] c* [(string, value)] output
 /*get the evaluation information from a function
   (name, return name, parameter names, body)*/
 Judgment eval_fun : fun* string string [string] c
@@ -192,8 +192,8 @@ eval_rf FG G endRecFieldExprs [] emptyOutput
 eval_e FG G E V O1
 eval_rf FG G Rest FVs O2
 appendOutput O1 O2 O
---------------------------------------------------------- [ERF-Add]
-eval_rf FG G addRecFieldExprs(L, E, Rest) (|L, V|)::FVs O
+------------------------------------------------------- [ERF-Add]
+eval_rf FG G addRecFieldExprs(L, E, Rest) (L, V)::FVs O
 
 
 
@@ -206,8 +206,8 @@ eval_args FG G endArgs [] [] emptyOutput
 eval_e FG G E V O1
 eval_args FG G Rest NRest C O2
 appendOutput O1 O2 O
------------------------------------------------------- [EA-Add]
-eval_args FG G addArgs(E, Rest) X::NRest (|X, V|)::C O
+---------------------------------------------------- [EA-Add]
+eval_args FG G addArgs(E, Rest) X::NRest (X, V)::C O
 
 
 
@@ -225,13 +225,13 @@ eval_c FG G seq(C1, C2) G2 O
 
 
 eval_e FG G E V O
-------------------------------------------- [E-Declare]
-eval_c FG G declare(X, Ty, E) (|X, V|)::G O
+----------------------------------------- [E-Declare]
+eval_c FG G declare(X, Ty, E) (X, V)::G O
 
 
 eval_e FG G E V O
--------------------------------------- [E-Assign]
-eval_c FG G assign(X, E) (|X, V|)::G O
+------------------------------------ [E-Assign]
+eval_c FG G assign(X, E) (X, V)::G O
 
 
 eval_e FG G Cond trueVal O1
@@ -277,25 +277,26 @@ eval_c FG G printVal(E) G addOutput(O, V)
 /*Update the associations in the first tyCtx for the fields,
   descending through it to place the value in the final one, producing
   the ending tyCtx*/
-Judgment update_rec_fields : recFields* [(|string, value|)] value [(|string, value|)]
+Judgment update_rec_fields : recFields* [(string, value)] value [(string, value)]
 
 --------------------------------------------------- [URF-One]
-update_rec_fields oneField(F) Init V (|F, V|)::Init
+update_rec_fields oneField(F) Init V (F, V)::Init
 
 
 lookup Init F recVal(FFields)
 update_rec_fields Rest FFields V UpdatedFFields
----------------------------------------------------- [URF-Step]
-update_rec_fields addField(F, Rest) Init V (|
-                   F, recVal(UpdatedFFields)|)::Init
+----------------------------------------------------- [URF-Step]
+{update_rec_fields addField(F, Rest) Init V
+                   (F, recVal(UpdatedFFields))::Init}
 
 
 
 /*Program Evaluation*/
 
 eval_fun Fun Name RetName Names Body
-eval_program MainArgs addFun(Name, RetName, Names, Body, FG) Rest O
-------------------------------------------------------------- [EP-Add]
+{eval_program MainArgs addFun(Name, RetName, Names,
+                              Body, FG) Rest O}
+--------------------------------------------------- [EP-Add]
 eval_program ManArgs FG addProgram(Fun, Rest) O
 
 
@@ -319,15 +320,15 @@ full_eval Args P O
 
 
 /*Turn a list of names and a list of values into an evalctx*/
-Fixed Judgment buildEvalctx : [string] [value] [(|string, value|)]
+Fixed Judgment buildEvalctx : [string] [value] [(string, value)]
 
 ===================== [BEC-End]
 buildEvalctx [] [] []
 
 
 buildEvalctx PRest VRest ERest
-============================================== [BEC-Add]
-buildEvalctx N::PRest V::VRest (|N, V|)::ERest
+============================================ [BEC-Add]
+buildEvalctx N::PRest V::VRest (N, V)::ERest
 
 
 

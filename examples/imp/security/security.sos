@@ -29,9 +29,9 @@ smax public public public
 
 
 /*Security Analysis*/
-Judgment sec_level_a : [(|string, status|)] a* status
-Judgment sec_level_b : [(|string, status|)] b* status
-Judgment is_secure : status [(|string, status|)] c* /*program counter, ctx, cmd*/
+Judgment sec_level_a : [(string, status)] a* status
+Judgment sec_level_b : [(string, status)] b* status
+Judgment is_secure : status [(string, status)] c* /*program counter, ctx, cmd*/
 
 
 

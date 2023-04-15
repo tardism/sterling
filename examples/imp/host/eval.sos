@@ -6,9 +6,9 @@ bval ::= btrue | bfalse
 Translation bval :
 
 
-Judgment eval_a : [(|string, int|)] a* int
-Judgment eval_b : [(|string, int|)] b* bval
-Judgment eval_c : [(|string, int|)] c* [(|string, int|)]
+Judgment eval_a : [(string, int)] a* int
+Judgment eval_b : [(string, int)] b* bval
+Judgment eval_c : [(string, int)] c* [(string, int)]
 
 
 
@@ -119,8 +119,8 @@ eval_c E1 seq(C1, C2) E3
 
 
 eval_a E A I
---------------------------------- [E-Assign]
-eval_c E assign(X, A) (|X, I|)::E
+------------------------------- [E-Assign]
+eval_c E assign(X, A) (X, I)::E
 
 
 eval_b E B btrue

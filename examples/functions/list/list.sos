@@ -78,10 +78,10 @@ ty ::= ...
 /*Strictly speaking, an empty list doesn't have the head or tail
   fields.  However, we don't have any translation constraints, so we
   can do whatever we want, and this is close.*/
------------------------------------------------------- [Trans-ListTy]
+----------------------------------------------- [Trans-ListTy]
 |{ty}- listTy(T) ~~>
-       recTy([(|"head", T|), (|"tail", listTy(T)|),
-              (|"null", boolTy|)])
+       recTy([("head", T), ("tail", listTy(T)),
+              ("null", boolTy)])
 
 
 
@@ -91,11 +91,11 @@ value ::= ...
         | consVal(value, value)
 
 
--------------------------------------------------- [Trans-NilVal]
-|{value}- nilVal ~~> recVal([(|"null", trueVal|)])
+------------------------------------------------ [Trans-NilVal]
+|{value}- nilVal ~~> recVal([("null", trueVal)])
 
 
-------------------------------------------------- [Trans-ConsVal]
+--------------------------------------------- [Trans-ConsVal]
 |{value}- consVal(Hd, Tl) ~~>
-          recVal([(|"head", Hd|), (|"tail", Tl|),
-                  (|"null", falseVal|)])
+          recVal([("head", Hd), ("tail", Tl),
+                  ("null", falseVal)])
