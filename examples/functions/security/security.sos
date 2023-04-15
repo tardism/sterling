@@ -41,13 +41,13 @@ Translation seclevel :
 
 no_lookup G X /*still can't overwrite existing decls*/
 typeOf FG G E Ty
------------------------------------------------- [T-DeclareSec]
-typeOK FG G declareSec(X, S, Ty, E) (|X, Ty|)::G
+---------------------------------------------- [T-DeclareSec]
+typeOK FG G declareSec(X, S, Ty, E) (X, Ty)::G
 
 
 eval_e FG G E V O
-------------------------------------------------- [E-DeclareSec]
-eval_c FG G declareSec(X, S, Ty, E) (|X, V|)::G O
+----------------------------------------------- [E-DeclareSec]
+eval_c FG G declareSec(X, S, Ty, E) (X, V)::G O
 
 
 
@@ -59,8 +59,8 @@ paramsToTyList addSecParams(X, S, Ty, Rest) Ty::TRest
 
 
 paramsToTyCtx Rest TRest
--------------------------------------------------------- [PtTC-AddSec]
-paramsToTyCtx addSecParams(X, S, Ty, Rest) (|X, Ty|)::TRest
+--------------------------------------------------------- [PtTC-AddSec]
+paramsToTyCtx addSecParams(X, S, Ty, Rest) (X, Ty)::TRest
 
 
 paramsToNameList Rest NRest
@@ -72,7 +72,7 @@ paramsToNameList addSecParams(X, S, Ty, Rest) X::NRest
 /*Host Relations for New Fun*/
 
 paramsToTyCtx Params G
-typeOK FG (|RetName, RetTy|)::G Body G2 /*ret name declared*/
+typeOK FG (RetName, RetTy)::G Body G2 /*ret name declared*/
 ------------------------------------------------------------ [T-Secfun]
 funTyOK FG secfun(Name, Level, RetTy, RetSec, RetName, Params, Body)
 
@@ -85,6 +85,6 @@ getFunTy secfun(Name, Level, RetTy, RetSec, RetName, Params, Body
 
 paramsToNameList Params Names
 --------------------------------------------------------- [EF-Secfun]
-eval_fun secfun(Name, Level, RetTy, RetSec, RetName, Params, Body
-               ) Name RetName Names Body
+{eval_fun secfun(Name, Level, RetTy, RetSec, RetName, Params, Body)
+                  Name RetName Names Body}
 

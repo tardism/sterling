@@ -5,10 +5,10 @@ Module stdLib
 */
 
 /*Find the first item associated with the key*/
-Fixed Judgment lookup : [(|Key, Item|)] Key Item
+Fixed Judgment lookup : [(Key, Item)] Key Item
 
 /*Holds if no items are associated with the key*/
-Fixed Judgment no_lookup : [(|Key, Item|)] Key
+Fixed Judgment no_lookup : [(Key, Item)] Key
 
 /*Holds if the item is in the list*/
 Fixed Judgment mem : Item [Item]
@@ -23,10 +23,10 @@ Fixed Judgment select : Item [Item] [Item]
 Fixed Judgment subset : [A] [A]
 
 /*Domain of a list (first element of each pair)*/
-Fixed Judgment domain : [(|A, B|)] [A]
+Fixed Judgment domain : [(A, B)] [A]
 
 /*Values of a pair list (second element of each pair)*/
-Fixed Judgment values : [(|A, B|)] [B]
+Fixed Judgment values : [(A, B)] [B]
 
 
 
@@ -35,14 +35,14 @@ Fixed Judgment values : [(|A, B|)] [B]
 */
 
 
-===================================== [Lkp-Here]
-lookup (|Key, Value|)::Rest Key Value
+=================================== [Lkp-Here]
+lookup (Key, Value)::Rest Key Value
 
 
 K != Key
 lookup Rest Key Value
-=============================== [Lkp-Later]
-lookup (|K, V|)::Rest Key Value
+============================= [Lkp-Later]
+lookup (K, V)::Rest Key Value
 
 
 
@@ -53,8 +53,8 @@ no_lookup [] Key
 
 K != Key
 no_lookup Rest Key
-============================ [NLkp-Cons]
-no_lookup (|K, V|)::Rest Key
+========================== [NLkp-Cons]
+no_lookup (K, V)::Rest Key
 
 
 
@@ -98,8 +98,8 @@ domain [] []
 
 
 domain Rest DRest
-============================== [Dmn-Cons]
-domain (|A, B|)::Rest A::DRest
+============================ [Dmn-Cons]
+domain (A, B)::Rest A::DRest
 
 
 
@@ -109,5 +109,5 @@ values [] []
 
 
 values Rest VRest
-============================== [Vals-Cons]
-values (|A, B|)::Rest B::VRest
+============================ [Vals-Cons]
+values (A, B)::Rest B::VRest

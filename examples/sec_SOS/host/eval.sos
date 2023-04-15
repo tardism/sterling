@@ -1,9 +1,8 @@
 Module sec_SOS:host
 
-Judgment eval_e : [(|string, value|)] e* value
-Judgment eval_rf : {[(|string, value|)] recFieldExprs*
-                    [(|string, value|)]}
-Judgment eval_c : [(|string, value|)] c* [(|string, value|)]
+Judgment eval_e : [(string, value)] e* value
+Judgment eval_rf : [(string, value)] recFieldExprs* [(string, value)]
+Judgment eval_c : [(string, value)] c* [(string, value)]
 
 
 /*Expression Evaluation*/
@@ -114,8 +113,8 @@ eval_rf G endRecFieldExprs []
 
 eval_e G E V
 eval_rf G Rest FVs
----------------------------------------------------- [ERF-Add]
-eval_rf G addRecFieldExprs(L, E, Rest) (|L, V|)::FVs
+-------------------------------------------------- [ERF-Add]
+eval_rf G addRecFieldExprs(L, E, Rest) (L, V)::FVs
 
 
 
@@ -132,13 +131,13 @@ eval_c G seq(C1, C2) G2
 
 
 eval_e G E V
--------------------------------------- [E-Declare]
-eval_c G declare(X, Ty, E) (|X, V|)::G
+------------------------------------ [E-Declare]
+eval_c G declare(X, Ty, E) (X, V)::G
 
 
 eval_e G E V
---------------------------------- [E-Assign]
-eval_c G assign(X, E) (|X, V|)::G
+------------------------------- [E-Assign]
+eval_c G assign(X, E) (X, V)::G
 
 
 eval_e G Cond trueVal
@@ -175,17 +174,17 @@ eval_c G recUpdate(Rec, RecFields, E) Result
 /*Update the associations in the first tyCtx for the fields,
   descending through it to place the value in the final one, producing
   the ending tyCtx*/
-Judgment update_rec_fields : recFields* [(|string, value|)] value [(|string, value|)]
+Judgment update_rec_fields : recFields* [(string, value)] value [(string, value)]
 
---------------------------------------------------- [URF-One]
-update_rec_fields oneField(F) Init V (|F, V|)::Init
+------------------------------------------------- [URF-One]
+update_rec_fields oneField(F) Init V (F, V)::Init
 
 
 lookup Init F recVal(FFields)
 update_rec_fields Rest FFields V UpdatedFFields
 ----------------------------------------------- [URF-Step]
 {update_rec_fields addField(F, Rest) Init V
-    (|F, recVal(UpdatedFFields)|)::Init}
+    (F, recVal(UpdatedFFields))::Init}
 
 
 
@@ -210,14 +209,14 @@ val_eq recVal(Fields1) recVal(Fields2)
 
 
 
-Fixed Judgment evalctx_eq : [(|string, value|)] [(|string, value|)]
+Fixed Judgment evalctx_eq : [(string, value)] [(string, value)]
 
 ================ [ECEq-Empty]
 evalctx_eq [] []
 
 
-select (|X, V2|) EC2 Rest2
+select (X, V2) EC2 Rest2
 val_eq V1 V2
 evalctx_eq Rest1 Rest2
-=============================== [ECEq-Add]
-evalctx_eq (|X, V1|)::Rest1 EC2
+============================= [ECEq-Add]
+evalctx_eq (X, V1)::Rest1 EC2

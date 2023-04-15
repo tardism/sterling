@@ -60,14 +60,14 @@ join S private private
 
 
 /*Expressions*/
-Judgment level : seclevel funsecctx [(|string, seclevel|)] e* seclevel
-Judgment rf_level : seclevel funsecctx [(|string, seclevel|)] recFieldExprs* seclevel
-Judgment level_args : seclevel funsecctx [(|string, seclevel|)] args* [seclevel]
+Judgment level : seclevel funsecctx [(string, seclevel)] e* seclevel
+Judgment rf_level : seclevel funsecctx [(string, seclevel)] recFieldExprs* seclevel
+Judgment level_args : seclevel funsecctx [(string, seclevel)] args* [seclevel]
 /*Statements*/
-Judgment secure : seclevel funsecctx [(|string, seclevel|)] c* [(|string, seclevel|)]
+Judgment secure : seclevel funsecctx [(string, seclevel)] c* [(string, seclevel)]
 /*Functions*/
 Judgment secure_fun : funsecctx fun*
-Judgment paramsToSecCtx : params* [(|string, seclevel|)]
+Judgment paramsToSecCtx : params* [(string, seclevel)]
 /*Program*/
 Judgment secure_program : funsecctx program*
 Judgment buildFunSecCtx : program* funsecctx
@@ -215,20 +215,20 @@ secure PC FG G seq(C1, C2) G2
 
 
 level PC FG G E public
-------------------------------------------------- [S-Declare]
-secure PC FG G declare(X, Ty, E) (|X, public|)::G
+----------------------------------------------- [S-Declare]
+secure PC FG G declare(X, Ty, E) (X, public)::G
 
 
 level PC FG G E S
-------------------------------------------- [S-DeclareSecPrivate]
-secure PC FG G declareSec(X, private, Ty, E
-          ) (|X, private|)::G
+--------------------------------------------- [S-DeclareSecPrivate]
+{secure PC FG G declareSec(X, private, Ty, E)
+             (X, private)::G}
 
 
 level PC FG G E public
----------------------------------------------- [S-DeclareSecPublic]
-secure public FG G declareSec(X, public, Ty, E
-                ) (|X, public|)::G
+------------------------------------------------ [S-DeclareSecPublic]
+{secure public FG G declareSec(X, public, Ty, E)
+                   (X, public)::G}
 
 
 /*To assign to public var, need both PC and expr to be public*/
@@ -285,7 +285,7 @@ secure_fun FG fun(Name, RetTy, RetName, Params, Body)
 
 
 paramsToSecCtx Params G
-secure PC FG (|RetName, RetSec|)::G Body G2
+secure PC FG (RetName, RetSec)::G Body G2
 ------------------------------------------------------ [SF-Secfun]
 secure_fun FG secfun(Name, PC, RetTy, RetSec, RetName,
                      Params, Body)
@@ -303,13 +303,13 @@ paramsToSecCtx endParams []
 
 
 paramsToSecCtx Rest SRest
----------------------------------------------------------- [PtSC-Add]
-paramsToSecCtx addParams(X, Ty, Rest) (|X, public|)::SRest
+-------------------------------------------------------- [PtSC-Add]
+paramsToSecCtx addParams(X, Ty, Rest) (X, public)::SRest
 
 
 paramsToSecCtx Rest SRest
--------------------------------------------------------- [PtSC-AddSec]
-paramsToSecCtx addSecParams(X, S, Ty, Rest) (|X, S|)::SRest
+--------------------------------------------------------- [PtSC-AddSec]
+paramsToSecCtx addSecParams(X, S, Ty, Rest) (X, S)::SRest
 
 
 |{params}- P ~~> PT

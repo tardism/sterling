@@ -49,13 +49,13 @@
    '("=====[=]*[ \t]*\\[[-a-zA-Z0-9_]+\\(\\]\\)"
      (1 font-lock-keyword-face))
    ;;Types
-   '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[(|)]\\|\\]\\)+\\)"
+   '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)"
      (1 font-lock-type-face)) ;judgment types
-   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[(|)]\\|\\]\\)+\\)"
+   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)"
      (1 font-lock-type-face)) ;translation types
-   '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[(|)]\\|\\]\\)+\\)}"
+   '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)}"
      (1 font-lock-type-face)) ;judgment types in curly braces
-   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[(|)]\\|\\]\\)+\\)}"
+   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)}"
      (1 font-lock-type-face)) ;translation types in curly braces
    '("\\([a-zA-Z0-9:_]+\\)[ ]+::=" ;defined categories
      (1 font-lock-type-face))

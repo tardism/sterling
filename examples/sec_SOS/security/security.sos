@@ -21,11 +21,11 @@ Translation seclevel :
 
 no_lookup G X /*still can't overwrite existing decls*/
 typeOf G E Ty
---------------------------------------------- [T-DeclareSec]
-typeOK G declareSec(X, S, Ty, E) (|X, Ty|)::G
+------------------------------------------- [T-DeclareSec]
+typeOK G declareSec(X, S, Ty, E) (X, Ty)::G
 
 
 eval_e G E V
--------------------------------------------- [E-DeclareSec]
-eval_c G declareSec(X, S, Ty, E) (|X, V|)::G
+------------------------------------------ [E-DeclareSec]
+eval_c G declareSec(X, S, Ty, E) (X, V)::G
 

@@ -10,7 +10,7 @@ term ::= ...
 
 /*Typing Rule*/
 typeOf G T1 Ty1
-typeOf (|X, Ty1|)::G T2 Ty2
+typeOf (X, Ty1)::G T2 Ty2
 ---------------------------- [T-Let]
 typeOf G let(X, T1, T2) Ty2
 
