@@ -243,7 +243,7 @@ top::Type ::= ty::Type
 abstract production tupleType
 top::Type ::= tys::TypeList
 {
-  top.pp = "(|" ++ tys.pp_comma ++ "|)";
+  top.pp = "(" ++ tys.pp_comma ++ ")";
   top.name = error("Should not access tupleType.name");
 
   tys.subst = top.subst;

@@ -25,10 +25,8 @@ rules, a variable can be unified with any term.
 We also have terms building our built-in types:
 * Numeric constants build the integer (`int`) type.
 * Double-quoted strings build the string type.
-* Tuples are written as comma-separated lists of terms inside bananas,
-  such as `(|1, 2, "x"|)`.  We use bananas rather than simple
-  parentheses because of a parsing conflict with constructor
-  application.
+* Tuples are written as comma-separated lists of terms inside parentheses,
+  such as `(1, 2, "x")`.
 * Lists of constant length can be written in square brackets, such as
   `[1, 2, 3, 4]`.  Lists can also be written using cons notation, such
   as `1::2::Rest`, specifying a list where the first two elements are
@@ -36,8 +34,8 @@ We also have terms building our built-in types:
   anything.
 
 Finally, we have one last type of term, an ascription, written as
-`(|<term> : <type>|)`, asserting the term has the given type
-(e.g. `(|3 : int|)`).  Sometimes it is difficult to understand why a
+`(<term> : <type>)`, asserting the term has the given type
+(e.g. `(3 : int)`).  Sometimes it is difficult to understand why a
 rule is ill-typed, and asserting the types of variables or larger
 terms in strategic places can improve the type error messages given.
 Other than possibly improving the error messages from typing, an
@@ -142,7 +140,7 @@ The primary component can be thought of as what the judgment is
 so we would choose the expression as the primary component.  We might
 declare our typing relation thus:
 ```
-Judgment typeOf : [(|string, ty|)] expr* ty
+Judgment typeOf : [(string, ty)] expr* ty
 ```
 The `*` marks the expression as the primary component.
 

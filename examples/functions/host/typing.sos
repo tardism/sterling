@@ -32,14 +32,14 @@ paramsToTyList addParams(X, Ty, Rest) Ty::TyRest
 
 
 /*Expressions*/
-Judgment typeOf : funtyctx [(|string, ty|)] e* ty
-Judgment typeRecFields : funtyctx [(|string, ty|)] recFieldExprs* [(|string, ty|)]
+Judgment typeOf : funtyctx [(string, ty)] e* ty
+Judgment typeRecFields : funtyctx [(string, ty)] recFieldExprs* [(string, ty)]
 /*Statements*/
-Judgment typeOK : funtyctx [(|string, ty|)] c* [(|string, ty|)]
-Judgment typeArgs : funtyctx [(|string, ty|)] args* [ty]
+Judgment typeOK : funtyctx [(string, ty)] c* [(string, ty)]
+Judgment typeArgs : funtyctx [(string, ty)] args* [ty]
 /*Functions*/
 Judgment funTyOK : funtyctx fun*
-Judgment paramsToTyCtx : params* [(|string, ty|)]
+Judgment paramsToTyCtx : params* [(string, ty)]
 /*Program*/
 Judgment programTyOK : funtyctx  program*
 Judgment buildFunTyCtx : program* funtyctx
@@ -124,8 +124,8 @@ typeRecFields FG G endRecFieldExprs []
 typeOf FG G E Ty
 typeRecFields FG G Rest FTys
 no_lookup FTys L /*each label only occurs once*/
------------------------------------------------------------- [TRF-Add]
-typeRecFields FG G addRecFieldExprs(L, E, Rest) (|L, Ty|)::FTys
+------------------------------------------------------------- [TRF-Add]
+typeRecFields FG G addRecFieldExprs(L, E, Rest) (L, Ty)::FTys
 
 
 
@@ -156,8 +156,8 @@ typeOK FG G seq(C1, C2) G2
 
 no_lookup G X /*can't overwrite existing decls*/
 typeOf FG G E Ty
------------------------------------------- [T-Declare]
-typeOK FG G declare(X, Ty, E) (|X, Ty|)::G
+---------------------------------------- [T-Declare]
+typeOK FG G declare(X, Ty, E) (X, Ty)::G
 
 
 typeOf FG G E Ty
@@ -196,7 +196,7 @@ typeOK FG G printVal(E) G
 
 /*Check whether the update to the nested fields is valid
   The tyctx is the fields of the record*/
-Judgment checkRecUpdate : recFields* [(|string, ty|)] ty
+Judgment checkRecUpdate : recFields* [(string, ty)] ty
 
 lookup RecFieldTys F Ty
 ----------------------------------------- [CRU-OneField]
@@ -213,7 +213,7 @@ checkRecUpdate addField(F, Rest) RecFieldTys Ty
 /*Function Typing*/
 
 paramsToTyCtx Params G
-typeOK FG (|RetName, RetTy|)::G Body G2 /*ret name declared*/
+typeOK FG (RetName, RetTy)::G Body G2 /*ret name declared*/
 -------------------------------------------------- [T-Fun]
 funTyOK FG fun(Name, RetTy, RetName, Params, Body)
 
@@ -224,7 +224,7 @@ paramsToTyCtx endParams []
 
 paramsToTyCtx Rest TRest
 ----------------------------------------------------- [PtTC-Add]
-paramsToTyCtx addParams(X, Ty, Rest) (|X, Ty|)::TRest
+paramsToTyCtx addParams(X, Ty, Rest) (X, Ty)::TRest
 
 
 
@@ -292,7 +292,7 @@ typeOfVal recVal(Fields) recTy(FTys)
 
 /*Typing for evaluation contexts to allow type soundness and recVal
   typing*/
-Fixed Judgment typeOfEvalctx : [(|string, value|)] [(|string, ty|)]
+Fixed Judgment typeOfEvalctx : [(string, value)] [(string, ty)]
 
 =================== [TEC-Empty]
 typeOfEvalctx [] []
@@ -300,6 +300,6 @@ typeOfEvalctx [] []
 
 typeOfVal V Ty
 typeOfEvalctx Rest RestTys
-=============================================== [TEC-Add]
-typeOfEvalctx (|X, V|)::Rest (|X, Ty|)::RestTys
+=========================================== [TEC-Add]
+typeOfEvalctx (X, V)::Rest (X, Ty)::RestTys
 

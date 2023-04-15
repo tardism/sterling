@@ -12,11 +12,11 @@ type ::= arrow(type, type)
 
 
 /*Judgments*/
-Judgment typeOf : [(|string, type|)] term* type
+Judgment typeOf : [(string, type)] term* type
 
 /*Translation Types*/
-Translation term : [(|string, type|)] /*ctx |- term ~~> term*/
-Translation type :                    /*|- type ~~> type*/
+Translation term : [(string, type)] /*ctx |- term ~~> term*/
+Translation type :                  /*|- type ~~> type*/
 
 
 /*Typing Rules*/
@@ -27,7 +27,7 @@ typeOf G T2 Ty1
 typeOf G app(T1, T2) Ty2
 
 
-typeOf (|X, Ty1|)::G Body Ty2
+typeOf (X, Ty1)::G Body Ty2
 ------------------------------------------ [T-Abs]
 typeOf G abs(X, Ty1, Body) arrow(Ty1, Ty2)
 

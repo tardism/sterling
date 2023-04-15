@@ -1,9 +1,8 @@
 Module sec_SOS:host
 
-Judgment typeOf : [(|string, ty|)] e* ty
-Judgment typeRecFields : {[(|string, ty|)] recFieldExprs*
-                          [(|string, ty|)]}
-Judgment typeOK : [(|string, ty|)] c* [(|string, ty|)]
+Judgment typeOf : [(string, ty)] e* ty
+Judgment typeRecFields : [(string, ty)] recFieldExprs* [(string, ty)]
+Judgment typeOK : [(string, ty)] c* [(string, ty)]
 
 
 /*Expression Typing*/
@@ -76,8 +75,8 @@ typeRecFields G endRecFieldExprs []
 typeOf G E Ty
 typeRecFields G Rest FTys
 no_lookup FTys L /*each label only occurs once*/
------------------------------------------------------------- [TRF-Add]
-typeRecFields G addRecFieldExprs(L, E, Rest) (|L, Ty|)::FTys
+---------------------------------------------------------- [TRF-Add]
+typeRecFields G addRecFieldExprs(L, E, Rest) (L, Ty)::FTys
 
 
 
@@ -95,8 +94,8 @@ typeOK G seq(C1, C2) G2
 
 no_lookup G X /*can't overwrite existing decls*/
 typeOf G E Ty
---------------------------------------- [T-Declare]
-typeOK G declare(X, Ty, E) (|X, Ty|)::G
+------------------------------------- [T-Declare]
+typeOK G declare(X, Ty, E) (X, Ty)::G
 
 
 typeOf G E Ty
@@ -130,7 +129,7 @@ typeOK G recUpdate(Rec, Fields, E) G
 
 /*Check whether the update to the nested fields is valid
   The tyctx is the fields of the record*/
-Judgment checkRecUpdate : recFields* [(|string, ty|)] ty
+Judgment checkRecUpdate : recFields* [(string, ty)] ty
 
 lookup RecFieldTys F Ty
 ----------------------------------------- [CRU-OneField]
@@ -169,7 +168,7 @@ typeOfVal recVal(Fields) recTy(FTys)
 
 /*Typing for evaluation contexts to allow type soundness and recVal
   typing*/
-Fixed Judgment typeOfEvalctx : [(|string, value|)] [(|string, ty|)]
+Fixed Judgment typeOfEvalctx : [(string, value)] [(string, ty)]
 
 =================== [TEC-Empty]
 typeOfEvalctx [] []
@@ -177,6 +176,6 @@ typeOfEvalctx [] []
 
 typeOfVal V Ty
 typeOfEvalctx Rest RestTys
-=============================================== [TEC-Add]
-typeOfEvalctx (|X, V|)::Rest (|X, Ty|)::RestTys
+=========================================== [TEC-Add]
+typeOfEvalctx (X, V)::Rest (X, Ty)::RestTys
 

@@ -59,7 +59,7 @@ Translation program :
 /*Types*/
 ty ::= intTy
      | boolTy
-     | recTy([(|string, ty|)])
+     | recTy([(string, ty)])
 Translation ty :
 
 
@@ -67,6 +67,6 @@ Translation ty :
 value ::= intVal(int)
         | trueVal
         | falseVal
-        | recVal([(|string, value|)])
+        | recVal([(string, value)])
 Translation value :
 

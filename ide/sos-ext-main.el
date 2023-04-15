@@ -39,10 +39,10 @@
     (regexp-opt sos-ext-main-keyword-list 'words)
     font-lock-keyword-face)
    ;;Types
-   '(":[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[(|)]\\|\\]\\)+\\)[ \t\n]*>"
+   '(":[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[()]\\|\\]\\)+\\)[ \t\n]*>"
      (1 font-lock-type-face))
    '("Parse[ \t\n]+\\([a-zA-Z0-9_:]+\\)" (1 font-lock-type-face))
-   '("->[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[(|)]\\|\\]\\)+\\){"
+   '("->[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[()]\\|\\]\\)+\\){"
      (1 font-lock-type-face))
    ;;Variable names
    '("<[ \t\n]*\\([a-zA-Z0-9_]+\\)[ \t\n]*:" ;function parameters

@@ -1,25 +1,12 @@
 Module functions:host
 
-/*Domain for Type Contexts*/
-Fixed Judgment domain : [(|A, B|)] [A]
-
-============ [D-Empty]
-domain [] []
-
-
-domain Rest RestDomain
-==================================== [D-Add]
-domain (|S, Ty|)::Rest S::RestDomain
-
-
-
 /*Equality for Type Contexts*/
-Fixed Judgment tyctx_eq : [(|string, ty|)] [(|string, ty|)]
+Fixed Judgment tyctx_eq : [(string, ty)] [(string, ty)]
 
 
 
 /*Equality for Evaluation Contexts*/
-Fixed Judgment evalctx_eq : [(|string, value|)] [(|string, value|)]
+Fixed Judgment evalctx_eq : [(string, value)] [(string, value)]
 
 /*TODO write rules for these
   Probably take the domains and make sure they have the same names,

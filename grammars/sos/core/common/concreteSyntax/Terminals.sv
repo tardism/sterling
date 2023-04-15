@@ -14,8 +14,8 @@ terminal IntTy_t      'int'      lexer classes {KEYWORD};
 
 terminal LBracket_t   '[';
 terminal RBracket_t   ']';
-terminal LBanana_t    '(|';
-terminal RBanana_t    '|)';
+terminal LParen_t     '(';
+terminal RParen_t     ')';
 
 terminal Comma_t      ',';
 
@@ -32,6 +32,15 @@ terminal Newline_t        /(\/\/[^\n]*)?\r?\n/   precedence=10;
 
 terminal LowerId_t      /[a-z][a-z0-9A-Z_]*/;
 terminal LowerQName_t   /([a-zA-Z_]+:)+[a-z][a-z0-9A-Z_]*/;
+--using these for constr(args) permits pairs to use parentheses
+terminal LowerIdParen_t      /[a-z][a-z0-9A-Z_]*\(/;
+terminal LowerQNameParen_t   /([a-zA-Z_]+:)+[a-z][a-z0-9A-Z_]*\(/;
+
+function dropNameParen
+String ::= x::String
+{
+  return substring(0, length(x) - 1, x);
+}
 
 
 ignore terminal Spacing_t   /[\ \t\r]+/;

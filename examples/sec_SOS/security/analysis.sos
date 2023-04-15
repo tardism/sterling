@@ -17,10 +17,9 @@ join S private private
 
 
 
-Judgment level : [(|string, seclevel|)] e* seclevel
-Judgment rf_level : [(|string, seclevel|)] recFieldExprs* seclevel
-Judgment secure : {seclevel [(|string, seclevel|)] c*
-                   [(|string, seclevel|)]}
+Judgment level : [(string, seclevel)] e* seclevel
+Judgment rf_level : [(string, seclevel)] recFieldExprs* seclevel
+Judgment secure : seclevel [(string, seclevel)] c* [(string, seclevel)]
 
 
 /*Expression Security Level*/
@@ -127,20 +126,20 @@ secure PC G seq(C1, C2) G2
 
 
 level G E public
----------------------------------------------- [S-Declare]
-secure PC G declare(X, Ty, E) (|X, public|)::G
+-------------------------------------------- [S-Declare]
+secure PC G declare(X, Ty, E) (X, public)::G
 
 
 level G E S
 ------------------------------------------ [S-DeclareSecPrivate]
 {secure PC G declareSec(X, private, Ty, E)
-        (|X, private|)::G}
+        (X, private)::G}
 
 
 level G E public
 --------------------------------------------- [S-DeclareSecPublic]
 {secure public G declareSec(X, public, Ty, E)
-        (|X, public|)::G}
+        (X, public)::G}
 
 
 /*To assign to public var, need both PC and expr to be public*/

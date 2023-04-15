@@ -176,7 +176,7 @@ top::Term ::= constructor::QName args::TermList
 abstract production tupleTerm
 top::Term ::= contents::TermList
 {
-  top.pp = "(|" ++ contents.pp_comma ++ "|)";
+  top.pp = "(" ++ contents.pp_comma ++ ")";
 
   contents.moduleName = top.moduleName;
 
@@ -278,7 +278,7 @@ top::Term ::= hd::Term tl::Term
 abstract production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {
-  top.pp = "(|" ++ tm.pp ++ " : " ++ ty.pp ++ "|)";
+  top.pp = "(" ++ tm.pp ++ " : " ++ ty.pp ++ ")";
 
   tm.moduleName = top.moduleName;
 

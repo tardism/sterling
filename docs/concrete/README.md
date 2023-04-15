@@ -122,5 +122,5 @@ The constructs available for the abstract syntax:
   abstract syntax, as list literals (e.g. `[1, 2, 3]`) or using the
   cons list constructor (e.g. `Hd::Tl`).
 * Tuples:  Tuples can be written in terms, as they can be written in
-  the abstract syntax as a comma-separated list between bananas
-  (e.g. `(|1, 2, 3|)`).
+  the abstract syntax as a comma-separated list between parentheses
+  (e.g. `(1, 2, 3)`).

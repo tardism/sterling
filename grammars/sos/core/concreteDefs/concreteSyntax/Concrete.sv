@@ -215,19 +215,25 @@ concrete productions top::Term3_c
 | constant::LowerQName_t
   { top.ast = nameTerm(toQName(constant.lexeme, constant.location),
                        location=top.location); }
-| constant::LowerId_t '(' x::EmptyNewlines ')'
-  { top.ast = nameTerm(toQName(constant.lexeme, constant.location),
+| constant::LowerIdParen_t --'(' is part of this
+  x::EmptyNewlines ')'
+  { top.ast = nameTerm(toQName(dropNameParen(constant.lexeme),
+                               constant.location),
                        location=top.location); }
-| constant::LowerQName_t '(' x::EmptyNewlines ')'
-  { top.ast = nameTerm(toQName(constant.lexeme, constant.location),
+| constant::LowerQNameParen_t --'(' is part of this
+  x::EmptyNewlines ')'
+  { top.ast = nameTerm(toQName(dropNameParen(constant.lexeme),
+                               constant.location),
                        location=top.location); }
-| prod::LowerId_t '(' x1::EmptyNewlines args::TermList_c
-  x2::EmptyNewlines ')'
-  { top.ast = applicationTerm(toQName(prod.lexeme, prod.location),
+| prod::LowerIdParen_t --'(' is part of this
+  x1::EmptyNewlines args::TermList_c x2::EmptyNewlines ')'
+  { top.ast = applicationTerm(toQName(dropNameParen(prod.lexeme),
+                                      prod.location),
                               args.ast, location=top.location); }
-| prod::LowerQName_t '(' x1::EmptyNewlines args::TermList_c
-  x2::EmptyNewlines ')'
-  { top.ast = applicationTerm(toQName(prod.lexeme, prod.location),
+| prod::LowerQNameParen_t --'(' is part of this
+  x1::EmptyNewlines args::TermList_c x2::EmptyNewlines ')'
+  { top.ast = applicationTerm(toQName(dropNameParen(prod.lexeme),
+                                      prod.location),
                               args.ast, location=top.location); }
 | index::ProdPart_t
   { top.ast = prodIndex(index.lexeme, location=top.location); }
@@ -242,7 +248,7 @@ concrete productions top::Term3_c
   { top.ast = nilTerm(location=top.location); }
 | '[' tms::TermList_c ']'
   { top.ast = tms.listAST; }
-| '(|' tms::TermList_c '|)'
+| '(' tms::TermList_c ')'
   { top.ast = tupleTerm(tms.ast, location=top.location); }
 
 concrete productions top::TermList_c

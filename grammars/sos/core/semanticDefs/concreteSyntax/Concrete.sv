@@ -560,41 +560,36 @@ concrete productions top::NonNameTerm_c
   { top.ast =
         stringConst(substring(1, length(s.lexeme) - 1, s.lexeme),
                     location=top.location); }
-| constructor::LowerId_t
-  '(' x1::EmptyNewlines args::ContainedCommaTermList_c ')'
+| constructor::LowerIdParen_t --'(' is part of this
+  x1::EmptyNewlines args::ContainedCommaTermList_c ')'
   { top.ast =
-        appTerm(toQName(constructor.lexeme,
+        appTerm(toQName(dropNameParen(constructor.lexeme),
                         constructor.location),
                 args.ast, location=top.location); }
-| constructor::LowerQName_t
-  '(' x1::EmptyNewlines args::ContainedCommaTermList_c ')'
+| constructor::LowerQNameParen_t --'(' is part of this
+  x1::EmptyNewlines args::ContainedCommaTermList_c ')'
   { top.ast =
-        appTerm(toQName(constructor.lexeme,
+        appTerm(toQName(dropNameParen(constructor.lexeme),
                         constructor.location),
                 args.ast, location=top.location); }
-| constructor::LowerId_t '(' x::EmptyNewlines ')'
+| constructor::LowerIdParen_t --'(' is part of this
+  x::EmptyNewlines ')'
   { top.ast =
-        appTerm(toQName(constructor.lexeme,
+        appTerm(toQName(dropNameParen(constructor.lexeme),
                         constructor.location),
                 nilTermList(location=top.location),
                 location=top.location); }
-| constructor::LowerQName_t '(' x::EmptyNewlines ')'
+| constructor::LowerQNameParen_t --'(' is part of this
+  x::EmptyNewlines ')'
   { top.ast =
-        appTerm(toQName(constructor.lexeme,
+        appTerm(toQName(dropNameParen(constructor.lexeme),
                         constructor.location),
                 nilTermList(location=top.location),
                 location=top.location); }
-  {-
-    Tuples are delimited by '(|' and '|)' because using only
-    parentheses creates ambiguities with constructors:  We can't tell
-    whether "x (1, 2)" is supposed to be a single term, a constructor
-    x with arguments 1 and 2, or two terms, a constructor x without
-    arguments and a tuple.
-  -}
-| '(|' x1::EmptyNewlines '|)'
+| '(' x1::EmptyNewlines ')'
   { top.ast = tupleTerm(nilTermList(location=top.location),
                         location=top.location); }
-| '(|' x1::EmptyNewlines contents::ContainedCommaTermList_c '|)'
+| '(' x1::EmptyNewlines contents::ContainedCommaTermList_c ')'
   { top.ast =
         case contents.ast.toList of
         | [t] -> t
@@ -606,13 +601,8 @@ concrete productions top::NonNameTerm_c
   { top.ast = contents.listTerm; }
 | hd::Term_c '::' x1::EmptyNewlines tl::Term_c
   { top.ast = consTerm(hd.ast, tl.ast, location=top.location); }
-  {-
-    Ascription uses bananas because other delimiters we might use
-    cause ambiguities.  Using bananas might confuse because it isn't a
-    tuple, it is a single term for which we are specifying the type.
-  -}
-| '(|' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
-       x3::EmptyNewlines ty::Type_c x4::EmptyNewlines '|)'
+| '(' x1::EmptyNewlines t::Term_c x2::EmptyNewlines ':'
+      x3::EmptyNewlines ty::Type_c x4::EmptyNewlines ')'
   { top.ast = ascriptionTerm(t.ast, ty.ast, location=top.location); }
 
 

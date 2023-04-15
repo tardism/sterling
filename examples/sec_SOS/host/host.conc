@@ -88,7 +88,7 @@ type_c<ty> ::= intTy_t ~~> intTy
              | lcurly_t rcurly_t ~~> recTy([])
              | lcurly_t Fields::recTyFields_c rcurly_t ~~>
                   recTy(Fields)
-recTyFields_c<[(|string, ty|)]> ::=
-   | Field::name_t colon_t Ty::type_c ~~> [(|Field, Ty|)]
+recTyFields_c<[(string, ty)]> ::=
+   | Field::name_t colon_t Ty::type_c ~~> [(Field, Ty)]
    | Field::name_t colon_t Ty::type_c semi_t Rest::recTyFields_c ~~>
-        (|Field, Ty|)::Rest
+        (Field, Ty)::Rest

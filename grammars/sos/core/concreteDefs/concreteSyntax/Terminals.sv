@@ -14,8 +14,6 @@ terminal String_t    /"([^"]|(\\"))*"/;
 terminal ProdPart_t   /[A-Z][a-z0-9A-Z_]*/;
 terminal ToInt_t      '$to_int';
 
-terminal LParen_t   '(' lexer classes {REGEX_SYMBOL};
-terminal RParen_t   ')' lexer classes {REGEX_SYMBOL};
 terminal LAngle_t   '<';
 terminal RAngle_t   '>';
 terminal Comma_t    ',';
@@ -33,7 +31,7 @@ terminal RBracket_t   ']' lexer classes {REGEX_SYMBOL};
 terminal Star_t       '*' lexer classes {REGEX_SYMBOL};
 terminal Plus_t       '+' lexer classes {REGEX_SYMBOL};
 terminal Or_t         '|' lexer classes {REGEX_SYMBOL};
-terminal Char_t       /.|(\\[\ ntr\-\/\\abf+*|()\[\]])|(\\[0-9][0-9][0-9])/ submits to {KEYWORD, Slash_t, Spacing_t};
+terminal Char_t       /.|(\\[\ ntr\-\/\\abf+*|()\[\]])|(\\[0-9][0-9][0-9])/ submits to {KEYWORD, LParen_t, RParen_t, Slash_t, Spacing_t};
 terminal Range_t      '-' lexer classes {REGEX_SYMBOL};
 
 terminal ColonsEq_t   '::=';
