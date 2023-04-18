@@ -216,6 +216,20 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 
+aspect production notExpr
+top::Expr ::= e::Expr
+{
+  top.silverExpr =
+      buildLet(eName, "IOVal<Boolean>", e.silverExpr,
+         "if " ++ eName ++ ".iovalue " ++
+         "then " ++ buildIOVal(eName ++ ".io", "false") ++
+        " else " ++ buildIOVal(eName ++ ".io", "true"));
+  local eName::String = "not__" ++ toString(genInt());
+
+  e.precedingIO = top.precedingIO;
+}
+
+
 aspect production ltExpr
 top::Expr ::= e1::Expr e2::Expr
 {

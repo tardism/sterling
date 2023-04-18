@@ -130,6 +130,13 @@ top::Expr ::= e1::Expr e2::Expr
 }
 
 
+aspect production notExpr
+top::Expr ::= e::Expr
+{
+  top.parsedTypes = e.parsedTypes;
+}
+
+
 aspect production ltExpr
 top::Expr ::= e1::Expr e2::Expr
 {
