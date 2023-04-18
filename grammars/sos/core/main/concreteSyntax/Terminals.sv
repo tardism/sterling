@@ -37,6 +37,7 @@ terminal Assign_t   ':=';
 
 terminal Or_t    '||';
 terminal And_t   '&&';
+terminal Not_t   '!';
 
 terminal Bool_t    'bool'    lexer classes {KEYWORD};
 terminal True_t    'true'    lexer classes {KEYWORD};
