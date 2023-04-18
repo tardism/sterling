@@ -345,9 +345,27 @@ top::Expr ::= e1::Expr e2::Expr
                 location=top.location);
   e1.downSubst = top.downSubst;
   e2.downSubst = e1.upSubst;
-  unifyLeft.downSubst = top.downSubst;
+  unifyLeft.downSubst = e2.upSubst;
   unifyRight.downSubst = unifyLeft.upSubst;
   top.upSubst = unifyRight.upSubst;
+}
+
+
+abstract production notExpr
+top::Expr ::= e::Expr
+{
+  top.pp = "!(" ++ e.pp ++ ")";
+
+  top.type = boolType(location=top.location);
+
+  e.downVarTypes = top.downVarTypes;
+
+  local unify::TypeUnify =
+      typeUnify(e.type, boolType(location=top.location),
+                location=top.location);
+  e.downSubst = top.downSubst;
+  unify.downSubst = e.upSubst;
+  top.upSubst = unify.upSubst;
 }
 
 

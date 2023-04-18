@@ -70,6 +70,8 @@ closed nonterminal AddExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
 closed nonterminal MultExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
+closed nonterminal NotExpr_c layout {Spacing_t, Comment_t, Newline_t}
+   with ast<Expr>, location;
 closed nonterminal IOExpr_c layout {Spacing_t, Comment_t, Newline_t}
    with ast<Expr>, location;
 closed nonterminal IndexExpr_c layout {Spacing_t, Comment_t, Newline_t}
@@ -132,12 +134,18 @@ concrete productions top::AddExpr_c
   { top.ast = e.ast; }
 
 concrete productions top::MultExpr_c
-| e1::MultExpr_c '*' e2::FactorExpr_c
+| e1::MultExpr_c '*' e2::NotExpr_c
   { top.ast = multExpr(e1.ast, e2.ast, location=top.location); }
-| e1::MultExpr_c '/' e2::FactorExpr_c
+| e1::MultExpr_c '/' e2::NotExpr_c
   { top.ast = divExpr(e1.ast, e2.ast, location=top.location); }
-| e1::MultExpr_c '%' e2::FactorExpr_c
+| e1::MultExpr_c '%' e2::NotExpr_c
   { top.ast = modExpr(e1.ast, e2.ast, location=top.location); }
+| e::NotExpr_c
+  { top.ast = e.ast; }
+
+concrete productions top::NotExpr_c
+| '!' e::NotExpr_c
+  { top.ast = notExpr(e.ast, location=top.location); }
 | e::IOExpr_c
   { top.ast = e.ast; }
 

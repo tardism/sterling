@@ -28,6 +28,9 @@ Fixed Judgment domain : [(A, B)] [A]
 /*Values of a pair list (second element of each pair)*/
 Fixed Judgment values : [(A, B)] [B]
 
+/*Combine two lists into a list of pairs*/
+Fixed Judgment zip : [A] [B] [(A, B)]
+
 
 
 /*
@@ -111,3 +114,14 @@ values [] []
 values Rest VRest
 ============================ [Vals-Cons]
 values (A, B)::Rest B::VRest
+
+
+
+
+============ [Zip-Nil]
+zip [] [] []
+
+
+zip ARest BRest Rest
+================================== [Zip-Cons]
+zip A::ARest B::BRest (A, B)::Rest
