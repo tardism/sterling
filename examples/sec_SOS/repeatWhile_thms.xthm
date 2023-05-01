@@ -75,6 +75,9 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
  apply repeatWhile_transEval to Hyp1. search.
 
 
+Prove_Ext_Ind sec_SOS:host:eval_c.
+
+
 Prove sec_SOS:host:eval_c_unique.
 %E-RepeatWhileTrue
  Ev2: case Ev2.

@@ -480,6 +480,9 @@ Translation_Constraint trans_c_eval : forall C C' G G2,
   |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
 
 
+Ext_Ind eval_c G C G1 with |{c}- C ~~> T.
+
+
 Extensible_Theorem
   eval_c_unique : forall G C G1 G2,
     Ev1 : eval_c G C G1 ->
