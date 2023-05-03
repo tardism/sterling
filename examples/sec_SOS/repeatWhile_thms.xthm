@@ -76,6 +76,66 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
 
 
 Prove_Ext_Ind sec_SOS:host:eval_c.
+%E-RepeatWhileTrue
+ %We need this as a lemma for the rest of the proof
+ RW_to_SW: assert forall C B EG EG' N,
+             <eval_c {ES}> EG (repeatWhile B C) EG' N ->
+             exists N', <eval_c {ES}> EG (seq B (while C B)) EG' N' /\
+                        N' < N.
+   clear IH IH1 Rel Acc Rel1 Rel2 Rel3 Rel4 Rel5. %not needed here
+   induction on 1. intros EvalRep. Ev: case EvalRep.
+     %E-RepeatWhileTrue
+      SubSeq: apply IH to Ev4. EvSub: case SubSeq.
+      IsN8: apply ext_ind_is_int_eval_c to EvSub1.
+      IsN9: apply ext_ind_is_int_eval_c to EvSub2.
+      IsN': apply plus_integer_is_integer to _ _ EvSub.
+      IsN5: apply ext_ind_is_int_eval_c to Ev2.
+      N5+N': apply plus_integer_total to IsN5 IsN'.
+      exists N10. split.
+        %eval for the sequence
+         search.
+        %N10 < N1
+         IsN6: apply ext_ind_is_int_eval_c to Ev4.
+         IsN7: apply plus_integer_is_integer to _ _ Ev1.
+         LN7N1: apply lt_plus_one to Ev _.
+         LN10N7: apply less_sums to N5+N' Ev1 _ _.
+         apply less_integer_transitive to LN10N7 LN7N1. search.
+     %E-RepeatWhileFalse
+      IsN5: apply ext_ind_is_int_eval_c to Ev1.
+      LN5N1: apply lt_plus_one to Ev _.
+      N5+0: apply plus_integer_total to IsN5 _ with N2 = 0.
+      apply plus_zero_right to N5+0. search.
+ %Rest of the proof:
+ Acc: case Acc. IsN2: apply ext_ind_is_int_eval_c to Rel3.
+ IsN3: apply ext_ind_is_int_eval_c to Rel5.
+ IsN4: apply plus_integer_is_integer to _ _ Rel2.
+ PosN2: apply ext_ind_pos_eval_c to Rel3.
+ PosN3: apply ext_ind_pos_eval_c to Rel5.
+ LN4N: apply lt_plus_one to Rel1 _.
+ LN2N: assert N2 < N.
+    OrN2: apply lt_left to Rel2 _ _. L: case OrN2.
+       apply less_integer_transitive to L LN4N. search.
+       search.
+ LN3N: assert N3 < N.
+    OrN3: apply lt_right to Rel2 _ _ _. L: case OrN3.
+       apply less_integer_transitive to L LN4N. search.
+       search.
+ AccN2: apply Acc to _ LN2N. AccN3: apply Acc to _ LN3N.
+ EvalTBody: apply IH to Rel3 AccN2. EvalTRep: apply IH to Rel5 AccN3.
+ Trans: assert |{c}- repeatWhile Body Cond ~~>
+                     seq Body (while Cond Body).
+ SW: apply RW_to_SW to Rel5.
+ LN'N: apply less_integer_transitive to SW1 LN3N.
+ L0N': apply ext_ind_pos_eval_c to SW. AccN': apply Acc to _ LN'N.
+ apply IH to SW AccN'. skip. %Continue here, rearranging to get the right stuff
+%E-RepeatWhileFalse
+ Acc: case Acc. L0N2: apply ext_ind_pos_eval_c to Rel2.
+ IsN2: apply ext_ind_is_int_eval_c to Rel2.
+ LN2N: apply lt_plus_one to Rel1 _. AccN2: apply Acc to _ LN2N.
+ EvalTBody: apply IH to Rel2 AccN2.
+ Trans: assert |{c}- repeatWhile Body Cond ~~>
+                     seq Body (while Cond Body). search.
+    
 
 
 Prove sec_SOS:host:eval_c_unique.
