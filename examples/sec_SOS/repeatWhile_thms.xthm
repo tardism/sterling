@@ -127,7 +127,8 @@ Prove_Ext_Ind sec_SOS:host:eval_c.
  SW: apply RW_to_SW to Rel5.
  LN'N: apply less_integer_transitive to SW1 LN3N.
  L0N': apply ext_ind_pos_eval_c to SW. AccN': apply Acc to _ LN'N.
- apply IH to SW AccN'. skip. %Continue here, rearranging to get the right stuff
+ EvalTSeq: apply IH to SW AccN'. EvalTParts: case EvalTSeq.
+ search.
 %E-RepeatWhileFalse
  Acc: case Acc. L0N2: apply ext_ind_pos_eval_c to Rel2.
  IsN2: apply ext_ind_is_int_eval_c to Rel2.
@@ -135,7 +136,6 @@ Prove_Ext_Ind sec_SOS:host:eval_c.
  EvalTBody: apply IH to Rel2 AccN2.
  Trans: assert |{c}- repeatWhile Body Cond ~~>
                      seq Body (while Cond Body). search.
-    
 
 
 Prove sec_SOS:host:eval_c_unique.
