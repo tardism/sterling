@@ -612,26 +612,30 @@ function buildImportedUnknownRules_help
           jenv::Env<JudgmentEnvItem>
 {
   local ty::TypeEnvItem = head(tys);
+  local jname::String =
+      decorate j.name with {judgmentEnv=jenv;}.ebJudgmentName;
+
   --names for all children
   local childNames::[String] =
       foldr(\ x::Type rest::[String] ->
               freshNameFromType(x, rest)::rest,
-          [], take(j.pcIndex, j.types.toList) ++
-              drop(j.pcIndex + 1, j.types.toList));
+            [], j.types.toList);
   local termed::[ExtensibellaTerm] =
       map(varExtensibellaTerm, childNames);
   --fill in unknown constructor for PC
   local args::[ExtensibellaTerm] =
       take(j.pcIndex, termed) ++
       [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
-      drop(j.pcIndex, termed);
+      drop(j.pcIndex + 1, termed);
+
   --full definition of rule
-  --no requirements, since we don't know what other modules will have
+  --only requirement is same relation for translation with same args
+  --   other than PC being a variable
   local d::Def =
-      factDef(relationMetaterm(
-                 decorate j.name with {
-                    judgmentEnv=jenv;
-                 }.ebJudgmentName, args));
+      ruleDef(relationMetaterm(jname, args),
+              existsMetaterm([head(drop(j.pcIndex, childNames))],
+                             relationMetaterm(jname, termed)));
+
   return
       case tys of
       | [] -> []

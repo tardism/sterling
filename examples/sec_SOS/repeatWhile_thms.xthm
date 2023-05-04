@@ -57,18 +57,17 @@ Prove_Constraint sec_SOS:host:trans_eval_e.
 Prove sec_SOS:host:eval_e_unique,
       sec_SOS:host:eval_rf_unique.
 
+Prove sec_SOS:host:update_rec_fields_unique.
 
-Extensible_Theorem
-  repeatWhile_transEval : forall G Body Cond G1,
-    Ev: eval_c G (repeatWhile Body Cond) G1 ->
-    exists G2, eval_c G (seq Body (while Cond Body)) G2
-  on Ev.
+
+Theorem repeatWhile_transEval : forall G Body Cond G1,
+    eval_c G (repeatWhile Body Cond) G1 ->
+    exists G2, eval_c G (seq Body (while Cond Body)) G2.
+induction on 1. intros Ev. Ev: case Ev (keep).
 %E-RepeatWhileTrue
  EvSeq: apply IH to Ev3. EvSeq: case EvSeq. search.
 %E-RepeatWhileFalse
  search.
-
-Prove sec_SOS:host:update_rec_fields_unique.
 
 Prove_Constraint sec_SOS:host:trans_c_eval.
 %repeatWhile

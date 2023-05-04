@@ -156,6 +156,19 @@ lookup G X private
 secure PC G assign(X, E) G
 
 
+/*Like assignment, since it is a version of it*/
+level G E public
+lookup G R public
+------------------------------------ [S-RecUpdatePublic]
+secure public G recUpdate(R, F, E) G
+
+
+level G E S
+lookup G R private
+-------------------------------- [S-RecUpdatePrivate]
+secure PC G recUpdate(R, F, E) G
+
+
 level G Cond S
 join PC S NewPC
 secure NewPC G Then GTh
