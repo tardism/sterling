@@ -615,26 +615,37 @@ function buildImportedUnknownRules_help
   local jname::String =
       decorate j.name with {judgmentEnv=jenv;}.ebJudgmentName;
 
-  --names for all children
-  local childNames::[String] =
+  --names for all args other than PC
+  local transName::String = "Trans";
+  local preArgNames::[String] =
       foldr(\ x::Type rest::[String] ->
-              freshNameFromType(x, rest)::rest,
-            [], j.types.toList);
-  local termed::[ExtensibellaTerm] =
-      map(varExtensibellaTerm, childNames);
+              freshNameFromType(x, transName::rest)::rest,
+            [], take(j.pcIndex, j.types.toList));
+  local postArgNames::[String] =
+      foldr(\ x::Type rest::[String] ->
+              freshNameFromType(x, --different from preArgNames
+                 transName::rest ++ preArgNames)::rest,
+            [], drop(j.pcIndex + 1, j.types.toList));
+  local preTermed::[ExtensibellaTerm] =
+      map(varExtensibellaTerm, preArgNames);
+  local postTermed::[ExtensibellaTerm] =
+      map(varExtensibellaTerm, postArgNames);
+
   --fill in unknown constructor for PC
   local args::[ExtensibellaTerm] =
-      take(j.pcIndex, termed) ++
-      [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
-      drop(j.pcIndex + 1, termed);
+      preTermed ++ [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
+      postTermed;
+
+  --fill in translation for PC
+  local transArgs::[ExtensibellaTerm] =
+      preTermed ++ [nameExtensibellaTerm(transName)] ++ postTermed;
 
   --full definition of rule
   --only requirement is same relation for translation with same args
   --   other than PC being a variable
-  local d::Def =
-      ruleDef(relationMetaterm(jname, args),
-              existsMetaterm([head(drop(j.pcIndex, childNames))],
-                             relationMetaterm(jname, termed)));
+  local d::Def = ruleDef(relationMetaterm(jname, args),
+                    existsMetaterm([transName],
+                       relationMetaterm(jname, transArgs)));
 
   return
       case tys of
