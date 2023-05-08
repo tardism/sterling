@@ -126,17 +126,20 @@ secure PC G seq(C1, C2) G2
 
 
 level G E public
--------------------------------------------- [S-Declare]
-secure PC G declare(X, Ty, E) (X, public)::G
+no_lookup G X /*no previous assignment*/
+------------------------------------------------ [S-Declare]
+secure public G declare(X, Ty, E) (X, public)::G
 
 
 level G E S
+no_lookup G X /*no previous assignment*/
 ------------------------------------------ [S-DeclareSecPrivate]
 {secure PC G declareSec(X, private, Ty, E)
         (X, private)::G}
 
 
 level G E public
+no_lookup G X /*no previous assignment*/
 --------------------------------------------- [S-DeclareSecPublic]
 {secure public G declareSec(X, public, Ty, E)
         (X, public)::G}

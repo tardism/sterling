@@ -73,7 +73,7 @@ Prove sec_SOS:host:vars_eval_same_result,
 %We need this to make join_unique below possible
 %Problem arises due to disallowed case analysis
 Extensible_Theorem
-  join_private : forall A S,
+  join_private_left : forall A S,
     Join : join A private S ->
     S = private
   on Join.
@@ -92,7 +92,7 @@ Extensible_Theorem
 %1 by J-Private1
  case J2. search. search.
 %1 by J-Private 2
- apply join_private to J2. search.
+ apply join_private_left to J2. search.
 Extensible_Theorem
   join_public : forall A B,
     J: join A B public ->
@@ -182,6 +182,7 @@ Extensible_Theorem
    Mem: apply trans_rf_vars to Lev1 Vars V Mem.
    apply IH1 to Lev2 V Mem1. search.
 
+
 Define public_equiv :
    list (pair string seclevel) -> list (pair string value) ->
    list (pair string value) -> prop by
@@ -203,6 +204,13 @@ Equiv: case Equiv. apply vars_eval_same_result to _ Vars Ev1 Ev2.
 search.
 
 
+Theorem public_equiv_trans : forall SG GA GB GC,
+  public_equiv SG GA GB -> public_equiv SG GB GC ->
+  public_equiv SG GA GC.
+intros SAB SBC. unfold. intros LkpSec LkpA LkpC.
+SAB: case SAB. SBC: case SBC. skip.
+
+
 Extensible_Theorem
   stmt_private_no_public_change : forall C SG SG1 G G1,
     Sec : secure private SG C SG1 ->
@@ -210,27 +218,54 @@ Extensible_Theorem
     public_equiv SG G G1
   on Ev.
 %E-Noop
- skip.
+ unfold. intros LkpSec LkpA LkpB. apply lookup_unique to LkpA LkpB.
+ search.
 %E-Seq
- skip.
+ Sec: case Sec. apply IH to _ Ev1. apply IH to _ Ev2. skip. %need transitivity
 %E-Declare
- skip.
+ Sec: case Sec. %basic declare requires PC be public, not private
 %E-Assign
- skip.
+ Sec: case Sec. unfold. intros LkpSec LkpA LkpB. LkpB: case LkpB.
+   %LkpB here
+    apply lookup_unique to Sec1 LkpSec.
+   %LkpB later
+    apply lookup_unique to LkpA LkpB1. search.
 %E-IfThenElseTrue
- skip.
+ Sec: case Sec. case Sec1.
+   %J-Private1
+    apply IH to Sec2 Ev2. search.
+   %J-Private2
+    apply IH to Sec2 Ev2. search.
 %E-IfThenElseFalse
- skip.
+ Sec: case Sec. case Sec1.
+   %J-Private1
+    apply IH to Sec3 Ev2. search.
+   %J-Private2
+    apply IH to Sec3 Ev2. search.
 %E-WhileFalse
- skip.
+ unfold. intros LkpSec LkpA LkpB. apply lookup_unique to LkpA LkpB.
+ search.
 %E-WhileTrue
- skip.
+ Sec: case Sec (keep). case Sec2.
+   %J-Private1
+    apply IH to _ Ev2. apply IH to _ Ev3. skip. %need transitivity
+   %J-Private2
+    apply IH to _ Ev2. apply IH to _ Ev3. skip. %need transitivity
 %E-RecUpdate
- skip.
+ Sec: case Sec. unfold. intros LkpSec LkpA LkpB. LkpB: case LkpB.
+   %LkpB here
+    apply lookup_unique to Sec1 LkpSec.
+   %LkpB later
+    apply lookup_unique to LkpA LkpB1. search.
 %E-DeclareSec
- skip.
+ Sec: case Sec. unfold. intros LkpSec LkpA LkpB. LkpB: case LkpB.
+   %LkpB here
+    apply no_lookup to Sec1 LkpSec.
+   %LkpB later
+    apply lookup_unique to LkpA LkpB1. search.
 %Preservability
- skip.
+ Sec: case Sec. apply trans_c_unique to Ev2 Sec. apply IH to _ Ev1.
+ search.
 
 
 Extensible_Theorem
@@ -301,8 +336,10 @@ Extensible_Theorem
 %E-IfThenElseTrue
  Is: case Is. Sec: case Sec. EvB: case EvB.
    %EvB by E-IfThenElseTrue
-    apply IH to _ _ _ EvA2 EvB1. skip.
+    apply IH to _ _ _ EvA2 EvB1. skip. %branch makes no changes to new vars, so still equiv under old SG?
    %EvB by E-IfThenElseFalse
+    %need property that different values imply level of expr is private
+    %apply stmt_private_no_public_change to _ _.
     skip. %need another property
 %E-IfThenElseFalse
  Is: case Is. Sec: case Sec. EvB: case EvB.
