@@ -386,7 +386,8 @@ Extensible_Theorem
 %Preservability
  Sec: case Sec. apply trans_c_unique to EvA2 Sec.
  EvBTrans: apply trans_c_eval to EvA2 EvB.
- Equiv: apply IH to _ Sec1 Rel EvA1 EvBTrans. skip. %need TC for is -> is
+ IsCT: apply trans_c_is to Sec Is.
+ Equiv: apply IH to _ Sec1 Rel EvA1 EvBTrans.
  Equiv: case Equiv. unfold. intros LkpSec LkpA LkpB.
  LkpG': apply trans_c_eval_results to EvA2 EvB EvBTrans LkpB.
  apply Equiv to LkpSec LkpA LkpG'. search.
