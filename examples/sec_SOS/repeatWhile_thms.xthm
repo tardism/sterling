@@ -152,12 +152,11 @@ Prove sec_SOS:host:eval_c_unique.
     apply IH to Ev3 Ev2. search.
 
 
-Extensible_Theorem
-  repeatWhile_transSame : forall G Body Cond G1 G2,
-    EvRW: eval_c G (repeatWhile Body Cond) G1 ->
-    EvSW: eval_c G (seq Body (while Cond Body)) G2 ->
-    G1 = G2
-  on EvRW.
+Theorem repeatWhile_transSame : forall G Body Cond G1 G2,
+    eval_c G (repeatWhile Body Cond) G1 ->
+    eval_c G (seq Body (while Cond Body)) G2 ->
+    G1 = G2.
+induction on 1. intros EvRW EvSW. EvRW: case EvRW (keep).
 %E-RepeatWhileTrue
  EvSW: case EvSW. apply eval_c_unique to EvRW1 EvSW. EvW': case EvSW1.
    %E-WhileFalse
