@@ -167,8 +167,9 @@ eval_c G while(Cond, Body) G2
 eval_e G E V
 lookup G Rec recVal(Fields)
 update_rec_fields RecFields Fields V Result
--------------------------------------------- [E-RecUpdate]
-eval_c G recUpdate(Rec, RecFields, E) Result
+------------------------------------------- [E-RecUpdate]
+{eval_c G recUpdate(Rec, RecFields, E)
+             (Rec, recVal(Result))::G}
 
 
 /*Update the associations in the first tyCtx for the fields,

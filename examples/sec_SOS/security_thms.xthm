@@ -47,11 +47,21 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
 %declareSec
  Ev: case Hyp1. search.
 
+Prove_Ext_Ind sec_SOS:host:eval_c.
+%declareSec
+ Trans: assert |{c}- declareSec X S Ty E ~~> declare X Ty E.
+ assert <eval_c {T}> G (declare X Ty E) ((X, V)::G). search.
+
 Prove sec_SOS:host:eval_c_unique.
 %declareSec
  Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
 
 Prove_Constraint sec_SOS:host:trans_c_eval_results.
+%declareSec
+ Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
+ search.
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
 %declareSec
  Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
  search.
@@ -68,7 +78,7 @@ Prove sec_SOS:host:vars_eval_same_result,
 %We need this to make join_unique below possible
 %Problem arises due to disallowed case analysis
 Extensible_Theorem
-  join_private : forall A S,
+  join_private_left : forall A S,
     Join : join A private S ->
     S = private
   on Join.
@@ -87,7 +97,7 @@ Extensible_Theorem
 %1 by J-Private1
  case J2. search. search.
 %1 by J-Private 2
- apply join_private to J2. search.
+ apply join_private_left to J2. search.
 Extensible_Theorem
   join_public : forall A B,
     J: join A B public ->
@@ -177,13 +187,56 @@ Extensible_Theorem
    Mem: apply trans_rf_vars to Lev1 Vars V Mem.
    apply IH1 to Lev2 V Mem1. search.
 
+
 Define public_equiv :
-   list (pair string seclevel) -> list (pair string value) ->
-   list (pair string value) -> prop by
+  list (pair string seclevel) -> list (pair string value) ->
+  list (pair string value) -> prop by
 public_equiv S G1 G2 :=
-  forall X V1 V2,
-    lookup S X public ->
-    lookup G1 X V1 -> lookup G2 X V2 -> V1 = V2.
+  (forall X V1 V2,
+      lookup S X public ->
+      lookup G1 X V1 -> lookup G2 X V2 -> V1 = V2) /\
+  (forall X V,
+      lookup S X public ->
+      lookup G1 X V -> lookup G2 X V) /\
+  (forall X V,
+      lookup S X public ->
+      lookup G2 X V -> lookup G1 X V).
+
+Theorem public_equiv_trans : forall SG GA GB GC,
+  public_equiv SG GA GB -> public_equiv SG GB GC ->
+  public_equiv SG GA GC.
+intros PEAB PEBC. PEAB: case PEAB. PEBC: case PEBC. unfold.
+  %First part
+   intros LkpSec LkpA LkpC. LkpB: apply PEAB1 to LkpSec LkpA.
+   apply PEBC to LkpSec LkpB LkpC. search.
+  %Second part
+   intros LkpSec LkpA. LkpB: apply PEAB1 to LkpSec LkpA.
+   apply PEBC1 to LkpSec LkpB. search.
+  %Third part
+   intros LkpSec LkpC. LkpB: apply PEBC2 to LkpSec LkpC.
+   apply PEAB2 to LkpSec LkpB. search.
+
+
+Theorem public_equiv_symm : forall SG GA GB,
+  public_equiv SG GA GB -> public_equiv SG GB GA.
+intros Rel. Rel: case Rel. unfold.
+  %First part
+   intros LkpSec LkpB LkpA. apply Rel to LkpSec LkpA LkpB. search.
+  %Second part
+   intros LkpSec LkpB. apply Rel2 to LkpSec LkpB. search.
+  %Third part
+   intros LkpSec LkpA. apply Rel1 to LkpSec LkpA. search.
+
+
+Theorem public_equiv_refl : forall SG G,
+  public_equiv SG G G.
+intros. unfold.
+  %First part
+   intros LkpSec Lkp1 Lkp2. apply lookup_unique to Lkp1 Lkp2. search.
+  %Second part
+   intros. search.
+  %Third part
+   intros. search.
 
 
 Theorem level_secure : forall SG G1 G2 E V1 V2,
@@ -193,5 +246,611 @@ Theorem level_secure : forall SG G1 G2 E V1 V2,
 intros IsE Lev Equiv Ev1 Ev2. Vars: apply vars_exist to IsE.
 Equiv: case Equiv. apply vars_eval_same_result to _ Vars Ev1 Ev2.
   intros Mem Lkp1 Lkp2. LkpS: apply level_public_vars to Lev Vars Mem.
+  %
   apply Equiv to LkpS Lkp1 Lkp2. search.
 search.
+
+
+Extensible_Theorem
+  level_unique : forall SG E S1 S2,
+    LevA : level SG E S1 ->
+    LevB : level SG E S2 ->
+    S1 = S2
+  on LevA,
+  level_rf_unique : forall SG RF S1 S2,
+    LevA : rf_level SG RF S1 ->
+    LevB : rf_level SG RF S2 ->
+    S1 = S2
+  on LevA.
+%level_unique
+ %S-Num
+  case LevB. search.
+ %S-Plus
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %S-Name
+  LevB: case LevB. apply lookup_unique to LevA1 LevB. search.
+ %S-Greater
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %S-Eq
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %S-And
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %S-Or
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %S-True
+  case LevB. search.
+ %S-False
+  case LevB. search.
+ %S-RecBuild
+  LevB: case LevB. apply IH1 to LevA1 LevB. search.
+ %S-RecField
+  LevB: case LevB. apply IH to LevA1 LevB. search.
+ %Preservability
+  LevB: case LevB. apply trans_e_unique to LevA1 LevB.
+  apply IH to LevA2 LevB1. search.
+%level_rf_unique
+ %S-RFEnd
+  case LevB. search.
+ %S-RFAdd
+  LevB: case LevB. apply IH to LevA1 LevB. apply IH1 to LevA2 LevB1.
+  apply join_unique to LevA3 LevB2. search.
+ %Preservability
+  LevB: case LevB. apply trans_rf_unique to LevA1 LevB.
+  apply IH1 to LevA2 LevB1. search.
+
+
+Theorem level_not_public : forall SG G1 G2 E V1 V2,
+  is_e E -> public_equiv SG G1 G2 -> level SG E public ->
+  eval_e G1 E V1 -> eval_e G2 E V2 -> (V1 = V2 -> false) ->
+  false.
+intros Is Equiv Lev Ev1 Ev2 NEq.
+apply level_secure to Is Lev Equiv Ev1 Ev2. backchain NEq.
+
+
+Extensible_Theorem
+  stmt_public_branch : forall PC SG SG2 G G2 C X,
+    Sec : secure PC SG C SG2 ->
+    Ev : eval_c G C G2 ->
+    LkpSec : lookup SG X public ->
+    lookup SG2 X public
+  on Ev.
+%E-Noop
+ case Sec. search.
+%E-Seq
+ Sec: case Sec. apply IH to Sec Ev1 _. apply IH to Sec1 Ev2 _. search.
+%E-Declare
+ Sec: case Sec. assert X1 = X -> false.
+                   intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
+ search.
+%E-Assign
+ case Sec.
+   %S-AssignPublic
+    search.
+   %S-AssignPrivate
+    search.
+%E-IfThenElseTrue
+ Sec: case Sec. apply IH to Sec2 Ev2 _. search.
+%E-IfThenElseFalse
+ Sec: case Sec. apply IH to Sec3 Ev2 _. search.
+%E-WhileFalse
+ case Sec. search.
+%E-WhileTrue
+ Sec: case Sec (keep). apply IH to Sec3 Ev2 _. apply IH to Sec Ev3 _.
+ search.
+%E-RecUpdate
+ case Sec.
+   %S-RecUpdatePublic
+    search.
+   %S-RecUpdatePrivate
+    search.
+%E-DeclareSec
+ Sec: case Sec.
+   %S-DeclareSecPrivate
+    assert X1 = X -> false.
+      intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
+    search.
+   %S-DeclareSecPublic
+    assert X1 = X -> false.
+      intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
+    search.
+%Preservability
+ Sec: case Sec. apply trans_c_unique to Ev2 Sec.
+ apply IH to Sec1 Ev1 _. search.
+
+
+Theorem public_equiv_swap : forall SG SG' GA GB,
+  (forall X, lookup SG X public -> lookup SG' X public) ->
+  public_equiv SG' GA GB -> public_equiv SG GA GB.
+intros LkpEquiv Eq. Eq: case Eq. unfold.
+  %First part
+   intros LkpSec LkpA LkpB. LkpSG': apply LkpEquiv to LkpSec.
+   apply Eq to LkpSG' LkpA LkpB. search.
+  %Second part
+   intros LkpSec LkpA. LkpSG': apply LkpEquiv to LkpSec.
+   apply Eq1 to LkpSG' LkpA. search.
+  %Third part
+   intros LkpSec LkpB. LkpSG': apply LkpEquiv to LkpSec.
+   apply Eq2 to LkpSG' LkpB. search.
+
+
+Extensible_Theorem
+  stmt_not_public_no_public_change : forall C S SG SG1 G G1,
+    Sec : secure S SG C SG1 ->
+    NEq : (S = public -> false) ->
+    Ev : eval_c G C G1 ->
+    public_equiv SG G G1
+  on Ev.
+%E-Noop
+ unfold.
+   %First part
+    intros LkpSec LkpA LkpB. apply lookup_unique to LkpA LkpB. search.
+   %Second part
+    intros. search.
+   %Third part
+    intros. search.
+%E-Seq
+ Sec: case Sec. EqGG2: apply IH to _ _ Ev1. EqG2G1: apply IH to _ _ Ev2.
+ LkpEq1: assert (forall X, lookup SG X public -> lookup G3 X public).
+   intros Lkp. apply stmt_public_branch to Sec Ev1 Lkp. search.
+ Eq2: apply public_equiv_swap to LkpEq1 EqG2G1.
+ apply public_equiv_trans to EqGG2 Eq2. search.
+%E-Declare
+ Sec: case Sec. apply NEq to _.
+%E-Assign
+ Sec: case Sec.
+   %S-AssignPublic
+    apply NEq to _.
+   %S-AssignPrivate
+    unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpB: case LkpB.
+         %LkpB here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpB later
+          apply lookup_unique to LkpA LkpB1. search.
+      %Second part
+       intros LkpSec LkpG. Or: apply lookup_eq_or_not to Sec1 LkpSec.
+       Eq: case Or.
+         %X = X1
+          apply lookup_unique to Sec1 LkpSec.
+         %X =/= X1
+         search.
+      %Third part
+       intros LkpSec LkpG+. Lkp: case LkpG+.
+         %Lkp here
+          apply lookup_unique to Sec1 LkpSec.
+         %Lkp later
+          search.
+%E-IfThenElseTrue
+ Sec: case Sec.
+ assert NewPC = public -> false.
+   intros Eq. case Eq. backchain NEq. apply join_public to Sec1. search.
+ apply IH to Sec2 _ Ev2. search.
+%E-IfThenElseFalse
+ Sec: case Sec.
+ assert NewPC = public -> false.
+   intros Eq. case Eq. backchain NEq. apply join_public to Sec1. search.
+ apply IH to Sec3 _ Ev2. search.
+%E-WhileFalse
+ unfold.
+   %First part
+    intros LkpSec LkpA LkpB. apply lookup_unique to LkpA LkpB. search.
+   %Second part
+    intros LkpSec LkpG1. search.
+   %Third part
+    intros LkpSec LkpG1. search.
+%E-WhileTrue
+ Sec: case Sec (keep).
+ assert NewPC = public -> false.
+   intros Eq. case Eq. backchain NEq. apply join_public to Sec2. search.
+ EqGG2: apply IH to Sec3 _ Ev2. EqG2G1: apply IH to _ _ Ev3.
+ apply public_equiv_trans to EqGG2 EqG2G1. search.
+%E-RecUpdate
+ Sec: case Sec.
+   %S-RecUpdatePublic
+    apply NEq to _.
+   %S-RecUpdatePrivate
+    unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpB: case LkpB.
+         %LkpB here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpB later
+          apply lookup_unique to LkpA LkpB1. search.
+      %Second part
+       intros LkpSec LkpG. Or: apply lookup_eq_or_not to Sec1 LkpSec.
+       Eq: case Or.
+         %X = X1
+          apply lookup_unique to Sec1 LkpSec.
+         %X =/= X1
+          search.
+      %Third part
+       intros LkpSec LkpG+. Lkp: case LkpG+.
+         %LkpG+ here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpG+ later
+          search.
+%E-DeclareSec
+ Sec: case Sec.
+   %S-DeclareSecPrivate
+    unfold.
+      %Frist part
+       intros LkpSec LkpA LkpB. LkpB: case LkpB.
+         %LkpB here
+          apply no_lookup to Sec1 LkpSec.
+         %LkpB later
+          apply lookup_unique to LkpA LkpB1. search.
+      %Second part
+       intros LkpSec LkpG.
+       assert (X = X1 -> false).
+         intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
+       search.
+      %Third part
+       intros LkpSec LkpG+. Lkp: case LkpG+.
+         %LkpG+ here
+          apply no_lookup to Sec1 LkpSec.
+         %LkpG+ later
+          search.
+   %S-DeclareSecPublic
+    apply NEq to _.
+%Preservability
+ Sec: case Sec. apply trans_c_unique to Ev2 Sec. apply IH to _ _ Ev1.
+ search.
+
+
+Theorem while_no_public_change : forall PC SG SG' Cond Body S G G2,
+  secure PC SG (while Cond Body) SG' -> level SG Cond S ->
+  (S = public -> false) -> eval_c G (while Cond Body) G2 ->
+  public_equiv SG G G2.
+induction on 4. intros Sec Lev NEq Ev. Ev: case Ev.
+  %1:  E-WhileFalse
+   backchain public_equiv_refl.
+  %2:  E-WhileTrue
+   EqG1G2: apply IH to Sec Lev NEq Ev2. Sec: case Sec.
+   EqGG1: apply stmt_not_public_no_public_change to Sec2 _ Ev1.
+     intros Eq. case Eq. apply join_public to Sec1.
+     apply level_unique to Lev Sec. backchain NEq.
+   apply public_equiv_trans to EqGG1 EqG1G2. search.
+
+
+Extensible_Theorem
+  stmt_secure : forall C PC SG SG1 GA GA' GB GB',
+    Is : is_c C ->
+    Sec : secure PC SG C SG1 ->
+    Rel : public_equiv SG GA GB ->
+    EvA : eval_c GA C GA' ->
+    EvB : eval_c GB C GB' ->
+    public_equiv SG1 GA' GB'
+  on EvA. %Rel.
+%E-Noop
+ case EvB. case Sec. search.
+%E-Seq
+ EvB: case EvB. Sec: case Sec. Is: case Is.
+ apply IH to _ _ _ EvA1 EvB. apply IH to _ _ _ EvA2 EvB1. search.
+%E-Declare
+ EvB: case EvB. Sec: case Sec. Is: case Is.
+ apply level_secure to _ _ Rel EvA1 EvB. unfold.
+   %First part
+    intros LkpSec LkpA LkpB. LkpA: case LkpA.
+      %LkpA here
+       LkpB: case LkpB.
+         %LkpB here
+          search.
+         %LkpB later
+          apply LkpB to _.
+      %LkpA later
+       LkpB: case LkpB.
+         %LkpB here
+          apply LkpA to _.
+         %LkpB later
+          Rel: case Rel. LkpSec: case LkpSec.
+            %LkpSec here
+             apply LkpA to _.
+            %LkpSec later
+             apply Rel to LkpSec1 LkpA1 LkpB1. search.
+   %Second part
+    intros LkpSec LkpA. LkpSec: case LkpSec.
+      %LkpSec here
+       LkpA: case LkpA.
+         %LkpA here
+          search.
+         %LkpA later
+          apply LkpA to _.
+      %LkpSec later
+       LkpA: case LkpA.
+         %LkpA here
+          apply LkpSec to _.
+         %LkpA later
+          Rel: case Rel. apply Rel1 to LkpSec1 LkpA1. search.
+   %Third part
+    intros LkpSec LkpB. LkpSec: case LkpSec.
+      %LkpSec here
+       LkpB: case LkpB.
+         %LkpB here
+          search.
+         %LkpB later
+          apply LkpB to _.
+      %LkpSec later
+       LkpB: case LkpB.
+         %LkpB here
+          apply LkpSec to _.
+         %LkpB later
+          Rel: case Rel. apply Rel2 to LkpSec1 LkpB1. search.
+%E-Assign
+ EvB: case EvB. Is: case Is.Sec: case Sec.
+   %S-AssignPublic
+    apply level_secure to _ Sec Rel EvA1 EvB. unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpA: case LkpA.
+         %LkpA here
+          LkpB: case LkpB.
+            %LkpB here
+             search.
+            %LkpB later
+             apply LkpB to _.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpA to _.
+            %LkpB later
+             Rel: case Rel. apply Rel to LkpSec LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec LkpA. LkpA: case LkpA.
+         %LkpA here
+          search.
+         %LkpA later
+          Rel: case Rel. apply Rel1 to LkpSec LkpA1. search.
+      %Third part
+       intros LkpSec LkpB. LkpB: case LkpB.
+         %LkpB here
+          search.
+         %LkpB later
+          Rel: case Rel. apply Rel2 to LkpSec LkpB1. search.
+   %S-AssignPrivate
+    unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpA: case LkpA.
+         %LkpA here
+          LkpB: case LkpB.
+            %LkpB here
+             apply lookup_unique to Sec1 LkpSec.
+            %LkpB later
+             apply LkpB to _.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpA to _.
+            %LkpB later
+             Rel: case Rel. apply Rel to LkpSec LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec LkpA. LkpA: case LkpA.
+         %LkpA here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpA later
+          Rel: case Rel. apply Rel1 to LkpSec LkpA1. search.
+      %Third part
+       intros LkpSec LkpB. LkpB: case LkpB.
+         %LkpB here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpB later
+          Rel: case Rel. apply Rel2 to LkpSec LkpB1. search.
+%E-IfThenElseTrue
+ Is: case Is. Sec: case Sec. EvB: case EvB.
+   %EvB by E-IfThenElseTrue
+    EqGA'GB': apply IH to _ _ _ EvA2 EvB1.
+    LkpEq: assert forall X, lookup SG X public -> lookup GTh X public.
+      intros Lkp. apply stmt_public_branch to Sec2 EvA2 Lkp. search.
+    apply public_equiv_swap to LkpEq EqGA'GB'. search.
+   %EvB by E-IfThenElseFalse
+    assert S = public -> false.
+      intros Eq. case Eq. apply level_not_public to Is _ _ EvA1 EvB _.
+    EqGAGA': apply stmt_not_public_no_public_change to Sec2 _ EvA2.
+      apply join_public to Sec1. search.
+    EqGBGB': apply stmt_not_public_no_public_change to Sec3 _ EvB1.
+      apply join_public to Sec1. search.
+    EqGAGB': apply public_equiv_trans to Rel EqGBGB'.
+    EqGA'GA: apply public_equiv_symm to EqGAGA'.
+    EqGA'GB: apply public_equiv_trans to EqGA'GA Rel.
+    apply public_equiv_trans to EqGA'GB EqGBGB'. search.
+%E-IfThenElseFalse
+ Is: case Is. Sec: case Sec. EvB: case EvB.
+   %EvB by E-IfThenElseTrue
+    assert S = public -> false.
+      intros Eq. case Eq. apply level_not_public to Is _ _ EvA1 EvB _.
+    EqGAGA': apply stmt_not_public_no_public_change to Sec3 _ EvA2.
+      apply join_public to Sec1. search.
+    EqGBGB': apply stmt_not_public_no_public_change to Sec2 _ EvB1.
+      apply join_public to Sec1. search.
+    EqGAGB': apply public_equiv_trans to Rel EqGBGB'.
+    EqGA'GA: apply public_equiv_symm to EqGAGA'.
+    EqGA'GB: apply public_equiv_trans to EqGA'GA Rel.
+    apply public_equiv_trans to EqGA'GB EqGBGB'. search.
+   %EvB by E-IfThenElseFalse
+    EqGA'GB': apply IH to _ _ _ EvA2 EvB1.
+    LkpEq: assert forall X, lookup SG X public -> lookup GEl X public.
+      intros Lkp. apply stmt_public_branch to Sec3 EvA2 Lkp. search.
+    apply public_equiv_swap to LkpEq EqGA'GB'. search.
+%E-WhileFalse
+ Is: case Is (keep). Sec: case Sec (keep). EvB: case EvB.
+   %EvB by E-WhileFalse
+    search.
+   %EvB by E-WhileTrue
+    SNEq: assert S = public -> false.
+      intros Eq. case Eq. apply level_not_public to Is1 _ _ EvA1 EvB _.
+    EqGBG2: apply stmt_not_public_no_public_change to Sec3 _ EvB1.
+      intros Eq. case Eq. apply join_public to Sec2. backchain SNEq.
+    EqGA'G2: apply public_equiv_trans to Rel EqGBG2.
+    EqG2GB': apply while_no_public_change to Sec Sec1 _ EvB2.
+    apply public_equiv_trans to EqGA'G2 EqG2GB'. search.
+%E-WhileTrue
+ Is: case Is (keep). Sec: case Sec (keep). EvB: case EvB.
+   %EvB by E-WhileFalse
+    SNEq: assert S = public -> false.
+      intros Eq. case Eq. apply level_not_public to Is1 _ _ EvA1 EvB _.
+    EqGAG1: apply stmt_not_public_no_public_change to Sec3 _ EvA2.
+      intros Eq. case Eq. apply join_public to Sec2. backchain SNEq.
+    EqG1GA': apply while_no_public_change to Sec Sec1 _ EvA3.
+    EqGAGA': apply public_equiv_trans to EqGAG1 EqG1GA'.
+    EqGA'GA: apply public_equiv_symm to EqGAGA'.
+    apply public_equiv_trans to EqGA'GA Rel. search.
+   %EvB by E-WhileTrue
+    EqG1G3: apply IH to _ _ _ EvA2 EvB1.
+    LEq: assert forall X, lookup SG1 X public -> lookup G2 X public.
+      intros Lkp. apply stmt_public_branch to Sec3 EvA2 Lkp. search.
+    apply public_equiv_swap to LEq EqG1G3.
+    EqG1GA': apply IH to Is Sec _ EvA3 EvB2. search.
+%E-RecUpdate
+ EvB: case EvB. Is: case Is. Sec: case Sec.
+   %S-RecUpdatePublic
+    apply level_secure to _ Sec Rel EvA1 EvB. Rel: case Rel.
+    apply Rel to Sec1 EvA2 EvB1.
+    apply update_rec_fields_unique to EvA3 EvB2. unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpA: case LkpA.
+         %LkpA here
+          LkpB: case LkpB.
+            %LkpB here
+             search.
+            %LkpB later
+             apply LkpB to _.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpA to _.
+            %LkpB later
+             apply Rel to LkpSec LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec Lkp. Lkp: case Lkp.
+         %Lkp here
+          search.
+         %Lkp later
+          apply Rel1 to LkpSec Lkp1. search.
+      %Third part
+       intros LkpSec Lkp. Lkp: case Lkp.
+         %Lkp here
+          search.
+         %Lkp later
+          apply Rel2 to LkpSec Lkp1. search.
+   %S-RecUpdatePrivate
+    unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpA: case LkpA.
+         %LkpA here
+          apply lookup_unique to Sec1 LkpSec.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpA to _.
+            %LkpB later
+             Rel: case Rel. apply Rel to LkpSec LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec Lkp. Lkp: case Lkp.
+         %Lkp here
+          apply lookup_unique to Sec1 LkpSec.
+         %Lkp later
+          Rel: case Rel. apply Rel1 to LkpSec Lkp1. search.
+      %Third part
+       intros LkpSec Lkp. Lkp: case Lkp.
+         %Lkp here
+          apply lookup_unique to Sec1 LkpSec.
+         %Lkp later
+          Rel: case Rel. apply Rel2 to LkpSec Lkp1. search.
+%E-DeclareSec
+ EvB: case EvB. Is: case Is. Sec: case Sec.
+   %S-DeclareSecPrivate
+    unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpSec: case LkpSec.
+       LkpA: case LkpA.
+         %LkpA here
+          apply LkpSec to _.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpSec to _.
+            %LkpB later
+             Rel: case Rel. apply Rel to LkpSec1 LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec Lkp. LkpSec: case LkpSec. Lkp: case Lkp.
+         %Lkp here
+          apply LkpSec to _.
+         %Lkp later
+          Rel: case Rel. apply Rel1 to LkpSec1 Lkp1. search.
+      %Third part
+       intros LkpSec Lkp. LkpSec: case LkpSec. Lkp: case Lkp.
+         %Lkp here
+          apply LkpSec to _.
+         %Lkp later
+          Rel: case Rel. apply Rel2 to LkpSec1 Lkp1. search.
+   %S-DeclareSecPublic
+    apply level_secure to _ Sec Rel EvA1 EvB. unfold.
+      %First part
+       intros LkpSec LkpA LkpB. LkpA: case LkpA.
+         %LkpA here
+          LkpB: case LkpB.
+            %LkpB here
+             search.
+            %LkpB later
+             apply LkpB to _.
+         %LkpA later
+          LkpB: case LkpB.
+            %LkpB here
+             apply LkpA to _.
+            %LkpB later
+             LkpSec: case LkpSec.
+               %LkpSec here
+                apply LkpA to _.
+               %LkpSec later
+                Rel: case Rel. apply Rel to LkpSec1 LkpA1 LkpB1. search.
+      %Second part
+       intros LkpSec Lkp. LkpSec: case LkpSec.
+         %LkpSec here
+          Lkp: case Lkp.
+            %Lkp here
+             search.
+            %Lkp later
+             apply Lkp to _.
+         %LkpSec later
+          Lkp: case Lkp.
+            %Lkp here
+             apply LkpSec to _.
+            %Lkp later
+             Rel: case Rel. apply Rel1 to LkpSec1 Lkp1. search.
+      %Third part
+       intros LkpSec Lkp. LkpSec: case LkpSec.
+         %LkpSec here
+          Lkp: case Lkp.
+            %Lkp here
+             search.
+            %Lkp later
+             apply Lkp to _.
+         %LkpSec later
+          Lkp: case Lkp.
+            %Lkp here
+             apply LkpSec to _.
+            %Lkp later
+             Rel: case Rel. apply Rel2 to LkpSec1 Lkp1. search.
+%Preservability
+ Sec: case Sec. apply trans_c_unique to EvA2 Sec.
+ EvBTrans: apply trans_c_eval to EvA2 EvB.
+ IsCT: apply trans_c_is to Sec Is.
+ Equiv: apply IH to _ Sec1 Rel EvA1 EvBTrans.
+ LkpGB'G': assert forall X V, lookup GB' X V -> lookup G' X V.
+   intros L. apply trans_c_eval_results to EvA2 EvB EvBTrans L. search.
+
+ EqG'GB': assert public_equiv SG1 G' GB'.
+   unfold.
+     %First part
+      intros LkpSec LkpG' LkpGB'. Lkp: apply LkpGB'G' to LkpGB'.
+      apply lookup_unique to LkpG' Lkp. search.
+     %Second part
+      intros LkpSec LkpG'.
+      apply trans_c_eval_results_back to Sec EvB EvBTrans LkpG'. search.
+     %Third part
+      intros LkpSec LkpGB'. backchain LkpGB'G'.
+ apply public_equiv_trans to Equiv EqG'GB'. search.

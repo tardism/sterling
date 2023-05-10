@@ -30,8 +30,8 @@ typeOf G greater(E1, E2) boolTy
 
 typeOf G E1 Ty
 typeOf G E2 Ty
----------------------- [T-Eq]
-typeOf G eq(E1, E2) Ty
+-------------------------- [T-Eq]
+typeOf G eq(E1, E2) boolTy
 
 
 typeOf G E1 boolTy

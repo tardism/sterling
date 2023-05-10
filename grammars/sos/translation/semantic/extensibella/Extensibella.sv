@@ -612,26 +612,41 @@ function buildImportedUnknownRules_help
           jenv::Env<JudgmentEnvItem>
 {
   local ty::TypeEnvItem = head(tys);
-  --names for all children
-  local childNames::[String] =
+  local jname::String =
+      decorate j.name with {judgmentEnv=jenv;}.ebJudgmentName;
+
+  --names for all args other than PC
+  local transName::String = "Trans";
+  local preArgNames::[String] =
       foldr(\ x::Type rest::[String] ->
-              freshNameFromType(x, rest)::rest,
-          [], take(j.pcIndex, j.types.toList) ++
-              drop(j.pcIndex + 1, j.types.toList));
-  local termed::[ExtensibellaTerm] =
-      map(varExtensibellaTerm, childNames);
+              freshNameFromType(x, transName::rest)::rest,
+            [], take(j.pcIndex, j.types.toList));
+  local postArgNames::[String] =
+      foldr(\ x::Type rest::[String] ->
+              freshNameFromType(x, --different from preArgNames
+                 transName::rest ++ preArgNames)::rest,
+            [], drop(j.pcIndex + 1, j.types.toList));
+  local preTermed::[ExtensibellaTerm] =
+      map(varExtensibellaTerm, preArgNames);
+  local postTermed::[ExtensibellaTerm] =
+      map(varExtensibellaTerm, postArgNames);
+
   --fill in unknown constructor for PC
   local args::[ExtensibellaTerm] =
-      take(j.pcIndex, termed) ++
-      [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
-      drop(j.pcIndex, termed);
+      preTermed ++ [nameExtensibellaTerm(ty.name.ebUnknownName)] ++
+      postTermed;
+
+  --fill in translation for PC
+  local transArgs::[ExtensibellaTerm] =
+      preTermed ++ [nameExtensibellaTerm(transName)] ++ postTermed;
+
   --full definition of rule
-  --no requirements, since we don't know what other modules will have
-  local d::Def =
-      factDef(relationMetaterm(
-                 decorate j.name with {
-                    judgmentEnv=jenv;
-                 }.ebJudgmentName, args));
+  --only requirement is same relation for translation with same args
+  --   other than PC being a variable
+  local d::Def = ruleDef(relationMetaterm(jname, args),
+                    existsMetaterm([transName],
+                       relationMetaterm(jname, transArgs)));
+
   return
       case tys of
       | [] -> []
