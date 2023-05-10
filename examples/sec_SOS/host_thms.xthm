@@ -532,6 +532,11 @@ Translation_Constraint trans_c_eval_results :
     |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
     lookup G1 X V -> lookup G2 X V.
 
+Translation_Constraint trans_c_eval_results_back :
+  forall C C' G G1 G2 X V,
+    |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
+    lookup G2 X V -> lookup G1 X V.
+
 
 Theorem vars_equiv_left :
   forall (G1 : list (pair string value)) G2 D D1 D2,

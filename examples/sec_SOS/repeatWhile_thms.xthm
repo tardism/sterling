@@ -176,5 +176,10 @@ Prove_Constraint sec_SOS:host:trans_c_eval_results.
  apply repeatWhile_transSame to Hyp1 Hyp2. search.
 
 
+Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
+%repeatWhile
+ apply repeatWhile_transSame to Hyp1 Hyp2. search.
+
+
 Prove sec_SOS:host:vars_eval_same_result,
       sec_SOS:host:vars_equal_rf_same_result.

@@ -377,6 +377,7 @@ Prove sec_SOS:host:eval_c_unique.
 
 
 Prove_Constraint sec_SOS:host:trans_c_eval_results.
+Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
 
 
 Prove sec_SOS:host:vars_eval_same_result,

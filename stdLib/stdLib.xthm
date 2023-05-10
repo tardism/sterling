@@ -32,6 +32,24 @@ induction on 1. intros NLkp' Lkp'. NLkp: case NLkp'.
       backchain IH.
 
 
+Theorem lookup_eq_or_not [Key, Value] :
+  forall L (A B : Key) (VA VB : Value),
+    lookup L A VA -> lookup L B VB -> A = B \/ (A = B -> false).
+induction on 1. intros LkpA LkpB. LkpA: case LkpA.
+  %1:  Lkp-Here
+   LkpB: case LkpB.
+     %1.1:  Lkp-Here
+      search.
+     %1.2:  Lkp-Later
+      search.
+  %2:  Lkp-Later
+   LkpB: case LkpB.
+     %2.1:  Lkp-Here
+      right. intros Eq. case Eq. backchain LkpA.
+     %2.2:  Lkp-Later
+      apply IH to LkpA1 LkpB1. search.
+
+
 Theorem lookup_member [Key, Value] :
   forall L (Key : Key) (Value : Value),
     lookup L Key Value -> mem (Key, Value) L.
