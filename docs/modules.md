@@ -42,7 +42,7 @@ module builds on the [standard library](stdLib.md).
 
 
 ## Qualified Names
-Each declaration in a grammar is written using a short name, but also
+Each declaration in a module is written using a short name, but also
 has a full, qualified name.  For example, we might define a syntactic
 category named `term` in a module `lang:host`.  While we can use the
 name `term` to refer to this category, its full name is qualified by
