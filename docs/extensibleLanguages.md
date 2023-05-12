@@ -1,8 +1,8 @@
 # Extensible Languages
-The view of extensible languages on which SOS-Ext is one in which the
-language's syntax and semantics are given by a base language, or host
-language, and a set of independently-developed extensions adding to
-its definitions.
+The view of extensible languages on which SOS-Ext is based is one in
+which the language's syntax and semantics are given by a base
+language, or host language, and a set of independently-developed
+extensions adding to its definitions.
 
 
 ## Basic Extensible Languages
@@ -32,7 +32,7 @@ adds a new semantic relation, do we define it on the new syntax
 constructors introduced by another extension?  This is part of Phil
 Wadler's famous *expression problem*.  One option is to say the
 relation is not derivable on the new constructors.  However, this
-would the combination of new syntax and new semantic relations
+would make the combination of new syntax and new semantic relations
 unusable in practice, since a new static safety check, for example,
 would never hold if a program included new syntax from a different
 extension.

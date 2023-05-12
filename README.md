@@ -27,7 +27,7 @@ documentation](docs/extensibleLanguages.md).
 
 
 ## Required Software and Set-up
-SOS-Ext is written in [Silver](github.com/melt-umn/silver) and
+SOS-Ext is written in [Silver](https://github.com/melt-umn/silver) and
 thus requires Silver for building.  Running SOS-Ext requires Java 8
 and Bash.  Some extensions will require other software to use to run
 the compiled version of the defined language.
