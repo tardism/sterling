@@ -641,11 +641,16 @@ function buildImportedUnknownRules_help
       preTermed ++ [nameExtensibellaTerm(transName)] ++ postTermed;
 
   --full definition of rule
-  --only requirement is same relation for translation with same args
-  --   other than PC being a variable
+  --only requirements are same relation for translation with same args
+  --   other than PC being a variable and (0 = 0 -> false)
   local d::Def = ruleDef(relationMetaterm(jname, args),
                     existsMetaterm([transName],
-                       relationMetaterm(jname, transArgs)));
+                       andMetaterm(
+                          impliesMetaterm(
+                             eqMetaterm(extensibellaIntegerTerm(0),
+                                        extensibellaIntegerTerm(0)),
+                             falseMetaterm()),
+                          relationMetaterm(jname, transArgs))));
 
   return
       case tys of
