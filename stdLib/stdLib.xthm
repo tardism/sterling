@@ -50,7 +50,7 @@ induction on 1. intros LkpA LkpB. LkpA: case LkpA.
       apply IH to LkpA1 LkpB1. search.
 
 
-Theorem lookup_member [Key, Value] :
+Theorem lookup_mem [Key, Value] :
   forall L (Key : Key) (Value : Value),
     lookup L Key Value -> mem (Key, Value) L.
 induction on 1. intros Lkp'. Lkp: case Lkp'.
@@ -58,6 +58,20 @@ induction on 1. intros Lkp'. Lkp: case Lkp'.
    search.
   %2:  Lkp-Later
    apply IH to Lkp1. search.
+
+
+Theorem no_lookup_mem [Key, Value] :
+  forall L (Key : Key) (Value : Value),
+    no_lookup L Key -> mem (Key, Value) L -> false.
+induction on 1. intros Lkp Mem. Lkp: case Lkp.
+  %1:  NLkp-Nil
+   case Mem.
+  %2:  NLkp-Cons
+   Mem: case Mem.
+     %2.1:  Mem-Here
+      apply Lkp to _.
+     %2.2:  Mem-Later
+      apply IH to Lkp1 Mem.
 
 
 Theorem lookup_select [Key, Value] :
@@ -68,6 +82,39 @@ induction on 1. intros Lkp'. Lkp: case Lkp'.
    search.
   %2:  Lkp-Later
    apply IH to Lkp1. search.
+
+
+Theorem no_lookup_select [Key, Value] :
+  forall L (Key : Key) (Value : Value) R,
+    no_lookup L Key -> select (Key, Value) R L -> false.
+induction on 1. intros NLkp Slct. NLkp: case NLkp.
+  %1:  NLkp-Nil
+   case Slct.
+  %2:  NLkp-Cons
+   Slct: case Slct.
+     %2.1:  Slct-First
+      apply NLkp to _.
+     %2.2:  Slct-Later
+      apply IH to NLkp1 Slct.
+
+
+Theorem select_lookup [Key, Value] :
+  forall L (Key K : Key) (Value V : Value) R,
+    lookup L K V -> select (Key, Value) R L -> (K = Key -> false) ->
+    lookup R K V.
+induction on 1. intros Lkp Slct NEq. Lkp: case Lkp.
+  %1:  Lkp-Here
+   Slct: case Slct.
+     %1.1:  Slct-First
+      apply NEq to _.
+     %1.2:  Slct-Later
+      search.
+  %2:  Lkp-Later
+   Slct: case Slct.
+     %2.1:  Slct-First
+      search.
+     %2.2:  Slct-Later
+      apply IH to Lkp1 Slct _. search.
 
 
 Theorem mem_select [Item] : forall L (X : Item),
@@ -86,6 +133,19 @@ induction on 1. intros Slct'. Slct: case Slct'.
    search.
   %2:  Slct-Later
    apply IH to Slct. search.
+
+
+Theorem mem_after_select_before [Item] : forall L L' (X Y : Item),
+  select X L' L -> mem Y L' -> mem Y L.
+induction on 1. intros Slct Mem. Slct: case Slct.
+  %1:  Slct-First
+   search.
+  %2:  Slct-Later
+   Mem: case Mem.
+     %2.1:  Mem-Here
+      search.
+     %2.2:  Mem-Later
+      apply IH to Slct Mem. search.
 
 
 Theorem mem_append_left [A] : forall L1 L2 L (A : A),
