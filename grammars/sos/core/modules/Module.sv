@@ -136,35 +136,35 @@ top::ModuleList ::= m::Module rest::ModuleList
   --In that case, m would see everything from C twice.
   --We want to keep any multiple copies of m's defs, though, so we can
   --detect multiple declarations of the same name.
-  local tys::[TypeEnvItem] =
+  production tys::[TypeEnvItem] =
         nubBy(\ t1::TypeEnvItem t2::TypeEnvItem -> t1.name == t2.name,
            lookupAllModules(fullBuildsOnDecls, rest.moduleTyDecls)) ++
            m.tyDecls;
-  local cons::[ConstructorEnvItem] =
+  production cons::[ConstructorEnvItem] =
         nubBy(\ c1::ConstructorEnvItem c2::ConstructorEnvItem ->
                 c1.name == c2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleConstructorDecls)) ++ m.constructorDecls;
-  local jdgs::[JudgmentEnvItem] =
+  production jdgs::[JudgmentEnvItem] =
         nubBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                 j1.name == j2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleJudgmentDecls)) ++ m.judgmentDecls;
-  local trns::[TranslationEnvItem] =
+  production trns::[TranslationEnvItem] =
         nubBy(\ t1::TranslationEnvItem t2::TranslationEnvItem ->
                 t1.name == t2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleTranslationDecls)) ++ m.translationDecls;
-  local rules::[RuleEnvItem] =
+  production rules::[RuleEnvItem] =
         nubBy(\ r1::RuleEnvItem r2::RuleEnvItem -> r1.name == r2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleRuleDecls)) ++ m.ruleDecls;
-  local concretes::[ConcreteEnvItem] =
+  production concretes::[ConcreteEnvItem] =
         nubBy(\ c1::ConcreteEnvItem c2::ConcreteEnvItem ->
                 c1.name == c2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleConcreteDecls)) ++ m.concreteDecls;
-  local functions::[FunctionEnvItem] =
+  production functions::[FunctionEnvItem] =
         nubBy(\ f1::FunctionEnvItem f2::FunctionEnvItem ->
                 f1.name == f2.name,
            lookupAllModules(fullBuildsOnDecls,

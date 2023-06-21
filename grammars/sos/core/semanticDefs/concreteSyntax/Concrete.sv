@@ -22,6 +22,14 @@ concrete productions top::DeclList_c
   { top.ast = nilDecls(location=top.location); }
 | d::TopDecl_c x::EmptyNewlines rest::DeclList_c
   { top.ast = branchDecls(d.ast, rest.ast, location=top.location); }
+  {-We pull this out here so we can have EmptyNewlines between entries
+    in a syntax declaration, adding the EmptyNewlines that can go
+    between different top-level declarations to the syntax declaration
+    concrete production itself.-}
+| decl::AbsSyntaxDecl_c rest::DeclList_c
+  { top.ast = branchDecls(absSyntaxDecls(decl.ast,
+                                         location=decl.location),
+                          rest.ast, location=top.location); }
 
 
 
@@ -37,8 +45,6 @@ concrete productions top::TopDecl_c
                             location=top.location); }
 | r::Rule_c
   { top.ast = ruleDecls(r.ast, location=top.location); }
-| decl::AbsSyntaxDecl_c
-  { top.ast = absSyntaxDecls(decl.ast, location=top.location); }
 | decl::JudgmentDecl_c
   { top.ast = judgmentDecls(decl.ast, location=top.location); }
 
@@ -139,16 +145,12 @@ closed nonterminal AbsConstructorDecls_c layout {Spacing_t, Comment_t}
    with ast<AbsConstructorDecls>, location;
 
 concrete productions top::AbsConstructorDecls_c
-| d::AbsConstructorDecl_c Newline_t
+| d::AbsConstructorDecl_c Newline_t x::EmptyNewlines
   { top.ast = d.ast; }
-| d::AbsConstructorDecl_c '|' rest::AbsConstructorDecls_c
+| d::AbsConstructorDecl_c x::EmptyNewlines
+  '|' rest::AbsConstructorDecls_c
   { top.ast = branchAbsConstructorDecls(d.ast, rest.ast,
                                         location=top.location); }
-| d::AbsConstructorDecl_c Newline_t '|' rest::AbsConstructorDecls_c
-  { top.ast = branchAbsConstructorDecls(d.ast, rest.ast,
-                                        location=top.location); }
-| Newline_t rest::AbsConstructorDecls_c
-  { top.ast = rest.ast; }
 
 
 

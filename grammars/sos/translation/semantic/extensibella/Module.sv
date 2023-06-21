@@ -106,7 +106,15 @@ top::ModuleList ::= m::Module rest::ModuleList
   --rules for imported relations so they hold on unknown constructors
   local rulesImportedUnknown::[Def] =
       buildImportedUnknownRules(importedJdgs, importedTys,
-                                m.judgmentEnv);
+                                m.judgmentEnv) ++
+      --rules for unknown constructors for imported types
+      flatMap(\ t::TypeEnvItem ->
+                if sameModule(toQName(m.modName, bogusLoc()), t.name)
+                then []
+                else [factDef(relationMetaterm(t.name.ebIsName,
+                                 [nameExtensibellaTerm(
+                                     t.name.ebUnknownName)]))],
+              tys);
   --rules for translation rules holding on unknown constructors
   local constrEnvs::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->

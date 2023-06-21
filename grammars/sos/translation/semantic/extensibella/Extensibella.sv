@@ -123,7 +123,20 @@ top::Metaterm ::= rel::String args::[ExtensibellaTerm]
                   args));
 
   top.vars = unions(map((.vars), args));
-  top.usedRels = [rel];
+  --is_list and is_pair get the sub-relations added to the rel string,
+  --so split the relation to find all the relations
+  local parseRels::([String] ::= String) =
+      \ s::String ->
+        if startsWith("(", s)
+        then --remove () and try again
+             parseRels(substring(1, length(s) - 1, s))
+        else case explode(" ", s) of
+             | [] -> error("Impossible") --must be at least one
+             | [r] -> [r] --simply one relation
+             | r::tl -> --get rels from all sub-rels
+               r::flatMap(parseRels, tl)
+             end;
+  top.usedRels = parseRels(rel);
   top.definedRel = rel;
 
   top.replaced =
