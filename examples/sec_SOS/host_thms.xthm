@@ -545,7 +545,7 @@ Theorem vars_equiv_left :
     D1 ++ D2 = D ->
     (forall X U1 U2, mem X D1 -> lookup G1 X U1 ->
                      lookup G2 X U2 -> U1 = U2).
-intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
+intros Equiv J Mem Lkp1 Lkp2. backchain Equiv with X = X.
 backchain mem_append_left.
 Theorem vars_equiv_right :
   forall (G1 : list (pair string value)) G2 D D1 D2,
@@ -554,7 +554,7 @@ Theorem vars_equiv_right :
     D1 ++ D2 = D ->
     (forall X U1 U2, mem X D2 -> lookup G1 X U1 ->
                      lookup G2 X U2 -> U1 = U2).
-intros Equiv J Mem Lkp1 Lkp2. backchain Equiv.
+intros Equiv J Mem Lkp1 Lkp2. backchain Equiv with X = X.
 backchain mem_append_right.
 
 
