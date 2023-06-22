@@ -628,17 +628,36 @@ function buildImportedUnknownRules_help
   local jname::String =
       decorate j.name with {judgmentEnv=jenv;}.ebJudgmentName;
 
-  --names for all args other than PC
+  local d::Def =
+      buildOneUnknownRule(jname, j.types.toList, j.pcIndex, ty);
+
+  return
+      case tys of
+      | [] -> []
+      | _::rest ->
+        case j.pcType of
+        | nameType(q) ->
+          if q == ty.name
+          then d::buildImportedUnknownRules_help(j, rest, jenv)
+          else buildImportedUnknownRules_help(j, rest, jenv)
+        | _ -> error("Not possible")
+        end
+      end;
+}
+
+function buildOneUnknownRule
+Def ::= jname::String argTys::[Type] pcIndex::Integer ty::TypeEnvItem
+{
   local transName::String = "Trans";
   local preArgNames::[String] =
       foldr(\ x::Type rest::[String] ->
               freshNameFromType(x, transName::rest)::rest,
-            [], take(j.pcIndex, j.types.toList));
+            [], take(pcIndex, argTys));
   local postArgNames::[String] =
       foldr(\ x::Type rest::[String] ->
               freshNameFromType(x, --different from preArgNames
                  transName::rest ++ preArgNames)::rest,
-            [], drop(j.pcIndex + 1, j.types.toList));
+            [], drop(pcIndex + 1, argTys));
   local preTermed::[ExtensibellaTerm] =
       map(varExtensibellaTerm, preArgNames);
   local postTermed::[ExtensibellaTerm] =
@@ -664,19 +683,7 @@ function buildImportedUnknownRules_help
                                         extensibellaIntegerTerm(0)),
                              falseMetaterm()),
                           relationMetaterm(jname, transArgs))));
-
-  return
-      case tys of
-      | [] -> []
-      | _::rest ->
-        case j.pcType of
-        | nameType(q) ->
-          if q == ty.name
-          then d::buildImportedUnknownRules_help(j, rest, jenv)
-          else buildImportedUnknownRules_help(j, rest, jenv)
-        | _ -> error("Not possible")
-        end
-      end;
+  return d;
 }
 
 

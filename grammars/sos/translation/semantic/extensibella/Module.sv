@@ -111,9 +111,9 @@ top::ModuleList ::= m::Module rest::ModuleList
       flatMap(\ t::TypeEnvItem ->
                 if sameModule(toQName(m.modName, bogusLoc()), t.name)
                 then []
-                else [factDef(relationMetaterm(t.name.ebIsName,
-                                 [nameExtensibellaTerm(
-                                     t.name.ebUnknownName)]))],
+                else [buildOneUnknownRule(t.name.ebIsName,
+                         [nameType(t.name, location=bogusLoc())],
+                         0, t)],
               tys);
   --rules for translation rules holding on unknown constructors
   local constrEnvs::[ConstructorEnvItem] =
