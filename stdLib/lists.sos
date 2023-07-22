@@ -18,9 +18,15 @@ Fixed Judgment mem : Item [Item]
 Fixed Judgment select : Item [Item] [Item]
 
 /*Holds if the second list contains everything in the first list
-  Does not work with duplication:  subset [A, A] [A] will fail because
-     there is only copy of A in the second list*/
+  Permits duplication in the subset (e.g. subset [A, A] [A] holds)*/
 Fixed Judgment subset : [A] [A]
+
+/*Holds if the first list contains everything in the second list and
+  the first list contains everything in the second list*/
+Fixed Judgment permutation : [A] [A]
+
+/*Count haw many times an item occurs in a list*/
+Fixed Judgment count : A [A] int
 
 /*Domain of a list (first element of each pair)*/
 Fixed Judgment domain : [(A, B)] [A]
@@ -30,6 +36,9 @@ Fixed Judgment values : [(A, B)] [B]
 
 /*Combine two lists into a list of pairs*/
 Fixed Judgment zip : [A] [B] [(A, B)]
+
+/*Build a range list, inclusive*/
+Fixed Judgment range : int int [int]
 
 
 
@@ -88,10 +97,40 @@ select Item I::L1 I::L2
 subset [] L
 
 
-select X SupRest Supset
-subset Rest SupRest
-======================= [Sbst-Cons]
+mem X Supset
+subset Rest Supset
+===================== [Sbst-Cons]
 subset X::Rest Supset
+
+
+
+
+================= [Prm-Nil]
+permutation [] []
+
+
+select A L2 L
+permutation Rest L2
+======================= [Prm-Cons]
+permutation (A::Rest) L
+
+
+
+
+============ [Cnt-Nil]
+count X [] 0
+
+
+count X Rest N
+1 + N = N1
+================== [Cnt-ConsEq]
+count X X::Rest N1
+
+
+X != Y
+count X Rest N
+================= [Cnt-ConsNEq]
+count X Y::Rest N
 
 
 
@@ -125,3 +164,17 @@ zip [] [] []
 zip ARest BRest Rest
 ================================== [Zip-Cons]
 zip A::ARest B::BRest (A, B)::Rest
+
+
+
+
+Low > High
+================= [Range-End]
+range Low High []
+
+
+Low <= High
+1 + Low = PlusOne
+range PlusOne High Rest
+======================== [Range-Step]
+range Low High Low::Rest
