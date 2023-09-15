@@ -6,9 +6,9 @@ if ! silver --mwda -o testing.jar -I ../grammars sos:testing; then
 fi
 
 #assume we are running from the tests directory
-export SOS_HOME=..
-export SOS_GRAMMARS=${SOS_HOME}/grammars/
-export SOS_GENERATED=${SOS_HOME}/generated/
+export STERLING_HOME=..
+export STERLING_GRAMMARS=${STERLING_HOME}/grammars/
+export STERLING_GENERATED=${STERLING_HOME}/generated/
 
 java -jar testing.jar basics:base
 java -jar testing.jar basics:ext1
