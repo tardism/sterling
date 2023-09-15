@@ -87,9 +87,9 @@ IOVal<Integer> ::= args::[String]
         buildModuleList(a.generateModuleName, rootLocs,
            abstractFileParse, concreteFileParse, mainFileParse, ioin);
   local genLoc::IOVal<String> =
-        envVarT("SOS_GENERATED", modules.io);
+        envVarT("STERLING_GENERATED", modules.io);
   local grmmrsLoc::IOVal<String> =
-        envVarT("SOS_GRAMMARS", genLoc.io);
+        envVarT("STERLING_GRAMMARS", genLoc.io);
 
   local startMessage::IOToken =
         printT("\n*************** Sterling ***************\n",
