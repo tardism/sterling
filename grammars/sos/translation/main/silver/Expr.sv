@@ -507,7 +507,7 @@ attribute
    silverArgs, precedingIO, resultingIO
 occurs on Args;
 
---[(name, SOS-Ext type, expression to assign to that name)]
+--[(name, Sterling type, expression to assign to that name)]
 synthesized attribute silverArgs::[(String, Type, String)];
 
 --IO after computing all the args

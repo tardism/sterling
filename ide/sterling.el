@@ -1,41 +1,41 @@
 
-(provide 'sos-ext-mode)
+(provide 'sterling-mode)
 
 
 ;;automatically enter this mode for *.sos
-(setq auto-mode-alist (cons '("\\.sos\\'" . sos-ext-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.sos\\'" . sterling-mode) auto-mode-alist))
 
 
 ;;hook for modifying the mode without modifying the mode
-(defvar sos-ext-mode-hook '()
-  "*Hook for customizing SOS-Ext mode")
+(defvar sterling-mode-hook '()
+  "*Hook for customizing Sterling mode")
 
 
-(defun sos-ext-mode ()
+(defun sterling-mode ()
   "Mode for editing SOS modules."
   (interactive)
   (kill-all-local-variables)
-  (setq major-mode `sos-ext-mode)
-  (setq mode-name "Sos-Ext Module")
+  (setq major-mode `sterling-mode)
+  (setq mode-name "Sterling Module")
   ;;syntax highlighting
-  (set-syntax-table sos-ext-syntax-table)
+  (set-syntax-table sterling-syntax-table)
   (set (make-local-variable 'font-lock-defaults)
-       '(sos-ext-font-lock-keywords))
+       '(sterling-font-lock-keywords))
   (turn-on-font-lock)
   ;;hook for user changes
-  (run-hooks 'sos-ext-mode-hook))
+  (run-hooks 'sterling-mode-hook))
 
 
 
-(setq sos-ext-semantic-keywords-list
+(setq sterling-semantic-keywords-list
       '("Module" "Builds" "on" "Judgment" "Fixed" "Translation"))
-(setq sos-ext-semantic-type-list '("int" "string"))
+(setq sterling-semantic-type-list '("int" "string"))
 
-(defvar sos-ext-font-lock-keywords
+(defvar sterling-font-lock-keywords
   (list
    ;;Keywords
    (cons
-    (regexp-opt sos-ext-semantic-keywords-list 'words)
+    (regexp-opt sterling-semantic-keywords-list 'words)
     font-lock-keyword-face)
    (cons ; '...'  |  '~~>'  |  '|{'  |  '}-'
     "\\(\\.\\.\\.\\)\\|\\(~~>\\)\\|\\(|{\\)\\|\\(}-\\)"
@@ -70,7 +70,7 @@
   )
 
 
-(defvar sos-ext-syntax-table
+(defvar sterling-syntax-table
   (let ((table (make-syntax-table (standard-syntax-table))))
     (modify-syntax-entry ?/ ". 124" table)
     (modify-syntax-entry ?* ". 23bn" table)

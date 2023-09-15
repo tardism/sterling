@@ -92,7 +92,7 @@ IOVal<Integer> ::= args::[String]
         envVarT("SOS_GRAMMARS", genLoc.io);
 
   local startMessage::IOToken =
-        printT("\n*************** SOS-Ext ***************\n",
+        printT("\n*************** Sterling ***************\n",
                grmmrsLoc.io);
   local runs::IOVal<Integer> =
         runActions(actions, modules.iovalue.fromRight, genLoc.iovalue,
@@ -309,7 +309,7 @@ Either<String  Decorated CmdArgs> ::= args::[String]
       mainTransFlags;
 
   local usage::String = 
-        "Usage: sos-ext [options] <module name>\n\n" ++
+        "Usage: sterling [options] <module name>\n\n" ++
         "Flag options:\n" ++ flagSpecsToHelpText(flags) ++ "\n";
 
   -- Parse the command line

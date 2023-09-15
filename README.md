@@ -1,5 +1,5 @@
-# SOS-Ext
-SOS-Ext is a system for defining extensible languages using inference
+# Sterling
+Sterling is a system for defining extensible languages using inference
 rules.
 
 
@@ -27,8 +27,8 @@ documentation](docs/extensibleLanguages.md).
 
 
 ## Required Software and Set-up
-SOS-Ext is written in [Silver](https://github.com/melt-umn/silver) and
-thus requires Silver for building.  Running SOS-Ext requires Java 8
+Sterling is written in [Silver](https://github.com/melt-umn/silver) and
+thus requires Silver for building.  Running Sterling requires Java 8
 and Bash.  Some extensions will require other software to use to run
 the compiled version of the defined language.
 
@@ -36,22 +36,22 @@ Once this software is installed, run
 ```
 ./build
 ```
-in the repository root to build the SOS-Ext system using Silver.  Then
+in the repository root to build the Sterling system using Silver.  Then
 run
 ```
 ./install
 ```
-to install the `sos-ext` script.  SOS-Ext can then be run as
-`sos-ext`.  The `install` script only needs to be run once, even if
+to install the `sterling` script.  Sterling can then be run as
+`sterling`.  The `install` script only needs to be run once, even if
 you rebuild using the `build` script.
 
-SOS-Ext has been tested on Linux, but may run on MacOS or the Windows
+Sterling has been tested on Linux, but may run on MacOS or the Windows
 Subsystem for Linux (WSL).
 
 
 ## Documentation
-Documentation for writing languages in SOS-Ext and running them can be
+Documentation for writing languages in Sterling and running them can be
 found in the [docs directory](docs/).
 
 Additionally the [examples directory](examples/) contains a number of
-languages to peruse to learn about SOS-Ext.
+languages to peruse to learn about Sterling.

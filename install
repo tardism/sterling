@@ -10,9 +10,9 @@ fi
 
 echo "Found ~/bin"
 
-ln -s "$(readlink -f sos-ext)" ~/bin/
+ln -s "$(readlink -f sterling)" ~/bin/
 
-echo "Created ~/bin/sos-ext"
+echo "Created ~/bin/sterling"
 
 echo "Install finished."
 

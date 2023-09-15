@@ -1,42 +1,42 @@
 
-(provide 'sos-ext-main-mode)
+(provide 'sterling-main-mode)
 
 
 ;;automatically enter this mode for *.main
-(setq auto-mode-alist (cons '("\\.main\\'" . sos-ext-main-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.main\\'" . sterling-main-mode) auto-mode-alist))
 
 
 ;;hook for modifying the mode without modifying the mode
-(defvar sos-ext-main-mode-hook '()
-  "*Hook for customizing SOS-Ext main mode")
+(defvar sterling-main-mode-hook '()
+  "*Hook for customizing Sterling main mode")
 
 
-(defun sos-ext-main-mode ()
+(defun sterling-main-mode ()
   "Mode for editing SOS main modules."
   (interactive)
   (kill-all-local-variables)
-  (setq major-mode `sos-ext-main-mode)
-  (setq mode-name "Sos-Ext Main")
+  (setq major-mode `sterling-main-mode)
+  (setq mode-name "Sterling Main")
   ;;syntax highlighting
-  (set-syntax-table sos-ext-main-syntax-table)
+  (set-syntax-table sterling-main-syntax-table)
   (set (make-local-variable 'font-lock-defaults)
-       '(sos-ext-main-font-lock-keywords))
+       '(sterling-main-font-lock-keywords))
   (turn-on-font-lock)
   ;;hook for user changes
-  (run-hooks 'sos-ext-main-mode-hook))
+  (run-hooks 'sterling-main-mode-hook))
 
 
 
-(setq sos-ext-main-keyword-list
+(setq sterling-main-keyword-list
       '("Module" "Function" "Print" "Before" "Let" "In" "Parse" "from"
         "If" "Then" "Else" "Derive" "for" "assigning" "Read"))
-(setq sos-ext-main-type-list '("int" "string" "bool"))
+(setq sterling-main-type-list '("int" "string" "bool"))
 
-(defvar sos-ext-main-font-lock-keywords
+(defvar sterling-main-font-lock-keywords
   (list
    ;;Keywords
    (cons
-    (regexp-opt sos-ext-main-keyword-list 'words)
+    (regexp-opt sterling-main-keyword-list 'words)
     font-lock-keyword-face)
    ;;Types
    '(":[ \t\n]*\\(\\([ a-zA-Z0-9_:,\\[()]\\|\\]\\)+\\)[ \t\n]*>"
@@ -56,7 +56,7 @@
   )
 
 
-(defvar sos-ext-main-syntax-table
+(defvar sterling-main-syntax-table
   (let ((table (make-syntax-table (standard-syntax-table))))
     (modify-syntax-entry ?/ ". 124" table)
     (modify-syntax-entry ?* ". 23bn" table)

@@ -1,5 +1,5 @@
 # Concrete Language
-The concrete portion of SOS-Ext defines concrete syntax for parsing
+The concrete portion of Sterling defines concrete syntax for parsing
 files written in a language.  Concrete syntax is defined using a
 grammar, with each grammar production mapping to an abstract syntax
 term.

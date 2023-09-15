@@ -1,13 +1,13 @@
 # Standard Library
-SOS-Ext contains a standard library for helpful relations and
+Sterling contains a standard library for helpful relations and
 functions that might be of common use.  As these are part of the
 standard library module, they are qualified with the module name
 `stdLib` (e.g. `stdLib:tail` is a function in the standard library).
 
 The standard library can be found [here](../stdLib).  This directory
-only contains the definitions that can be written in SOS-Ext itself.
+only contains the definitions that can be written in Sterling itself.
 In addition to these, there are some functions in the `main` category
-listed below that cannot be written in SOS-Ext but are available as
+listed below that cannot be written in Sterling but are available as
 part of the standard library.
 
 
@@ -24,7 +24,7 @@ concrete category.
 
 ## Main
 The standard library includes three functions for working with lists
-in `main` files, none of which can be written in SOS-Ext itself:
+in `main` files, none of which can be written in Sterling itself:
 * `stdLib:tail`:  This function has type `[A] -> [A]`, producing
   the list minus the first element if the list is non-empty.  If the
   list is empty, this will crash the program.

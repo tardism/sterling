@@ -1,5 +1,5 @@
 # Extensible Languages
-The view of extensible languages on which SOS-Ext is based is one in
+The view of extensible languages on which Sterling is based is one in
 which the language's syntax and semantics are given by a base
 language, or host language, and a set of independently-developed
 extensions adding to its definitions.
@@ -37,7 +37,7 @@ unusable in practice, since a new static safety check, for example,
 would never hold if a program included new syntax from a different
 extension.
 
-The solution SOS-Ext uses allows a new relation from one extension to
+The solution Sterling uses allows a new relation from one extension to
 be defined on new syntax from another extension.  This solution relies
 on the notion of the primary component of a relation, given when the
 relation is declared.  The primary component is the argument to the
@@ -100,7 +100,7 @@ write a rule defining evaluation for the base language's addition.
 Extensible languages as we have defined them thus far are built by a
 base language and a set of extensions building directly on that
 language, developed completely independently of each other.  However,
-SOS-Ext expands this notion.  Rather than a base language and
+Sterling expands this notion.  Rather than a base language and
 extensions, we simply have a set of modules that may freely build on
 each other.  These modules are developed independently, with knowledge
 of only the modules they build on.  Thus, rather than a

@@ -6,7 +6,7 @@ modules building on the module introducing them.  The other is
 extensible judgments, where other modules can add new rules.  We
 examine the introduction and definition of each in turn after looking
 at the terms we can use in writing judgments and the built-in
-judgments SOS-Ext provides.
+judgments Sterling provides.
 
 
 ## Terms
@@ -43,7 +43,7 @@ ascription is equivalent to the term inside it.
 
 
 ## Built-In Judgments
-In addition to applications of defined relation judgments, SOS-Ext
+In addition to applications of defined relation judgments, Sterling
 provides several built-in judgment forms that can be used in writing
 semantic rules.
 

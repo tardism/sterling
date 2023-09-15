@@ -23,7 +23,7 @@ constructor declaration has the form
 ```
 Constructors and categories must have names starting with lowercase
 letters.  Each syntactic category is a type in the language and can be
-used in the argument types for constructors.  Additionally, SOS-Ext
+used in the argument types for constructors.  Additionally, Sterling
 has [built-in types](#built-in-types) that can be used as arguments.
 If a constructor takes no arguments, we may optionally leave the
 parentheses out, as we did with `true` and `false` above.
@@ -43,7 +43,7 @@ expr ::= ...
        | num(int)
        | greater(expr, expr)
 ```
-We use the ellipsis (`...`) at the beginning to alert SOS-Ext to the
+We use the ellipsis (`...`) at the beginning to alert Sterling to the
 fact that this category already exists and we are only adding
 constructors, as opposed to creating a new category.  The constructor
 declarations are then as before.
@@ -54,7 +54,7 @@ translation](translation.md).
 
 
 ## Built-In Types
-SOS-Ext has two basic built-in types, strings and integers, written as
+Sterling has two basic built-in types, strings and integers, written as
 `string` and `int` respectively.
 
 We also have two built-in type constructors that can contain any

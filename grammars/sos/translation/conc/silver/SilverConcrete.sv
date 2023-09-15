@@ -213,7 +213,7 @@ top::SilverConcTerm ::= contents::[SilverConcTerm]
 
 {-
   Turn a list of SilverConcTerms into a string representing an
-  SOS-Ext TermList
+  Sterling TermList
 -}
 function toTermList
 String ::= args::[SilverConcTerm]
