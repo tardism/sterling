@@ -1,5 +1,5 @@
 # Main Function Language
-The portion of SOS-Ext for defining functions tells how the language
+The portion of Sterling for defining functions tells how the language
 should run.  It includes processing files by reading them, parsing
 them, and deriving relations over the abstract syntax produced by
 parsing.
@@ -20,7 +20,7 @@ to arguments and as return types are the types in the [semantic
 portion of the language](../semantic/syntax.md), in addition to new
 `bool` (Boolean) and `unit` types.
 
-When an SOS-Ext module is compiled and run, the starting point is the
+When an Sterling module is compiled and run, the starting point is the
 special `main` function in the module with the type `[string] -> int`.
 The list of strings is the list of command line arguments given when
 the compiled program is run.

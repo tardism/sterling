@@ -1,47 +1,47 @@
 
-(provide 'sos-ext-conc-mode)
+(provide 'sterling-conc-mode)
 
 
 ;;automatically enter this mode for *.conc
-(setq auto-mode-alist (cons '("\\.conc\\'" . sos-ext-conc-mode) auto-mode-alist))
+(setq auto-mode-alist (cons '("\\.conc\\'" . sterling-conc-mode) auto-mode-alist))
 
 
 ;;hook for modifying the mode without modifying the mode
-(defvar sos-ext-conc-mode-hook '()
-  "*Hook for customizing SOS-Ext-Conc mode")
+(defvar sterling-conc-mode-hook '()
+  "*Hook for customizing Sterling-Conc mode")
 
 
-(defun sos-ext-conc-mode ()
+(defun sterling-conc-mode ()
   "Mode for editing SOS concrete modules."
   (interactive)
   (kill-all-local-variables)
-  (setq major-mode `sos-ext-conc-mode)
-  (setq mode-name "Sos-Ext Concrete Files")
+  (setq major-mode `sterling-conc-mode)
+  (setq mode-name "Sterling Concrete Files")
   ;;syntax highlighting
-  (set-syntax-table sos-ext-conc-syntax-table)
+  (set-syntax-table sterling-conc-syntax-table)
   (set (make-local-variable 'font-lock-defaults)
-       '(sos-ext-conc-font-lock-keywords))
+       '(sterling-conc-font-lock-keywords))
   (turn-on-font-lock)
   ;;hook for user changes
-  (run-hooks 'sos-ext-conc-mode-hook))
+  (run-hooks 'sterling-conc-mode-hook))
 
 
 
-(setq sos-ext-conc-keywords-list '("Module" "ignore"))
-(setq sos-ext-conc-built-in-list '("$to_int"))
+(setq sterling-conc-keywords-list '("Module" "ignore"))
+(setq sterling-conc-built-in-list '("$to_int"))
 
-(defvar sos-ext-conc-font-lock-keywords
+(defvar sterling-conc-font-lock-keywords
   (list
    ;;Keywords
    (cons
-    (regexp-opt sos-ext-conc-keywords-list 'words)
+    (regexp-opt sterling-conc-keywords-list 'words)
     font-lock-keyword-face)
    (cons ; '...'  |  '~~>'
     "\\(\\.\\.\\.\\)\\|\\(~~>\\)"
     font-lock-keyword-face)
    ;;Built-in
    (cons
-    (regexp-opt sos-ext-conc-built-in-list 'words)
+    (regexp-opt sterling-conc-built-in-list 'words)
     font-lock-builtin-face)
    ;;Regular /regex/
    (cons
@@ -65,7 +65,7 @@
   )
 
 
-(defvar sos-ext-conc-syntax-table
+(defvar sterling-conc-syntax-table
   (let ((table (make-syntax-table (standard-syntax-table))))
     (modify-syntax-entry ?/ ". 124" table)
     (modify-syntax-entry ?* ". 23bn" table)

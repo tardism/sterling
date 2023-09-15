@@ -2,4 +2,4 @@
 
 MODULE="sec_SOS:composed"
 
-sos-ext $@ -I .. $MODULE
+sterling $@ -I .. $MODULE

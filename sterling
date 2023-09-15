@@ -1,0 +1,18 @@
+#!/bin/bash
+
+THIS_SCRIPT=$(readlink -f "${BASH_SOURCE[0]}")
+
+export STERLING_HOME=${THIS_SCRIPT/\/sterling}
+export STERLING_GRAMMARS=${STERLING_HOME}/grammars/
+export STERLING_GENERATED=${STERLING_HOME}/generated/
+
+JAR="$STERLING_HOME/sterling.jar"
+
+
+if [ ! -f "$JAR" ]; then
+    echo "Couldn't find the jar to execute; aborting"
+    exit 2
+fi
+
+java -jar "$JAR" "$@"
+

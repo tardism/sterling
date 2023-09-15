@@ -1,13 +1,13 @@
-# SOS-Ext Modules
-Extensible languages in SOS-Ext are built by modules.  Each module can
+# Sterling Modules
+Extensible languages in Sterling are built by modules.  Each module can
 introduce new concrete and abstract syntax, new semantic relations,
 new rules defining semantic relations, and new functions for running
 the language.  All modules are treated the same, whether they
 conceptually represent a base (host) language or extension, as the
-distinction is blurry in SOS-Ext.
+distinction is blurry in Sterling.
 
 A module is a collection of files in a single directory.  When
-building a module, all files with SOS-Ext file extensions in the
+building a module, all files with Sterling file extensions in the
 module's directory are read and checked as part of the module.  There
 is no distinction between the contents of different files of the same
 [file category](langCategories.md).  For example, a relation defined
@@ -19,7 +19,7 @@ A module contained in the directory `mo/du/le` will have the name
 [Silver](https://melt.cs.umn.edu/silver/concepts/modules/), an
 attribute grammar system for writing extensible languages.
 
-Each SOS-Ext file in the directory is expected to start with a
+Each Sterling file in the directory is expected to start with a
 declaration of its module:
 ```
 Module mo:du:le

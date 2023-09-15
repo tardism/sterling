@@ -1,5 +1,5 @@
 # Translations
-Because languages written using SOS-Ext are extensible, meaning
+Because languages written using Sterling are extensible, meaning
 modules other than the one introducing a syntactic category can add
 constructors building the category, we need a way to extend the
 definition of new judgments over other constructors.  We do this by a

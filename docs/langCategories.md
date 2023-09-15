@@ -1,12 +1,12 @@
 # Language Categories
-SOS-Ext language definitions are split into three categories:
+Sterling language definitions are split into three categories:
 semantic, concrete, and main.  We discuss each briefly below.
 
 
 ## Semantic
 The semantic category defines the abstract syntax of a language, as
 well as its semantic relations.  It does not use any definitions given
-by the other categories.  This category is the heart of SOS-Ext.  The
+by the other categories.  This category is the heart of Sterling.  The
 other two categories are simply there to support it.
 
 Semantic files use the extension `.sos`.

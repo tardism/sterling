@@ -1,4 +1,4 @@
 #!/bin/bash
 
-sos-ext --extensibella -I .. stdLib
+sterling --extensibella -I .. stdLib
 extensibella --compile stdLib.xthm

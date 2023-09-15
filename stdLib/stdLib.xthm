@@ -199,6 +199,20 @@ induction on 1. intros Slct Mem Eq. Slct: case Slct.
       apply IH to Slct M Eq. search.
 
 
+Theorem select_comm [Item] : forall L Rest Rest' (X Y : Item),
+  select X Rest L -> select Y Rest' Rest ->
+  exists R, select Y R L /\ select X Rest' R.
+induction on 1. intros SX SY. SX: case SX.
+  %Slct-First
+   search.
+  %Slct-Later
+   SY: case SY.
+     %Slct-First
+      search.
+     %Slct-Later
+      apply IH to SX SY. search.
+
+
 Theorem mem_append_left [A] : forall L1 L2 L (A : A),
   mem A L1 -> L1 ++ L2 = L -> mem A L.
 induction on 1. intros Mem' App. case Mem'.
@@ -403,6 +417,27 @@ induction on 1. intros C G. C: case C.
    apply IH to C1 _. search.
 
 
+Theorem count_not_mem [Item] : forall (I : Item) L,
+  count I L 0 -> mem I L -> false.
+induction on 1. intros C Mem. C: case C.
+  %1:  Cnt-Nil
+   case Mem.
+  %2:  Cnt-ConsEq
+   G: apply count_geq_0 to C. IsN: apply count_is_integer to C.
+   P:  apply plus_integer_comm to _ _ C1.
+   Or: apply greatereq_integer_greater_or_eq to G. G': case Or.
+     %2.1:  N > 0
+      G'': apply greater_plus_positive to _ _ C1 _. case G''. case H1.
+     %2.2:  N = 0
+      case P.
+  %3:  Cnt-ConsNEq
+   Mem: case Mem.
+     %3.1:  Mem-Here
+      backchain C.
+     %3.2:  Mem-Later
+      apply IH to C1 Mem.
+
+
 Theorem count_greater_0 [Item] : forall (I : Item) L N,
   count I (I::L) N -> N > 0.
 induction on 1. intros C. C: case C.
@@ -442,6 +477,15 @@ induction on 1. intros SAB SBC. SAB: case SAB.
    apply subset_mem to SBC SAB. apply IH to SAB1 SBC. search.
 
 
+Theorem subset_add_right [A] : forall Sub Sup (A : A),
+  subset Sub Sup -> subset Sub (A::Sup).
+induction on 1. intros S. S: case S.
+  %1:  Sbst-Nil
+   search.
+  %2:  Sbst-Cons
+   apply IH to S1 with A = A. search.
+
+
 Theorem permutation_counts [Item] : forall L P (I : Item) NL NP,
   permutation L P -> count I L NL -> count I P NP -> NL = NP.
 induction on 2. intros P CL CP. CL: case CL.
@@ -478,6 +522,15 @@ induction on 1. intros Mem Dmn. Mem: case Mem.
    Dmn: case Dmn. apply IH to Mem Dmn. search.
 
 
+Theorem mem_domain [A, B] : forall (L : list (pair A B)) A D,
+  domain L D -> mem A D -> exists B, mem (A, B) L.
+induction on 2. intros D M. M: case M.
+  %1:  Mem-Here
+   case D. search.
+  %2:  Mem-Later
+   D: case D. apply IH to D M. search.
+
+
 Theorem domain_select [A, B] :
   forall (L : list (pair A B)) LRest A B D,
     domain L D -> select (A, B) LRest L ->
@@ -487,6 +540,15 @@ induction on 2. intros Dmn Slct. Slct: case Slct.
    case Dmn. search.
   %2:  Slct-Later
    Dmn: case Dmn. apply IH to Dmn Slct. search.
+
+
+Theorem domain_unique [A, B] : forall (L : list (pair A B)) DA DB,
+  domain L DA -> domain L DB -> DA = DB.
+induction on 1. intros DmnA DmnB. DmnA: case DmnA.
+  %1:  Dmn-Nil
+   case DmnB. search.
+  %2:  Dmn-Cons
+   DmnB: case DmnB. apply IH to DmnA DmnB. search.
 
 
 Theorem values_mem [A, B] : forall L (A : A) (B : B) V,

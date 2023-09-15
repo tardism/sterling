@@ -1,7 +1,7 @@
 # Extensions
-As SOS-Ext is written in [Silver](melt.cs.umn.edu/silver), an
+As Sterling is written in [Silver](melt.cs.umn.edu/silver), an
 extensible language system using attribute grammars, extensions can be
-written to it in Silver.  Some extensions are included in the SOS-Ext
+written to it in Silver.  Some extensions are included in the Sterling
 repository itself, and thus are part of any installation of it.  We
 discuss these here.
 
@@ -10,7 +10,7 @@ discuss these here.
 The main set of extensions we have are translations of the different
 language categories to other languages.
 
-SOS-Ext has a concept of runnable and non-runnable translations.  A
+Sterling has a concept of runnable and non-runnable translations.  A
 runnable translation is one that can be used to animate the language.
 A non-runnable translation is one that does not do this.  In order to
 produce an executable for the language, one needs to specify runnable
@@ -18,7 +18,7 @@ semantic and concrete translations, which will then result in a Java
 JAR file being produced.
 
 ### Semantic Translations
-SOS-Ext has one runnable translation of the semantic portion of the
+Sterling has one runnable translation of the semantic portion of the
 language:
 * Prolog:  This translates the language's rules into a Prolog
   specification.  It assumes `swipl` ([SWI-Prolog](swi-prolog.org)) is
@@ -35,7 +35,7 @@ We have several other semantic translations as well:
   to prove properties about the extensible language specified by the
   module.  Note that one must run the `build_extensibella` script in
   the [`stdLib`](../../stdLib/) directory in order to use Extensibella
-  with any compiled specifications, since all SOS-Ext modules build on
+  with any compiled specifications, since all Sterling modules build on
   the standard library.
   + Flag:  `--extensibella`
 * LaTeX:  The LaTeX extension will produce a dump of LaTeX code for
@@ -65,15 +65,15 @@ We currently have one runnable concrete translation:
 * Silver:  This produces a set of Silver functions that delegate to
   whichever semantic and concrete runnable translations were chosen.
   At this time, this is triggered not by a flag given when running
-  SOS-Ext, but by any runnable semantic and concrete translations
-  being specified by flags.  This makes it currently tied into SOS-Ext
+  Sterling, but by any runnable semantic and concrete translations
+  being specified by flags.  This makes it currently tied into Sterling
   more tightly than an extension normally would be, and this behavior
   might be modified in the future.
 
 
 ## Testing
-The testing extension is used for testing SOS-Ext itself behaves in
+The testing extension is used for testing Sterling itself behaves in
 the expected way, ensuring the expected error messages are given when
 incorrect code is written.  Because the constructs in this extension
 hide error messages as part of testing, it should not be used in
-composed versions of SOS-Ext other than one used to run the tests.
+composed versions of Sterling other than one used to run the tests.

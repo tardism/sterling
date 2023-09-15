@@ -107,7 +107,7 @@ IOVal<ModuleList> ::=
    mainFileParse::(ParseResult<MainFile_c> ::= String String)
    ioIn::IOToken
 {
-  local readSOS_HOME::IOVal<String> = envVarT("SOS_HOME", ioIn);
+  local readSOS_HOME::IOVal<String> = envVarT("STERLING_HOME", ioIn);
   local dir::String = readSOS_HOME.iovalue ++ "/stdLib";
   local files::IOVal<Either<String Files>> =
       buildAllFiles(dir, abstractFileParse, concreteFileParse,
