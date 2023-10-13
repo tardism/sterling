@@ -20,7 +20,7 @@ to arguments and as return types are the types in the [semantic
 portion of the language](../semantic/syntax.md), in addition to new
 `bool` (Boolean) and `unit` types.
 
-When an Sterling module is compiled and run, the starting point is the
+When a Sterling module is compiled and run, the starting point is the
 special `main` function in the module with the type `[string] -> int`.
 The list of strings is the list of command line arguments given when
 the compiled program is run.
@@ -88,7 +88,7 @@ We have several expressions for carrying out I/O actions:
 * `Read <file>` reads and results in the string contents of the file
   with the name `<file>`
 
-All three of these expressions have type `unit`.
+The first two of these expressions have type `unit`.
 
 ### Parsing
 We can parse concrete nonterminals, defined in the [concrete part of

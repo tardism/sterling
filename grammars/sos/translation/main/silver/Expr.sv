@@ -27,8 +27,7 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
                    buildLet(p.1, p.3.silverType,
                       letName ++ ".iovalue." ++ toString(p.2), rest),
                  e2.silverExpr,
-                 zipWith(pair, names,
-                    zipWith(pair, range(1, tys.len + 1), tys.toList)))
+                 zip(names, zip(range(1, tys.len + 1), tys.toList)))
          | _, [x] ->
            buildLet(x, e1.finalType.silverType, letName ++ ".iovalue",
                     e2.silverExpr)
