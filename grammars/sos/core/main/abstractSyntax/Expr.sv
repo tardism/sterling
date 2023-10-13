@@ -29,7 +29,7 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
      case namesTy, names of
      | _, [x] -> (x, e1.type)::top.downVarTypes
      | tupleType(tys), _ ->
-       zipWith(pair, names, tys.toList) ++ top.downVarTypes
+       zip(names, tys.toList) ++ top.downVarTypes
      | _, _ -> error("Impossible")
      end;
   local namesTy::Type =

@@ -271,7 +271,7 @@ function getPairsOfUnknown
   --get the pairs of judgments and constructors to which they apply
   local splitOut::[(JudgmentEnvItem, [ConstructorEnvItem])] =
      flatMap(\ p::([JudgmentEnvItem], [ConstructorEnvItem]) ->
-               map(pair(_, p.2), p.1),
+               map(\ a::JudgmentEnvItem -> (a, p.2), p.1),
              jdgConPairs);
   local extOnly::[(JudgmentEnvItem, [ConstructorEnvItem])] =
      filter(\ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
