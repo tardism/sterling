@@ -7,11 +7,13 @@ import sos:core:main:abstractSyntax only MainFile;
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
    ebTranslationRules, ebErrors,
-   defFileContents, interfaceFileContents
+   defFileContents, interfaceFileContents, fullFileContents
 occurs on ModuleList;
 
 synthesized attribute defFileContents::String;
 synthesized attribute interfaceFileContents::String;
+--definition for the non-extensible version of the language
+synthesized attribute fullFileContents::String;
 
 aspect production stdLibModuleList
 top::ModuleList ::= files::Files
@@ -59,6 +61,9 @@ top::ModuleList ::= files::Files
          top.ebJudgments, top.ebRulesByModule, []);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(stdLibName, [(stdLibName, [])]);
+  top.fullFileContents =
+      buildExtensibellaFile(top.ebKinds, top.ebConstrs,
+         top.ebJudgments, top.ebRulesByModule, []);
 
   top.ebErrors = [];
 }
@@ -140,6 +145,13 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(m.modName,
          (stdLibName, [])::top.buildsOns);
+  top.fullFileContents =
+      buildExtensibellaFile(top.ebKinds,
+         --no unknown constructors in the non-extensible definition
+         top.ebConstrs,
+         top.ebJudgments, top.ebRulesByModule,
+         --no unknown rules in the non-extensible definition
+         []);
 
   top.ebErrors =
       case intersect(map((.name), m.constructorDecls),
