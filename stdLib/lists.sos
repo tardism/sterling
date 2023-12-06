@@ -13,6 +13,9 @@ Fixed Judgment no_lookup : [(Key, Item)] Key
 /*Holds if the item is in the list*/
 Fixed Judgment mem : Item [Item]
 
+/*Holds if the item is NOT in the list*/
+Fixed Judgment not_mem : Item [Item]
+
 /*Splits the list into the item plus the rest of the list around it:
   select A Rest L*/
 Fixed Judgment select : Item [Item] [Item]
@@ -78,6 +81,18 @@ mem Item Item::Rest
 mem Item Rest
 ================ [Mem-Later]
 mem Item I::Rest
+
+
+
+
+=============== [NMem-Nil]
+not_mem Item []
+
+
+I != Item
+not_mem Item Rest
+==================== [NMem-Cons]
+not_mem Item I::Rest
 
 
 

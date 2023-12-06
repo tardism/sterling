@@ -263,6 +263,60 @@ induction on 1. intros Mem' App'. Mem: case Mem'.
       Or: apply IH to Mem App. case Or. search. search.
 
 
+Theorem not_mem [A] : forall (A : A) L,
+  not_mem A L -> mem A L -> false.
+induction on 1. intros N M. N: case N.
+  %1:  NMem-Nil
+   case M.
+  %2:  NMem-Cons
+   M: case M.
+     %2.1:  Mem-Here
+      apply N to _.
+     %2.2:  Mem-Later
+      apply IH to N1 M.
+
+
+Theorem not_mem_select [A] : forall L (A : A) L',
+  not_mem A L -> select A L' L -> false.
+intros N S. M: apply select_mem to S. apply not_mem to N M.
+
+
+Theorem not_mem_after_select_before [A] : forall L L' (X Y : A),
+  select X L' L -> not_mem Y L' -> (X = Y -> false) -> not_mem Y L.
+induction on 1. intros S N NEq. S: case S.
+  %1:  Slct-First
+   search.
+  %2:  Slct-Later
+   case N. apply IH to S _ _. search.
+
+
+Theorem not_mem_before_select_after [A] : forall L L' (X Y : A),
+  select X L' L -> not_mem Y L -> not_mem Y L'.
+induction on 1. intros S N. S: case S.
+  %1:  Slct-First
+   case N. search.
+  %2:  Slct-Later
+   case N. apply IH to S _. search.
+
+
+Theorem not_mem_append [A] : forall L1 L2 L (A : A),
+  not_mem A L1 -> not_mem A L2 -> L1 ++ L2 = L -> not_mem A L.
+induction on 1. intros NA NB App. NA: case NA.
+  %1:  NMem-Nil
+   case App. search.
+  %2:  NMem-Cons
+   case App. apply IH to NA1 _ _. search.
+
+
+Theorem not_mem_append_back [A] : forall L1 L2 L (A : A),
+  not_mem A L -> L1 ++ L2 = L -> not_mem A L1 /\ not_mem A L2.
+induction on 2. intros N App.  App: case App.
+  %1:  [] ++ L2 = L2
+   search.
+  %2:  (H::T) ++ L2 = H::L4
+   case N. apply IH to _ App. search.
+
+
 Theorem permutation_mem [Item] : forall (L M : list Item) I,
   permutation L M -> mem I L -> mem I M.
 induction on 2. intros P M. M: case M.
