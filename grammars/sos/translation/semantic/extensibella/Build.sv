@@ -39,11 +39,13 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
 
   local mkdir::IOVal<Boolean> = mkdirT(gendir, message);
   local gendir::String = genLoc ++ "extensibella/";
+
   --definition file
   local defFilename::String =
       gendir ++ a.generateModuleName ++ "___definition.thm";
   local outputDefFile::IOToken =
       writeFileT(defFilename, m.defFileContents, mkdir.io);
+
   --interface file
   local interfaceFilename::String =
       gendir ++ a.generateModuleName ++ "___interface.xthmi";
@@ -51,18 +53,29 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
       writeFileT(interfaceFilename, m.interfaceFileContents,
          outputDefFile);
 
-  return ioval(outputInterfaceFile, 0);
+  --full, non-extensible definition file
+  local fullFilename::String =
+      gendir ++ a.generateModuleName ++ "___full.thm";
+  local outputFullFile::IOToken =
+      if a.extensibellaFull
+      then writeFileT(fullFilename, m.fullFileContents,
+                      outputInterfaceFile)
+      else outputInterfaceFile;
+
+  return ioval(outputFullFile, 0);
 }
 
 
 
 
 synthesized attribute outputExtensibella::Boolean occurs on CmdArgs;
+synthesized attribute extensibellaFull::Boolean occurs on CmdArgs;
 
 aspect production endCmdArgs
 top::CmdArgs ::= l::[String]
 {
   top.outputExtensibella = false;
+  top.extensibellaFull = true;
 }
 
 
@@ -76,6 +89,26 @@ top::CmdArgs ::= rest::CmdArgs
   top.rootLocs = rest.rootLocs;
 
   top.outputExtensibella = true;
+  top.extensibellaFull = rest.extensibellaFull;
+
+  top.concTranslations = rest.concTranslations;
+  top.semTranslations = rest.semTranslations;
+
+  forwards to rest;
+}
+
+
+abstract production extensibellaFullFlag
+top::CmdArgs ::= rest::CmdArgs
+{
+  top.errors = rest.errors;
+
+  top.generateModuleName = rest.generateModuleName;
+
+  top.rootLocs = rest.rootLocs;
+
+  top.outputExtensibella = true;
+  top.extensibellaFull = true;
 
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
@@ -91,5 +124,9 @@ Either<String  Decorated CmdArgs> ::= args::[String]
      [flagSpec(name="--extensibella",
                paramString=nothing(),
                help="output Extensibella translation",
-               flagParser=flag(extensibellaFlag))];
+               flagParser=flag(extensibellaFlag)),
+      flagSpec(name="--extensibellaFull",
+               paramString=nothing(),
+               help="output full, non-extensible Extensibella translation",
+               flagParser=flag(extensibellaFullFlag))];
 }
