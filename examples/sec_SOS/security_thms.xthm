@@ -643,7 +643,7 @@ Extensible_Theorem
  Is: case Is. Sec: case Sec. EvB: case EvB.
    %EvB by E-IfThenElseTrue
     EqGA'GB': apply IH to _ _ _ EvA2 EvB1.
-    LkpEq: assert forall X, lookup SG X public -> lookup GTh X public.
+    LkpEq: assert forall X, lookup SG1 X public -> lookup GTh X public.
       intros Lkp. apply stmt_public_branch to Sec2 EvA2 Lkp. search.
     apply public_equiv_swap to LkpEq EqGA'GB'. search.
    %EvB by E-IfThenElseFalse
@@ -672,7 +672,7 @@ Extensible_Theorem
     apply public_equiv_trans to EqGA'GB EqGBGB'. search.
    %EvB by E-IfThenElseFalse
     EqGA'GB': apply IH to _ _ _ EvA2 EvB1.
-    LkpEq: assert forall X, lookup SG X public -> lookup GEl X public.
+    LkpEq: assert forall X, lookup SG1 X public -> lookup GEl X public.
       intros Lkp. apply stmt_public_branch to Sec3 EvA2 Lkp. search.
     apply public_equiv_swap to LkpEq EqGA'GB'. search.
 %E-WhileFalse

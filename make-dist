@@ -6,24 +6,19 @@ set -eu
 
 ./build
 
-ST=extensibella-dist
+cd ..
 
-ln -s . $ST
-
-tar -zcvf sterling.tar.gz \
+tar -zcvf sterling/sterling.tar.gz \
     "--exclude=*~" \
-    $ST/build \
-    $ST/deep-clean \
-    $ST/docs \
-    $ST/generated/README.md \
-    $ST/grammars \
-    $ST/ide \
-    $ST/install \
-    $ST/LICENSE \
-    $ST/README.md \
-    $ST/stdLib \
-    $ST/sterling \
-    $ST/sterling.jar
-
-
-rm $ST
+    sterling/build \
+    sterling/deep-clean \
+    sterling/docs \
+    sterling/generated/README.md \
+    sterling/grammars \
+    sterling/ide \
+    sterling/install \
+    sterling/LICENSE \
+    sterling/README.md \
+    sterling/stdLib \
+    sterling/sterling \
+    sterling/sterling.jar
