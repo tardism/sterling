@@ -649,6 +649,15 @@ induction on 1. intros VA VB. VA: case VA.
    VB: case VB. apply IH to VA VB. search.
 
 
+Theorem zip_unique [A, B] : forall (L1 : list A) (L2 : list B) LA LB,
+  zip L1 L2 LA -> zip L1 L2 LB -> LA = LB.
+induction on 1. intros ZA ZB. ZA: case ZA.
+  %Zip-Nil
+   case ZB. search.
+  %Zip-Cons
+   ZB: case ZB. apply IH to ZA ZB. search.
+
+
 Theorem zip_mem_after [A, B] : forall LA LB (A : A) (B : B) Z,
   zip LA LB Z -> mem (A, B) Z -> mem A LA /\ mem B LB.
 induction on 1. intros Zip Mem. Zip: case Zip.

@@ -92,7 +92,8 @@ IOVal<Integer> ::= args::[String]
         envVarT("STERLING_GRAMMARS", genLoc.io);
 
   local startMessage::IOToken =
-        printT("\n*************** Sterling ***************\n",
+        printT("\n*************** Sterling ***************\n\n" ++
+               "   Module:  " ++ a.generateModuleName ++ "\n",
                grmmrsLoc.io);
   local runs::IOVal<Integer> =
         runActions(actions, modules.iovalue.fromRight, genLoc.iovalue,
