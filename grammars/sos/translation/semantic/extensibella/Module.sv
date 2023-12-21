@@ -58,12 +58,12 @@ top::ModuleList ::= files::Files
 
   top.defFileContents =
       buildExtensibellaFile(top.ebKinds, top.ebConstrs,
-         top.ebJudgments, top.ebRulesByModule, []);
+         top.ebJudgments, top.ebRulesByModule, [], []);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(stdLibName, [(stdLibName, [])]);
   top.fullFileContents =
       buildExtensibellaFile(top.ebKinds, top.ebConstrs,
-         top.ebJudgments, top.ebRulesByModule, []);
+         top.ebJudgments, top.ebRulesByModule, [], []);
 
   top.ebErrors = [];
 }
@@ -78,11 +78,7 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.ebTranslationRules =
       m.ebTranslationRules ++ rest.ebTranslationRules;
   top.ebRulesByModule =
-      case m.ebRulesByModule of
-      | [(mod, rules)] ->
-        [(mod, rules ++ instantiatedTransRules)]
-      | _ -> error("Not possible")
-      end ++ rest.ebRulesByModule;
+      m.ebRulesByModule ++ rest.ebRulesByModule;
   --fill in trans rules for constructors not known with them before
   local instantiatedTransRules::[Def] =
      instantiateExtensibellaTransRules(newRuleCombinations,
@@ -134,13 +130,14 @@ top::ModuleList ::= m::Module rest::ModuleList
                        constrEnvs)),
           newJdgs);
   local rulesNewUnknown::[Def] =
-      instantiateExtensibellaTransRules( joinedNewJdgs,
+      instantiateExtensibellaTransRules(joinedNewJdgs,
          top.ebTranslationRules);
 
   top.defFileContents =
       buildExtensibellaFile(top.ebKinds,
          top.ebConstrs ++ unknownConstrs,
          top.ebJudgments, top.ebRulesByModule,
+         instantiatedTransRules,
          rulesImportedUnknown ++ rulesNewUnknown);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(m.modName,
@@ -150,6 +147,7 @@ top::ModuleList ::= m::Module rest::ModuleList
          --no unknown constructors in the non-extensible definition
          top.ebConstrs,
          top.ebJudgments, top.ebRulesByModule,
+         instantiatedTransRules,
          --no unknown rules in the non-extensible definition
          []);
 

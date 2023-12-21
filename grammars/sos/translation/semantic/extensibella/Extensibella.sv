@@ -428,6 +428,7 @@ top::ExtensibellaType ::= a::ExtensibellaType b::ExtensibellaType
 function buildExtensibellaFile
 String ::= kinds::[KindDecl] constrs::[ConstrDecl]
    jdgs::[(String, [ExtensibellaType])] rules::[(String, [Def])]
+   instanDefs::[Def] --instantiated rules, which come after real ones
    finalDefs::[Def] --rules that go at the end (unknown constructors)
 {
   local expandedDefs::[(String, Def)] =
@@ -460,6 +461,7 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
             let rel::String = head(l).2.definedRel
             in
               (rel, map(snd, l) ++
+                    filter(\ d::Def -> d.definedRel == rel, instanDefs) ++
                     filter(\ d::Def -> d.definedRel == rel, finalDefs))
             end,
           sortedRules);

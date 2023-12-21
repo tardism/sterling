@@ -186,11 +186,24 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.buildsOns =
       (m.modName, map((.pp), m.buildsOnDecls))::rest.buildsOns;
 
-  --Pairs of judgments and the constructors that don't know about them
-  --Useful for translations to fill in translation rules
+  {-
+    Pairs of judgments and the constructors that don't know about them
+    Useful for translations to fill in translation rules
+
+    Note that this is *all* the new rule combinations for *all* the modules.
+    If you us this from all the modules, you will generally end up with
+    duplicate rule instantiations.  This should only be used at the very
+    last module being built.
+  -}
   production newRuleCombinations::[(JudgmentEnvItem, [ConstructorEnvItem])] =
-     getPairsOfUnknown(top.moduleJudgmentDecls, top.moduleConstructorDecls,
-                       top.buildsOns, m.modName);
+     map(\ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
+           --sort constructors by module so all rules end up in the same order
+           --   in any composition (important in some applications)
+           (p.1, sortBy(\ c1::ConstructorEnvItem c2::ConstructorEnvItem ->
+                          --use <= to make it stable within modules
+                          c1.name.baselessName <= c2.name.baselessName, p.2)),
+         getPairsOfUnknown(top.moduleJudgmentDecls, top.moduleConstructorDecls,
+                           top.buildsOns, m.modName));
 
   m.tyEnv = buildEnv(tys);
   m.constructorEnv = buildEnv(cons);
