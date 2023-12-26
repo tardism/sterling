@@ -7,8 +7,12 @@ nonterminal QName with
    location;
 
 
---Easy equality checking
+--Easy equality checking, ordering
 attribute compareTo, isEqual occurs on QName;
+
+instance Ord QName{
+  compare = \ a::QName b::QName -> silver:core:compare(a.pp, b.pp);
+}
 
 
 --Get the short name in the qualified name

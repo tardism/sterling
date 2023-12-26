@@ -44,7 +44,22 @@ IOVal<Either<String ModuleList>> ::=
              end
            end;
 }
+--sorts buildsOn before continuing
+--makes sure module list ends up in the same order consistently
 function buildModuleList_helper
+IOVal<Either<String ModuleList>> ::=
+   buildsOn::[QName] rootLocs::[String]
+   abstractFileParse::(ParseResult<File_c> ::= String String)
+   concreteFileParse::(ParseResult<ConcreteFile_c> ::= String String)
+   mainFileParse::(ParseResult<MainFile_c> ::= String String)
+   thusFar::ModuleList ioIn::IOToken
+{
+  local sorted::[QName] = sort(buildsOn);
+  return buildModuleList_sorted(sorted, rootLocs, abstractFileParse,
+            concreteFileParse, mainFileParse, thusFar, ioIn);
+}
+--assumes buildsOn is sorted already
+function buildModuleList_sorted
 IOVal<Either<String ModuleList>> ::=
    buildsOn::[QName] rootLocs::[String]
    abstractFileParse::(ParseResult<File_c> ::= String String)
@@ -67,7 +82,7 @@ IOVal<Either<String ModuleList>> ::=
                        subcallNextModule.iovalue.fromRight);
   --Build the rest of the modules from buildsOn
   local subcallRestCurrent::IOVal<Either<String ModuleList>> =
-        buildModuleList_helper(tail(buildsOn), rootLocs, abstractFileParse,
+        buildModuleList_sorted(tail(buildsOn), rootLocs, abstractFileParse,
            concreteFileParse, mainFileParse, nextModuleList,
            subcallNextModule.io);
 
@@ -78,7 +93,7 @@ IOVal<Either<String ModuleList>> ::=
        --If anything else built on mod, it would already be in thusFar
        --along with all the modules it builds on
        if contains(mod.pp, thusFar.nameList)
-       then buildModuleList_helper(r, rootLocs, abstractFileParse,
+       then buildModuleList_sorted(r, rootLocs, abstractFileParse,
                concreteFileParse, mainFileParse, thusFar, ioIn)
        else case buildNextModule.iovalue of
             | left(err) -> ioval(buildNextModule.io, left(err))

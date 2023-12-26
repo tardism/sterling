@@ -183,8 +183,18 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.moduleFunctionDecls =
       (m.modName, functions)::rest.moduleFunctionDecls;
 
-  top.buildsOns =
-      (m.modName, map((.pp), m.buildsOnDecls))::rest.buildsOns;
+  local allBuildsOnModules::[String] =
+      let buildsOnDecls::[String] = map((.pp), m.buildsOnDecls)
+      in
+        foldr(\ here::(String, [String]) rest::[String] ->
+                if contains(here.1, buildsOnDecls)
+                then here.2 ++ rest
+                else rest, buildsOnDecls, rest.buildsOns)
+      end;
+  top.buildsOns = --get *all* modules on which it builds, in the order
+      (m.modName, --in which they appear in the module list
+       filter(contains(_, allBuildsOnModules),
+              top.nameList))::rest.buildsOns;
 
   {-
     Pairs of judgments and the constructors that don't know about them
