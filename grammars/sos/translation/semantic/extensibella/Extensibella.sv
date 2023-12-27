@@ -432,8 +432,8 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
    finalDefs::[Def] --rules that go at the end (unknown constructors)
 {
   local expandedDefs::[(String, Def)] =
-      flatMap(\ p::(String, [Def]) ->
-                map(\ d::Def -> (p.1, d), p.2), rules);
+      flatMap(\ p::(String, [Def]) -> --reverse to maintain expected order
+                map(\ d::Def -> (p.1, d), reverse(p.2)), rules);
   --group it by the relation being defined
   local relDefGroups::[[(String, Def)]] =
       groupBy(\ p1::(String, Def) p2::(String, Def) ->
@@ -441,20 +441,6 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
          sortBy(\ p1::(String, Def) p2::(String, Def) ->
                   p1.2.definedRel < p2.2.definedRel,
                 expandedDefs));
-  {-
-    We sort these by module because we want the rules to be in a
-    consistent order even if they are imported by two different
-    modules, then a third module including both of those.  This is
-    necessary for putting the proofs together right.
-
-    All the rules within each module set should always end up in the
-    same order in the list.
-  -}
-  local sortedRules::[[(String, Def)]] =
-      map(\ l::[(String, Def)] ->
-            sortBy(\ p1::(String, Def) p2::(String, Def) ->
-                     p1.1 < p2.1, l),
-          relDefGroups);
   --[(relation name, all def clauses)]
   local basicRules::[(String, [Def])] =
       map(\ l::[(String, Def)] ->
@@ -464,7 +450,7 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
                     filter(\ d::Def -> d.definedRel == rel, instanDefs) ++
                     filter(\ d::Def -> d.definedRel == rel, finalDefs))
             end,
-          sortedRules);
+          relDefGroups);
   --gather up the dependencies to do the ordering
   --use jdgs so we kept rule-less rels too
   --[(relation name, names of relations it uses)]
