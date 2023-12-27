@@ -33,7 +33,6 @@ Translation_Constraint trans_value_unique : forall V V1 V2,
 Translation_Constraint trans_value_is : forall V V',
   |{value}- V ~~> V' -> is_value V -> is_value V'.
 
-
 Extensible_Theorem
   vars_join : forall E V D,
     Vars : vars E V ->

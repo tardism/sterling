@@ -77,10 +77,12 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
 Prove_Ext_Ind sec_SOS:host:eval_c.
 %E-RepeatWhileTrue
  %We need this as a lemma for the rest of the proof
+ Set search_depth 2. %keep it from hanging
  RW_to_SW: assert forall C B EG EG' N,
              <eval_c {ES}> EG (repeatWhile B C) EG' N ->
              exists N', <eval_c {ES}> EG (seq B (while C B)) EG' N' /\
                         N' < N.
+   Set search_depth 5. %back to normal
    clear IH IH1 Rel Acc Rel1 Rel2 Rel3 Rel4 Rel5. %not needed here
    induction on 1. intros EvalRep. Ev: case EvalRep.
      %E-RepeatWhileTrue
@@ -103,7 +105,7 @@ Prove_Ext_Ind sec_SOS:host:eval_c.
       IsN5: apply ext_ind_is_int_eval_c to Ev1.
       LN5N1: apply lt_plus_one to Ev _.
       N5+0: apply plus_integer_total to IsN5 _ with N2 = 0.
-      apply plus_zero_right to N5+0. search.
+      apply plus_zero_right to N5+0. search 2.
  %Rest of the proof:
  Acc: case Acc. IsN2: apply ext_ind_is_int_eval_c to Rel3.
  IsN3: apply ext_ind_is_int_eval_c to Rel5.
@@ -127,14 +129,14 @@ Prove_Ext_Ind sec_SOS:host:eval_c.
  LN'N: apply less_integer_transitive to SW1 LN3N.
  L0N': apply ext_ind_pos_eval_c to SW. AccN': apply Acc to _ LN'N.
  EvalTSeq: apply IH to SW AccN'. EvalTParts: case EvalTSeq.
- search.
+ search 3.
 %E-RepeatWhileFalse
  Acc: case Acc. L0N2: apply ext_ind_pos_eval_c to Rel2.
  IsN2: apply ext_ind_is_int_eval_c to Rel2.
  LN2N: apply lt_plus_one to Rel1 _. AccN2: apply Acc to _ LN2N.
  EvalTBody: apply IH to Rel2 AccN2.
  Trans: assert |{c}- repeatWhile Body Cond ~~>
-                     seq Body (while Cond Body). search.
+                     seq Body (while Cond Body). search 3.
 
 
 Prove sec_SOS:host:eval_c_unique.

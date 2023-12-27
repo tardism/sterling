@@ -50,7 +50,7 @@ Prove_Constraint sec_SOS:host:trans_c_eval.
 Prove_Ext_Ind sec_SOS:host:eval_c.
 %declareSec
  Trans: assert |{c}- declareSec X S Ty E ~~> declare X Ty E.
- assert <eval_c {T}> G (declare X Ty E) ((X, V)::G). search.
+ assert <eval_c {T}> G (declare X Ty E) ((X, V)::G). search 2.
 
 Prove sec_SOS:host:eval_c_unique.
 %declareSec

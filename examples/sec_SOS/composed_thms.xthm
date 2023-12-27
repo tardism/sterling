@@ -1,0 +1,143 @@
+Module sec_SOS:composed.
+
+
+Prove_Constraint sec_SOS:host:trans_e_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_e_is.
+
+
+Prove_Constraint sec_SOS:host:trans_rf_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_rf_is.
+
+
+Prove_Constraint sec_SOS:host:trans_c_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_c_is.
+
+
+Prove_Constraint sec_SOS:host:trans_recFields_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_recFields_is.
+
+
+Prove_Constraint sec_SOS:host:trans_ty_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_ty_is.
+
+
+Prove_Constraint sec_SOS:host:trans_value_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_value_is.
+
+
+Prove sec_SOS:host:vars_join,
+      sec_SOS:host:vars_rf_join.
+
+
+Prove sec_SOS:host:vars_unique,
+      sec_SOS:host:vars_rf_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_e_vars_exist.
+
+
+Prove_Constraint sec_SOS:host:trans_e_vars.
+
+
+Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
+
+
+Prove_Constraint sec_SOS:host:trans_rf_vars.
+
+
+Prove sec_SOS:host:vars_is,
+      sec_SOS:host:vars_rf_is.
+
+
+Prove sec_SOS:host:vars_exist,
+      sec_SOS:host:vars_rf_exist.
+
+
+Prove sec_SOS:host:typeOf_unique,
+      sec_SOS:host:typeRecFields_unique.
+
+
+Prove sec_SOS:host:typeOK_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_eval_e.
+
+
+Prove sec_SOS:list:index_is_integer.
+
+
+Prove sec_SOS:list:index_negative_false.
+
+
+Prove sec_SOS:list:index_unique.
+
+
+Prove sec_SOS:list:length_is_integer.
+
+
+Prove sec_SOS:list:length_unique.
+
+
+Prove sec_SOS:host:eval_e_unique,
+      sec_SOS:host:eval_rf_unique.
+
+
+Prove sec_SOS:host:update_rec_fields_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval.
+
+
+Prove_Ext_Ind sec_SOS:host:eval_c.
+
+
+Prove sec_SOS:host:eval_c_unique.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results.
+
+
+Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
+
+
+Prove sec_SOS:host:vars_eval_same_result,
+      sec_SOS:host:vars_equal_rf_same_result.
+
+
+Prove sec_SOS:security:join_private_left.
+
+
+Prove sec_SOS:security:join_unique.
+
+
+Prove sec_SOS:security:join_public.
+
+
+Prove sec_SOS:security:level_public_vars,
+      sec_SOS:security:level_public_vars_rf.
+
+
+Prove sec_SOS:security:level_unique,
+      sec_SOS:security:level_rf_unique.
+
+
+Prove sec_SOS:security:stmt_public_branch.
+
+
+Prove sec_SOS:security:stmt_not_public_no_public_change.
+
+
+Prove sec_SOS:security:stmt_secure.
+
