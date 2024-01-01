@@ -40,6 +40,14 @@ Fixed Judgment values : [(A, B)] [B]
 /*Combine two lists into a list of pairs*/
 Fixed Judgment zip : [A] [B] [(A, B)]
 
+/*Drop the first N elements of a list:
+  drop N L Rest*/
+Fixed Judgment drop : int [A] [A]
+
+/*Take the first N elements of a list:
+  take N L FirstN*/
+Fixed Judgment take : int [A] [A]
+
 /*Build a range list, inclusive*/
 Fixed Judgment range : int int [int]
 
@@ -179,6 +187,30 @@ zip [] [] []
 zip ARest BRest Rest
 ================================== [Zip-Cons]
 zip A::ARest B::BRest (A, B)::Rest
+
+
+
+
+========== [Drop-0]
+drop 0 L L
+
+
+1 + N1 = N
+drop N1 L R
+============= [Drop-Step]
+drop N X::L R
+
+
+
+
+=========== [Take-0]
+take 0 L []
+
+
+1 + N1 = N
+take N1 L F
+================ [Take-Step]
+take N X::L X::F
 
 
 

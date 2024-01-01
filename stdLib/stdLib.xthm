@@ -697,6 +697,121 @@ induction on 1. intros Zip Mem. Zip: case Zip.
       apply IH to Zip Mem. search.
 
 
+Theorem drop_is_integer [A] : forall N (L R : list A),
+  drop N L R -> is_integer N.
+induction on 1. intros D. D: case D.
+  %1:  Drop-0
+   search.
+  %2:  Drop-Step
+   apply IH to D1. apply plus_integer_is_integer to _ _ D. search.
+
+
+Theorem drop_geq_0 [A] : forall N (L R : list A),
+  drop N L R -> N >= 0.
+induction on 1. intros D. D: case D.
+  %1:  Drop-0
+   search.
+  %2:  Drop-Step
+   GEq: apply IH to D1. LEq: case GEq.
+   G: apply greater_integer__add_positive to _ _ D.
+   L: apply greater_integer_flip_less to G.
+   apply less_integer_lesseq to L. search.
+
+
+Theorem drop_unique [A] : forall N (L RA RB : list A),
+  drop N L RA -> drop N L RB -> RA = RB.
+induction on 1. intros DA DB. DA: case DA.
+  %1:  Drop-0
+   DB: case DB.
+     %1.1:  Drop-0
+      search.
+     %1.2:  Drop-Step
+      apply drop_is_integer to DB1. L: apply lt_plus_one to DB _.
+      GEq: apply drop_geq_0 to DB1.
+      apply greatereq_less_integer_false to GEq L.
+  %2:  Drop-Step
+   DB: case DB.
+     %2.1:  Drop-0
+      apply drop_is_integer to DA1. L: apply lt_plus_one to DA _.
+      GEq: apply drop_geq_0 to DA1.
+      apply greatereq_less_integer_false to GEq L.
+     %2.2:  Drop-Step
+      apply drop_is_integer to DA1. apply drop_is_integer to DB1.
+      apply plus_integer_unique_addend to _ _ _ DA DB.
+      apply IH to DA1 DB1. search.
+
+
+Theorem append_drop [A] : forall N (L1 L2 L : list A),
+  L1 ++ L2 = L -> length L1 N -> drop N L L2.
+induction on 2. intros App Len. Len: case Len.
+  %1:  nil
+   case App. search.
+  %2:  cons
+   App: case App. apply IH to App Len. search.
+
+
+Theorem take_is_integer [A] : forall N (L F : list A),
+  take N L F -> is_integer N.
+induction on 1. intros T. T: case T.
+  %1:  Take-0
+   search.
+  %2:  Take-Step
+   apply IH to T1. apply plus_integer_is_integer to _ _ T. search.
+
+
+Theorem take_geq_0 [A] : forall N (L F : list A),
+  take N L F -> N >= 0.
+induction on 1. intros T. T: case T.
+  %1:  Take-0
+   search.
+  %2:  Take-Step
+   GEq: apply IH to T1. LEq: case GEq.
+   G: apply greater_integer__add_positive to _ _ T.
+   L: apply greater_integer_flip_less to G.
+   apply less_integer_lesseq to L. search.
+
+
+Theorem take_unique [A] : forall N (L RA RB : list A),
+  take N L RA -> take N L RB -> RA = RB.
+induction on 1. intros TA TB. TA: case TA.
+  %1:  Take-0
+   TB: case TB.
+     %1.1:  Take-0
+      search.
+     %1.2:  Take-Step
+      apply take_is_integer to TB1. L: apply lt_plus_one to TB _.
+      GEq: apply take_geq_0 to TB1.
+      apply greatereq_less_integer_false to GEq L.
+  %2:  Take-Step
+   TB: case TB.
+     %2.1:  Take-0
+      apply take_is_integer to TA1. L: apply lt_plus_one to TA _.
+      GEq: apply take_geq_0 to TA1.
+      apply greatereq_less_integer_false to GEq L.
+     %2.2:  Take-Step
+      apply take_is_integer to TA1. apply take_is_integer to TB1.
+      apply plus_integer_unique_addend to _ _ _ TA TB.
+      apply IH to TA1 TB1. search.
+
+
+Theorem take_length [A] : forall N (L R : list A),
+  take N L R -> length R N.
+induction on 1. intros T. T: case T.
+  %Take-0
+   search.
+  %Take-Step
+   L: apply IH to T1. search.
+
+
+Theorem append_take [A] : forall N (L1 L2 L : list A),
+  L1 ++ L2 = L -> length L1 N -> take N L L1.
+induction on 2. intros App Len. Len: case Len.
+  %nil
+   search.
+  %cons
+   App: case App. apply IH to App Len. search.
+
+
 Theorem range_is : forall Low High R,
   is_integer Low -> range Low High R -> is_list is_integer R.
 induction on 2. intros IsLow R. R: case R.
