@@ -1,4 +1,4 @@
-Module stdLib.
+Module sterling:stdLib.
 
 Theorem lookup_unique[Key, Value] :
   forall L (Key : Key) (Value1 Value2 : Value),

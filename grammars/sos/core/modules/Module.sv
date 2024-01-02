@@ -36,7 +36,7 @@ synthesized attribute errorString::String;
 
 
 --to make it easier to change the name, should we need to do so
-global stdLibName::String = "stdLib";
+global stdLibName::String = "sterling:stdLib";
 
 
 {-
