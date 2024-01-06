@@ -75,7 +75,7 @@ aspect production endCmdArgs
 top::CmdArgs ::= l::[String]
 {
   top.outputExtensibella = false;
-  top.extensibellaFull = true;
+  top.extensibellaFull = false;
 }
 
 
