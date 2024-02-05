@@ -1,8 +1,8 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-   eb<ExtensibellaTerm>
+   eb<ExtensibellaTerm>, isVar
 occurs on Term;
 
 aspect production const
@@ -10,6 +10,8 @@ top::Term ::= name::QName
 {
   top.eb =
       nameExtensibellaTerm(name.fullConstrName.ebConstructorName);
+
+  top.isVar = false;
 }
 
 
@@ -17,6 +19,8 @@ aspect production var
 top::Term ::= name::String
 {
   top.eb = varExtensibellaTerm(name);
+
+  top.isVar = true;
 }
 
 
@@ -24,6 +28,8 @@ aspect production num
 top::Term ::= int::Integer
 {
   top.eb = extensibellaIntegerTerm(int);
+
+  top.isVar = false;
 }
 
 
@@ -31,6 +37,8 @@ aspect production stringConst
 top::Term ::= s::String
 {
   top.eb = extensibellaStringTerm(s);
+
+  top.isVar = false;
 }
 
 
@@ -40,6 +48,8 @@ top::Term ::= constructor::QName args::TermList
   top.eb = applicationExtensibellaTerm(
               constructor.fullConstrName.ebConstructorName,
               args.eb);
+
+  top.isVar = false;
 }
 
 
@@ -49,6 +59,8 @@ top::Term ::= contents::TermList
   top.eb = foldr1(\ a::ExtensibellaTerm b::ExtensibellaTerm ->
                     applicationExtensibellaTerm("$pair_c", [a, b]),
                   contents.eb);
+
+  top.isVar = false;
 }
 
 
@@ -56,6 +68,8 @@ aspect production nilTerm
 top::Term ::=
 {
   top.eb = nilExtensibellaTerm();
+
+  top.isVar = false;
 }
 
 
@@ -63,6 +77,8 @@ aspect production consTerm
 top::Term ::= hd::Term tl::Term
 {
   top.eb = consExtensibellaTerm(hd.eb, tl.eb);
+
+  top.isVar = false;
 }
 
 
@@ -70,6 +86,8 @@ aspect production ascriptionTerm
 top::Term ::= tm::Term ty::Type
 {
   top.eb = tm.eb;
+
+  top.isVar = tm.isVar;
 }
 
 
@@ -77,7 +95,7 @@ top::Term ::= tm::Term ty::Type
 
 
 attribute
-   eb<[ExtensibellaTerm]>, pcVar
+   eb<[ExtensibellaTerm]>, pcVar, allArgsVars
 occurs on TermList;
 
 aspect production nilTermList
@@ -86,6 +104,8 @@ top::TermList ::=
   top.eb = [];
 
   top.pcVar = error("Should not translate in the presence of errors");
+
+  top.allArgsVars = true;
 }
 
 
@@ -101,5 +121,7 @@ top::TermList ::= t::Term rest::TermList
       | _, _ ->
         error("Should not translate in the presence of errors")
       end;
+
+  top.allArgsVars = t.isVar && rest.allArgsVars;
 }
 

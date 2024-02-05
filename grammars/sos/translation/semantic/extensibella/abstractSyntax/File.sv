@@ -1,8 +1,9 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules,
+   ebStandInRules
 occurs on File;
 
 aspect production file
@@ -13,6 +14,7 @@ top::File ::= moduleName::QName decls::Decls
   top.ebRules = decls.ebRules;
   top.ebJudgments = decls.ebJudgments;
   top.ebTranslationRules = decls.ebTranslationRules;
+  top.ebStandInRules = decls.ebStandInRules;
 }
 
 
@@ -20,7 +22,8 @@ top::File ::= moduleName::QName decls::Decls
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules,
+   ebStandInRules
 occurs on Decls;
 
 aspect production nilDecls
@@ -31,6 +34,7 @@ top::Decls ::=
   top.ebRules = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
+  top.ebStandInRules = [];
 }
 
 
@@ -42,6 +46,7 @@ top::Decls ::= importName::QName
   top.ebRules = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
+  top.ebStandInRules = [];
 }
 
 
@@ -53,6 +58,7 @@ top::Decls ::= r::Rule
   top.ebRules = r.ebRules;
   top.ebJudgments = [];
   top.ebTranslationRules = r.ebTranslationRules;
+  top.ebStandInRules = [];
 }
 
 
@@ -64,6 +70,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.ebRules = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
+  top.ebStandInRules = [];
 }
 
 
@@ -75,6 +82,7 @@ top::Decls ::= j::JudgmentDecl
   top.ebRules = [];
   top.ebJudgments = j.ebJudgments;
   top.ebTranslationRules = [];
+  top.ebStandInRules = [];
 }
 
 
@@ -87,4 +95,5 @@ top::Decls ::= d1::Decls d2::Decls
   top.ebJudgments = d1.ebJudgments ++ d2.ebJudgments;
   top.ebTranslationRules =
       d1.ebTranslationRules ++ d2.ebTranslationRules;
+  top.ebStandInRules = [];
 }

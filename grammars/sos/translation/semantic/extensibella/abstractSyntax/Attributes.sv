@@ -1,4 +1,4 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 imports sos:core:common:abstractSyntax;
 imports sos:core:semanticDefs:abstractSyntax;
@@ -18,6 +18,8 @@ synthesized attribute ebRules::[Def];
 --Gather translation rules [(judgment, conclusion, premises, PC var)]
 synthesized attribute ebTranslationRules::[(JudgmentEnvItem, Metaterm,
                                             [Metaterm], String)];
+synthesized attribute ebStandInRules::[(JudgmentEnvItem, Metaterm,
+                                        [Metaterm], String)];
 
 synthesized attribute ebRulesByModule::[(String, [Def])];
 
@@ -37,3 +39,9 @@ synthesized attribute pcVar::String;
 
 --is relation for a type
 synthesized attribute ebIs::String;
+
+
+--whether all arguments to a relation are variables
+synthesized attribute allArgsVars::Boolean;
+--whether a term is a variable
+synthesized attribute isVar::Boolean;

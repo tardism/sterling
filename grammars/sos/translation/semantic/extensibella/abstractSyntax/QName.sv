@@ -1,4 +1,4 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 synthesized attribute eb_base::String occurs on QName;
 

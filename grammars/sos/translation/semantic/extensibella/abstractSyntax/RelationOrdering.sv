@@ -1,4 +1,4 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 import silver:util:graph as g;
 --need this because one graph function returns a set here

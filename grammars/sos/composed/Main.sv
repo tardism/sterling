@@ -5,11 +5,12 @@ imports sos:core;
 imports sos:core:semanticDefs:concreteSyntax;
 imports sos:core:concreteDefs:concreteSyntax;
 imports sos:core:main:concreteSyntax;
+imports sos:translation:semantic:extensibella:concreteSyntax;
 
 imports sos:translation:semantic:prolog;
 imports sos:translation:semantic:latex;
 imports sos:translation:semantic:lambdaProlog;
-imports sos:translation:semantic:extensibella;
+imports sos:translation:semantic:extensibella:abstractSyntax;
 
 imports sos:translation:conc:silver;
 
@@ -23,6 +24,7 @@ imports sos:translation:main:silver;
 parser p::File_c {
   sos:core:common:concreteSyntax;
   sos:core:semanticDefs:concreteSyntax;
+  sos:translation:semantic:extensibella:concreteSyntax;
 }
 
 parser c::ConcreteFile_c {

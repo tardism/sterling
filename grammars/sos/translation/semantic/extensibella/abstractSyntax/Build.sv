@@ -1,4 +1,4 @@
-grammar sos:translation:semantic:extensibella;
+grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 import silver:util:cmdargs;

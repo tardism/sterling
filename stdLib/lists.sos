@@ -25,7 +25,7 @@ Fixed Judgment select : Item [Item] [Item]
 Fixed Judgment subset : [A] [A]
 
 /*Holds if the first list contains everything in the second list and
-  the first list contains everything in the second list*/
+  the second list contains everything in the first list*/
 Fixed Judgment permutation : [A] [A]
 
 /*Count haw many times an item occurs in a list*/
