@@ -6,7 +6,7 @@ import sos:core:main:abstractSyntax only MainFile;
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules, ebErrors,
+   ebTranslationRules, ebStandInRules, ebErrors,
    defFileContents, interfaceFileContents, fullFileContents
 occurs on ModuleList;
 
@@ -23,6 +23,7 @@ top::ModuleList ::= files::Files
   top.ebRulesByModule = [(stdLibName, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
   top.ebTranslationRules = files.ebTranslationRules;
+  top.ebStandInRules = files.ebStandInRules;
 
   --automatically generate is relations
   local isRels::[(String, [ExtensibellaType])] =
@@ -77,6 +78,8 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.ebJudgments = m.ebJudgments ++ rest.ebJudgments;
   top.ebTranslationRules =
       m.ebTranslationRules ++ rest.ebTranslationRules;
+  top.ebStandInRules =
+      m.ebStandInRules ++ rest.ebStandInRules;
   top.ebRulesByModule =
       m.ebRulesByModule ++ rest.ebRulesByModule;
   --fill in trans rules for constructors not known with them before
@@ -98,47 +101,54 @@ top::ModuleList ::= m::Module rest::ModuleList
   local newJdgs::[JudgmentEnvItem] = jdgSplit.1;
   local importedJdgs::[JudgmentEnvItem] = jdgSplit.2;
 
-  --declaration for unknown constructors
+  --declarations for unknown constructors
   local unknownConstrs::[ConstrDecl] =
-      map(\ t::TypeEnvItem ->
-            constrDecl(t.name.ebUnknownName, [],
-               extensibellaNameTy(t.name.ebTypeName)),
-          importedTys);
-  --rules for imported relations so they hold on unknown constructors
-  local rulesImportedUnknown::[Def] =
-      buildImportedUnknownRules(importedJdgs, importedTys,
-                                m.judgmentEnv) ++
-      --rules for unknown constructors for imported types
       flatMap(\ t::TypeEnvItem ->
-                if sameModule(toQName(m.modName, bogusLoc()), t.name)
-                then []
-                else [buildOneUnknownRule(t.name.ebIsName,
-                         [nameType(t.name, location=bogusLoc())],
-                         0, t)],
-              tys);
+                [constrDecl(t.name.ebUnknownNameI, [],
+                    extensibellaNameTy(t.name.ebTypeName)),
+                 constrDecl(t.name.ebUnknownNameK, [],
+                    extensibellaNameTy(t.name.ebTypeName))],
+              importedTys);
   --rules for translation rules holding on unknown constructors
-  local constrEnvs::[ConstructorEnvItem] =
+  local constrEnvsI::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->
             constructorEnvItem(
-               baseName(t.name.ebUnknownName, location=bogusLoc()),
+               baseName(t.name.ebUnknownNameI, location=bogusLoc()),
                nameType(t.name, location=bogusLoc()),
                nilTypeList(location=bogusLoc())),
           importedTys);
-  local joinedNewJdgs::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+  local joinedNewJdgsI::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
             (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
-                       constrEnvs)),
+                       constrEnvsI)),
           newJdgs);
-  local rulesNewUnknown::[Def] =
-      instantiateExtensibellaTransRules(joinedNewJdgs,
+  local rulesNewUnknownI::[Def] =
+      instantiateExtensibellaTransRules(joinedNewJdgsI,
          top.ebTranslationRules);
+  --rules for stand-in rules holding on unknown constructors
+  local constrEnvsK::[ConstructorEnvItem] =
+      map(\ t::TypeEnvItem ->
+            constructorEnvItem(
+               baseName(t.name.ebUnknownNameK, location=bogusLoc()),
+               nameType(t.name, location=bogusLoc()),
+               nilTypeList(location=bogusLoc())),
+          importedTys);
+  local joinedOldJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+      map(\ j::JudgmentEnvItem ->
+            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+                       constrEnvsK)),
+          importedJdgs);
+  local rulesNewUnknownK::[Def] =
+      instantiateExtensibellaTransRules(joinedOldJdgsK,
+         top.ebStandInRules);
 
+  --contents of different Extensibella files
   top.defFileContents =
       buildExtensibellaFile(top.ebKinds,
          top.ebConstrs ++ unknownConstrs,
          top.ebJudgments, top.ebRulesByModule,
          instantiatedTransRules,
-         rulesImportedUnknown ++ rulesNewUnknown);
+         rulesNewUnknownI ++ rulesNewUnknownK);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(m.modName,
          (stdLibName, [])::top.buildsOns);
@@ -169,7 +179,7 @@ top::ModuleList ::= m::Module rest::ModuleList
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules
+   ebTranslationRules, ebStandInRules
 occurs on Module;
 
 aspect production module
@@ -180,6 +190,7 @@ top::Module ::= name::String files::Files
   top.ebRulesByModule = [(name, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
   top.ebTranslationRules = files.ebTranslationRules;
+  top.ebStandInRules = files.ebStandInRules;
 
   --automatically generate is relations
   local isRels::[(String, [ExtensibellaType])] =
@@ -219,7 +230,8 @@ top::Module ::= name::String files::Files
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules,
+   ebStandInRules
 occurs on Files;
 
 aspect production nilFiles
@@ -230,6 +242,7 @@ top::Files ::=
   top.ebRules = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
+  top.ebStandInRules = [];
 }
 
 
@@ -242,6 +255,7 @@ top::Files ::= filename::String f::File rest::Files
   top.ebJudgments = f.ebJudgments ++ rest.ebJudgments;
   top.ebTranslationRules =
       f.ebTranslationRules ++ rest.ebTranslationRules;
+  top.ebStandInRules = f.ebStandInRules ++ rest.ebStandInRules;
 }
 
 
@@ -253,6 +267,7 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   top.ebRules = rest.ebRules;
   top.ebJudgments = rest.ebJudgments;
   top.ebTranslationRules = rest.ebTranslationRules;
+  top.ebStandInRules = rest.ebStandInRules;
 }
 
 
@@ -264,4 +279,5 @@ top::Files ::= filename::String f::MainFile rest::Files
   top.ebRules = rest.ebRules;
   top.ebJudgments = rest.ebJudgments;
   top.ebTranslationRules = rest.ebTranslationRules;
+  top.ebStandInRules = rest.ebStandInRules;
 }

@@ -2,7 +2,7 @@ grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-   eb<ExtensibellaTerm>, isVar
+   eb<ExtensibellaTerm>, isVar, argVars
 occurs on Term;
 
 aspect production const
@@ -12,6 +12,7 @@ top::Term ::= name::QName
       nameExtensibellaTerm(name.fullConstrName.ebConstructorName);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -21,6 +22,7 @@ top::Term ::= name::String
   top.eb = varExtensibellaTerm(name);
 
   top.isVar = true;
+  top.argVars = [name];
 }
 
 
@@ -30,6 +32,7 @@ top::Term ::= int::Integer
   top.eb = extensibellaIntegerTerm(int);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -39,6 +42,7 @@ top::Term ::= s::String
   top.eb = extensibellaStringTerm(s);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -50,6 +54,7 @@ top::Term ::= constructor::QName args::TermList
               args.eb);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -61,6 +66,7 @@ top::Term ::= contents::TermList
                   contents.eb);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -70,6 +76,7 @@ top::Term ::=
   top.eb = nilExtensibellaTerm();
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -79,6 +86,7 @@ top::Term ::= hd::Term tl::Term
   top.eb = consExtensibellaTerm(hd.eb, tl.eb);
 
   top.isVar = false;
+  top.argVars = [];
 }
 
 
@@ -88,6 +96,7 @@ top::Term ::= tm::Term ty::Type
   top.eb = tm.eb;
 
   top.isVar = tm.isVar;
+  top.argVars = tm.argVars;
 }
 
 
@@ -95,7 +104,7 @@ top::Term ::= tm::Term ty::Type
 
 
 attribute
-   eb<[ExtensibellaTerm]>, pcVar, allArgsVars
+   eb<[ExtensibellaTerm]>, pcVar, allArgsVars, argVars
 occurs on TermList;
 
 aspect production nilTermList
@@ -106,6 +115,7 @@ top::TermList ::=
   top.pcVar = error("Should not translate in the presence of errors");
 
   top.allArgsVars = true;
+  top.argVars = [];
 }
 
 
@@ -123,5 +133,6 @@ top::TermList ::= t::Term rest::TermList
       end;
 
   top.allArgsVars = t.isVar && rest.allArgsVars;
+  top.argVars = t.argVars ++ rest.argVars;
 }
 

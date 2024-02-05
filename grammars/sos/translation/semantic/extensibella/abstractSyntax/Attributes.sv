@@ -43,5 +43,7 @@ synthesized attribute ebIs::String;
 
 --whether all arguments to a relation are variables
 synthesized attribute allArgsVars::Boolean;
+--variables in a list of terms/args to a relation
+synthesized attribute argVars::[String];
 --whether a term is a variable
 synthesized attribute isVar::Boolean;

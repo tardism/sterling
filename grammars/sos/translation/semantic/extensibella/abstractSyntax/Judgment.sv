@@ -2,7 +2,7 @@ grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-   eb<Metaterm>, pcVar, allArgsVars
+   eb<Metaterm>, pcVar, allArgsVars, argVars
 occurs on Judgment;
 
 aspect production relation
@@ -13,6 +13,7 @@ top::Judgment ::= rel::QName args::TermList
   top.pcVar = args.pcVar;
 
   top.allArgsVars = args.allArgsVars;
+  top.argVars = args.argVars;
 }
 
 
@@ -26,6 +27,7 @@ top::Judgment ::= rel::QName args::TermList
   top.pcVar = error("Can only access pcVar on relation");
 
   top.allArgsVars = args.allArgsVars;
+  top.argVars = args.argVars;
 }
 
 
@@ -43,6 +45,7 @@ top::Judgment ::= args::TermList ty::QName t::Term translation::Term
   top.pcVar = error("Can only access pcVar on relation");
 
   top.allArgsVars = args.allArgsVars && t.isVar && translation.isVar;
+  top.argVars = args.argVars ++ t.argVars ++ translation.argVars;
 }
 
 
@@ -54,6 +57,7 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   top.pcVar = error("Can only access pcVar on relation");
 
   top.allArgsVars = t1.isVar && t2.isVar && result.isVar;
+  top.argVars = t1.argVars ++ t2.argVars ++ result.argVars;
 }
 
 
@@ -65,6 +69,7 @@ top::Judgment ::= t1::Term op::TopBinOp t2::Term
   top.pcVar = error("Can only access pcVar on relation");
 
   top.allArgsVars = t1.isVar && t2.isVar;
+  top.argVars = t1.argVars ++ t2.argVars;
 }
 
 

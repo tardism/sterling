@@ -7,7 +7,7 @@ imports sos:translation:semantic:extensibella:abstractSyntax;
 
 
 concrete productions top::TopDecl_c
-| 'Extensibella_Stand_In' '{' r::Rule_c '}'
+| 'Extensibella_Stand_In' '{' EmptyNewlines r::Rule_c EmptyNewlines '}'
   { top.ast = standInRuleDecls(r.ast, location=top.location); }
 
 terminal StandIn_t   'Extensibella_Stand_In'   lexer classes {KEYWORD};
