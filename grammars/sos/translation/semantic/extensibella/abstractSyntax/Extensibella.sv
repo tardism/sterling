@@ -606,17 +606,6 @@ function instantiateExtensibellaTransRules_help
 
 
 
---go through a list of judgments and constructors to fill in the
---stand-in rules of the judgments for the constructors
-{-function instantiateExtensibellaTransRules
-[Def] ::= newRuleComs::[(JudgmentEnvItem, [ConstructorEnvItem])]
-   ebTransRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
-{
-  
-}-}
-
-
-
 
 
 function capitalize

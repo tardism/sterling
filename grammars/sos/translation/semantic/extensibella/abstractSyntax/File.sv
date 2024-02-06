@@ -95,5 +95,5 @@ top::Decls ::= d1::Decls d2::Decls
   top.ebJudgments = d1.ebJudgments ++ d2.ebJudgments;
   top.ebTranslationRules =
       d1.ebTranslationRules ++ d2.ebTranslationRules;
-  top.ebStandInRules = [];
+  top.ebStandInRules = d1.ebStandInRules ++ d2.ebStandInRules;
 }
