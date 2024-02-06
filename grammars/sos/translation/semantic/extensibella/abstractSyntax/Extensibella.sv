@@ -442,7 +442,7 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
                   p1.2.definedRel < p2.2.definedRel,
                 expandedDefs));
   --[(relation name, all def clauses)]
-  local basicRules::[(String, [Def])] =
+  local defRules::[(String, [Def])] = --relations with rules
       map(\ l::[(String, Def)] ->
             let rel::String = head(l).2.definedRel
             in
@@ -451,6 +451,19 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
                     filter(\ d::Def -> d.definedRel == rel, finalDefs))
             end,
           relDefGroups);
+  local undefinedRels::[String] =
+      let l::[String] = map(fst, defRules)
+      in
+        map(fst, filter(\ p::(String, [ExtensibellaType]) ->
+                          !contains(p.1, l),
+                        jdgs))
+      end;
+  local basicRules::[(String, [Def])] =
+      defRules ++ --defined relations
+      map(\ rel::String -> --and relations without basic rules
+            (rel, filter(\ d::Def -> d.definedRel == rel, instanDefs) ++
+                  filter(\ d::Def -> d.definedRel == rel, finalDefs)),
+          undefinedRels);
   --gather up the dependencies to do the ordering
   --use jdgs so we kept rule-less rels too
   --[(relation name, names of relations it uses)]
@@ -590,6 +603,17 @@ function instantiateExtensibellaTransRules_help
                         rest, conc, prems, pc, pcless_vars)
          end;
 }
+
+
+
+--go through a list of judgments and constructors to fill in the
+--stand-in rules of the judgments for the constructors
+{-function instantiateExtensibellaTransRules
+[Def] ::= newRuleComs::[(JudgmentEnvItem, [ConstructorEnvItem])]
+   ebTransRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
+{
+  
+}-}
 
 
 

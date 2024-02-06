@@ -22,7 +22,8 @@ top::QName ::= name::String
             toString(top.location.line) ++ ":" ++
             toString(top.location.column) ++ ")");
   top.ebConstructorName =
-      if startsWith("$unknown__", name)
+      if startsWith("$unknownI__", name) ||
+         startsWith("$unknownK__", name)
       then name
       else error("Must have full constructor name for translation" ++
                  " (" ++ top.pp ++ ")");
