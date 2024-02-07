@@ -511,7 +511,12 @@ String ::= modName::String buildsOns::[(String, [String])]
 {
   return
      case lookup(modName, buildsOns) of
-     | just(x) -> implode("\n", x)
+     | just(l) ->
+       implode("\n",
+          map(\ mod::String ->
+                mod ++ " [" ++
+                implode(", ", lookup(mod, buildsOns).fromJust) ++ "]",
+              l))
      | nothing() ->
        error("buildExtensibellaInterfaceFile could not find " ++
              "module " ++ modName)
