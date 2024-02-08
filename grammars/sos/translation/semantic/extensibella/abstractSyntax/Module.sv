@@ -201,7 +201,7 @@ top::Module ::= name::String files::Files
   top.ebRulesByModule = [(name, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
   top.ebTranslationRules = files.ebTranslationRules;
-  top.ebStandInRules = files.ebStandInRules;
+  top.ebStandInRules = files.ebStandInRules ++ blankStandInRules;
 
   --automatically generate is relations
   local isRels::[(String, [ExtensibellaType])] =
@@ -234,6 +234,34 @@ top::Module ::= name::String files::Files
                       foldr1(andMetaterm, map(snd, children)))
             end,
           top.constructorDecls);
+
+  {-
+    When we declare Ext_Ind in Extensibella, it must be in the same
+    module as the one declaring the relation.  However, since we don't
+    instantiate the stand-in rule until we include an extension, we
+    don't know if there will be a rule for unknownKTerm when Ext_Ind
+    is declared.  To solve this, we include a blank stand-in rule for
+    every relation without an explicit one given.  That way we can
+    guarantee there will be a case, and a pretty generic one at that.
+  -}
+  local presentJdgs::[QName] = map((.name), map(fst, files.ebStandInRules));
+  local missingJdgs::[JudgmentEnvItem] =
+      filter(\ j::JudgmentEnvItem ->
+               j.isExtensible && !contains(j.name, presentJdgs),
+             top.judgmentDecls);
+  local blankStandInRules::[(JudgmentEnvItem, Metaterm, [Metaterm],
+                             String)] =
+      map(\ j::JudgmentEnvItem ->
+            let args::[String] =
+                map(\ x::Integer -> "A" ++ toString(x),
+                    range(1, j.types.len + 1))
+            in
+            let conc::Metaterm =
+                relationMetaterm(j.eb, map(varExtensibellaTerm, args))
+            in
+              (j, conc, [], head(drop(j.pcIndex, args)))
+            end end,
+          missingJdgs);
 }
 
 
