@@ -133,11 +133,22 @@ top::ModuleList ::= m::Module rest::ModuleList
                nameType(t.name, location=bogusLoc()),
                nilTypeList(location=bogusLoc())),
           importedTys);
+  local isJdgs::[JudgmentEnvItem] =
+      flatMap(
+         \ p::(String, [TypeEnvItem]) -> 
+           map(\ e::TypeEnvItem ->
+                 extJudgmentEnvItem(
+                    toQName(e.name.ebIsName, bogusLoc()),
+                    consTypeList(
+                       nameType(e.name, location=bogusLoc()),
+                       nilTypeList(location=bogusLoc()),
+                       location=bogusLoc()), 0),
+               p.2), rest.moduleTyDecls);
   local joinedOldJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
             (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
                        constrEnvsK)),
-          importedJdgs);
+          importedJdgs ++ isJdgs);
   local rulesNewUnknownK::[Def] =
       instantiateExtensibellaTransRules(joinedOldJdgsK,
          top.ebStandInRules);

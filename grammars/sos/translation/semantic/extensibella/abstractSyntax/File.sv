@@ -70,7 +70,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.ebRules = [];
   top.ebJudgments = [];
   top.ebTranslationRules = [];
-  top.ebStandInRules = [];
+  top.ebStandInRules = a.ebStandInRules;
 }
 
 

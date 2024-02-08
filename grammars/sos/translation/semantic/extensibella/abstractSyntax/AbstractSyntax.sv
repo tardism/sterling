@@ -2,7 +2,7 @@ grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-  ebKinds, ebConstrs
+  ebKinds, ebConstrs, ebStandInRules
 occurs on AbsSyntaxDecl;
 
 aspect production initialAbsSyntaxDecl
@@ -12,6 +12,23 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 
   top.ebConstrs = constructors.ebConstrs;
   constructors.builtEBType = extensibellaNameTy(fullName.ebTypeName);
+
+  local is::String = fullName.ebIsName;
+  local trans::TranslationEnvItem =
+      head(lookupEnv(fullName, top.translationEnv));
+  local transArgs::[ExtensibellaTerm] =
+      map(nameExtensibellaTerm,
+          map(\ x::Integer -> "A" ++ toString(x),
+              range(1, trans.types.len)) ++ ["X", "X_T"]);
+  top.ebStandInRules =
+      [(extJudgmentEnvItem(toQName(is, bogusLoc()),
+           consTypeList(nameType(fullName, location=bogusLoc()),
+                        nilTypeList(location=bogusLoc()),
+                        location=bogusLoc()), 0),
+        relationMetaterm(is, [nameExtensibellaTerm("X")]),
+        [relationMetaterm(fullName.ebTranslationName, transArgs),
+         relationMetaterm(is, [nameExtensibellaTerm("X_T")])],
+        "X")];
 }
 
 
@@ -27,6 +44,8 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
       | nameType(n) -> extensibellaNameTy(n.ebTypeName)
       | _ -> error("Not possible")
       end;
+
+  top.ebStandInRules = [];
 }
 
 
