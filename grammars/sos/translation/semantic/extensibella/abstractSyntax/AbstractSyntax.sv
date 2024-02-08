@@ -13,21 +13,28 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
   top.ebConstrs = constructors.ebConstrs;
   constructors.builtEBType = extensibellaNameTy(fullName.ebTypeName);
 
+  {-Generate a stand-in rule for is relations, since one can't be
+    created elsewhere.  Form:
+         Fresh Args |{ty}- X ~~> X_T
+         is_ty X_T
+         ---------------------------
+         is_ty X
+  -}
   local is::String = fullName.ebIsName;
   local trans::TranslationEnvItem =
       head(lookupEnv(fullName, top.translationEnv));
   local transArgs::[ExtensibellaTerm] =
-      map(nameExtensibellaTerm,
+      map(varExtensibellaTerm,
           map(\ x::Integer -> "A" ++ toString(x),
-              range(1, trans.types.len)) ++ ["X", "X_T"]);
+              range(1, trans.types.len + 1)) ++ ["X", "X_T"]);
   top.ebStandInRules =
       [(extJudgmentEnvItem(toQName(is, bogusLoc()),
            consTypeList(nameType(fullName, location=bogusLoc()),
                         nilTypeList(location=bogusLoc()),
                         location=bogusLoc()), 0),
-        relationMetaterm(is, [nameExtensibellaTerm("X")]),
+        relationMetaterm(is, [varExtensibellaTerm("X")]),
         [relationMetaterm(fullName.ebTranslationName, transArgs),
-         relationMetaterm(is, [nameExtensibellaTerm("X_T")])],
+         relationMetaterm(is, [varExtensibellaTerm("X_T")])],
         "X")];
 }
 
