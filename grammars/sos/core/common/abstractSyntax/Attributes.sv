@@ -40,6 +40,3 @@ inherited attribute finalSubst::Substitution;
 
 
 synthesized attribute isError::Boolean;
-
-
-
