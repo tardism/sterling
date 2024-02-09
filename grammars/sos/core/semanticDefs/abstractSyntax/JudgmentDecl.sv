@@ -23,8 +23,8 @@ top::JudgmentDecl ::= name::String ty::TypeList
   top.constructorDecls = [];
   top.judgmentDecls =
       if ty.foundPC
-      then [extJudgmentEnvItem(fullName, ty, ty.pcIndex)]
-      else [errorJudgmentEnvItem(fullName, ty)];
+      then [extJudgmentEnvItem(fullName, ty.types, ty.pcIndex)]
+      else [errorJudgmentEnvItem(fullName, ty.types)];
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
@@ -117,7 +117,8 @@ top::JudgmentDecl ::= name::String ty::TypeList
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls =
-      [fixedJudgmentEnvItem(addQNameBase(top.moduleName, name), ty)];
+      [fixedJudgmentEnvItem(addQNameBase(top.moduleName, name),
+                            ty.types)];
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
@@ -155,7 +156,8 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls =
-      [errorJudgmentEnvItem(addQNameBase(top.moduleName, name), ty)];
+      [errorJudgmentEnvItem(addQNameBase(top.moduleName, name),
+                            ty.types)];
   top.translationDecls = [];
 
   ty.tyEnv = top.tyEnv;
@@ -190,7 +192,7 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls =
-      [translationEnvItem(fullTyName, args)];
+      [translationEnvItem(fullTyName, args.types)];
 
   production fullTyName::QName = addQNameBase(top.moduleName, tyname);
 
@@ -228,7 +230,8 @@ top::JudgmentDecl ::= errs::[Message] tyname::String args::TypeList
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.translationDecls =
-      [translationEnvItem(addQNameBase(top.moduleName, tyname), args)];
+      [translationEnvItem(addQNameBase(top.moduleName, tyname),
+                          args.types)];
 
   args.tyEnv = top.tyEnv;
 
