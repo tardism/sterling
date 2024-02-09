@@ -8,7 +8,6 @@ synthesized attribute ebJudgmentName::String occurs on QName;
 synthesized attribute ebTranslationName::String occurs on QName;
 
 synthesized attribute ebUnknownNameI::String occurs on QName;
-synthesized attribute ebUnknownNameK::String occurs on QName;
 synthesized attribute ebIsName::String occurs on QName;
 
 aspect production baseName
@@ -37,8 +36,6 @@ top::QName ::= name::String
 
   top.ebUnknownNameI =
       error("Must have full type for unknown name (" ++ top.pp ++ ")");
-  top.ebUnknownNameK =
-      error("Must have full type for unknown name (" ++ top.pp ++ ")");
   top.ebIsName = error("Must have full type for is name");
 }
 
@@ -56,7 +53,6 @@ top::QName ::= name::String rest::QName
   top.ebTranslationName = "$trans__" ++ top.eb_base;
 
   top.ebUnknownNameI = "$unknownI__" ++ top.eb_base;
-  top.ebUnknownNameK = "$unknownK__" ++ top.eb_base;
 
   --mo:du:le:is_name
   top.ebIsName = "$ext__0__" ++
@@ -69,13 +65,18 @@ top::QName ::= name::String rest::QName
 
 
 attribute
-   eb<String> --full relation name
+   eb<String>, --full relation name
+   ebUnknownNameK --name for unknownK relative to this relation
 occurs on JudgmentEnvItem;
+
+synthesized attribute ebUnknownNameK::String;
 
 aspect production extJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
 {
   top.eb = "$ext__" ++ toString(pcIndex) ++ "__" ++ name.eb_base;
+
+  top.ebUnknownNameK = "$unknownK__" ++ name.eb_base;
 }
 
 
@@ -83,6 +84,9 @@ aspect production fixedJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList
 {
   top.eb = "$fix__" ++ name.eb_base;
+
+  top.ebUnknownNameK =
+      error("Should not access fixedJudgmentEnvItem.ebUnknownNameK");
 }
 
 
@@ -90,6 +94,9 @@ aspect production errorJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList
 {
   top.eb = error("Should not translate in the presence of errors");
+
+  top.ebUnknownNameK =
+      error("Should not access errorJudgmentEnvIetm.ebUnknownNameK");
 }
 
 

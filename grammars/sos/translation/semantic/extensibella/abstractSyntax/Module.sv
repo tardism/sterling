@@ -103,13 +103,17 @@ top::ModuleList ::= m::Module rest::ModuleList
 
   --declarations for unknown constructors
   local unknownConstrs::[ConstrDecl] =
-      flatMap(\ t::TypeEnvItem ->
-                [constrDecl(t.name.ebUnknownNameI, [],
-                    extensibellaNameTy(t.name.ebTypeName)),
-                 constrDecl(t.name.ebUnknownNameK, [],
-                    extensibellaNameTy(t.name.ebTypeName))],
-              importedTys);
-  --rules for translation rules holding on unknown constructors
+      map(\ t::TypeEnvItem ->
+            constrDecl(t.name.ebUnknownNameI, [],
+               extensibellaNameTy(t.name.ebTypeName)),
+            importedTys) ++
+      flatMap(\ j::JudgmentEnvItem ->
+                if j.isExtensible
+                then [constrDecl(j.ebUnknownNameK, [],
+                         extensibellaNameTy(j.pcType.name.ebTypeName))]
+                else [],
+              jdgs);
+  --env items for unknown constructors
   local constrEnvsI::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->
             constructorEnvItem(
@@ -117,6 +121,16 @@ top::ModuleList ::= m::Module rest::ModuleList
                nameType(t.name, location=bogusLoc()),
                nilTypeList(location=bogusLoc())),
           importedTys);
+  local constrEnvsK::[ConstructorEnvItem] =
+      flatMap(\ j::JudgmentEnvItem ->
+                if j.isExtensible
+                then [constructorEnvItem(
+                         baseName(j.ebUnknownNameK,
+                                  location=bogusLoc()),
+                         j.pcType, nilTypeList(location=bogusLoc()))]
+                else [],
+              jdgs);
+  --rules for translation rules holding on unknown constructors
   local joinedNewJdgsI::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
             (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
@@ -126,13 +140,6 @@ top::ModuleList ::= m::Module rest::ModuleList
       instantiateExtensibellaTransRules(joinedNewJdgsI,
          top.ebTranslationRules);
   --rules for stand-in rules holding on unknown constructors
-  local constrEnvsK::[ConstructorEnvItem] =
-      map(\ t::TypeEnvItem ->
-            constructorEnvItem(
-               baseName(t.name.ebUnknownNameK, location=bogusLoc()),
-               nameType(t.name, location=bogusLoc()),
-               nilTypeList(location=bogusLoc())),
-          importedTys);
   local isJdgs::[JudgmentEnvItem] =
       flatMap(
          \ p::(String, [TypeEnvItem]) -> 
@@ -149,9 +156,18 @@ top::ModuleList ::= m::Module rest::ModuleList
             (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
                        constrEnvsK)),
           importedJdgs ++ isJdgs);
+  local joinedNewJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
+      map(\ j::JudgmentEnvItem ->
+            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+                       constrEnvsK)),
+          m.judgmentDecls);
   local rulesNewUnknownK::[Def] =
+      --stand-in rules from imported judgments
       instantiateExtensibellaTransRules(joinedOldJdgsK,
-         top.ebStandInRules);
+         top.ebStandInRules) ++
+      --default rules for new judgments
+      instantiateExtensibellaTransRules(joinedNewJdgsK,
+         m.ebTranslationRules); 
 
   --contents of different Extensibella files
   top.defFileContents =
