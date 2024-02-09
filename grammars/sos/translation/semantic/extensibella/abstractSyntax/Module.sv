@@ -158,7 +158,10 @@ top::ModuleList ::= m::Module rest::ModuleList
           importedJdgs ++ isJdgs);
   local joinedNewJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
-            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+            (j, filter(\ c::ConstructorEnvItem ->
+                         j.pcType == c.type &&
+                         c.name.base != j.ebUnknownNameK,
+          --instantiated default rules does not include K for same rel
                        constrEnvsK)),
           m.judgmentDecls);
   local rulesNewUnknownK::[Def] =
