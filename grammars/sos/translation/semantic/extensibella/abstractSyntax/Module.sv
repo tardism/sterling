@@ -94,10 +94,21 @@ top::ModuleList ::= m::Module rest::ModuleList
                   m.tyDecls, --remove new
                   head(top.moduleTyDecls).2); --from all known
   --split relations into imported and new
+  local isJdgs::[JudgmentEnvItem] =
+      flatMap(
+         \ p::(String, [TypeEnvItem]) -> 
+           map(\ e::TypeEnvItem ->
+                 extJudgmentEnvItem(
+                    toQName(e.name.ebIsName, bogusLoc()),
+                    consTypeList(
+                       nameType(e.name, location=bogusLoc()),
+                       nilTypeList(location=bogusLoc()),
+                       location=bogusLoc()), 0),
+               p.2), rest.moduleTyDecls);
   local jdgSplit::([JudgmentEnvItem], [JudgmentEnvItem]) =
       partition(\ j::JudgmentEnvItem ->
                   j.name.baselessName == m.modName,
-                head(top.moduleJudgmentDecls).2);
+                head(top.moduleJudgmentDecls).2 ++ isJdgs);
   local newJdgs::[JudgmentEnvItem] = jdgSplit.1;
   local importedJdgs::[JudgmentEnvItem] = jdgSplit.2;
 
@@ -112,7 +123,7 @@ top::ModuleList ::= m::Module rest::ModuleList
                 then [constrDecl(j.ebUnknownNameK, [],
                          extensibellaNameTy(j.pcType.name.ebTypeName))]
                 else [],
-              jdgs);
+              jdgs ++ isJdgs);
   --env items for unknown constructors
   local constrEnvsI::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->
@@ -129,7 +140,7 @@ top::ModuleList ::= m::Module rest::ModuleList
                                   location=bogusLoc()),
                          j.pcType, nilTypeList(location=bogusLoc()))]
                 else [],
-              jdgs);
+              jdgs ++ isJdgs);
   --rules for translation rules holding on unknown constructors
   local joinedNewJdgsI::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
@@ -140,22 +151,12 @@ top::ModuleList ::= m::Module rest::ModuleList
       instantiateExtensibellaTransRules(joinedNewJdgsI,
          top.ebTranslationRules);
   --rules for stand-in rules holding on unknown constructors
-  local isJdgs::[JudgmentEnvItem] =
-      flatMap(
-         \ p::(String, [TypeEnvItem]) -> 
-           map(\ e::TypeEnvItem ->
-                 extJudgmentEnvItem(
-                    toQName(e.name.ebIsName, bogusLoc()),
-                    consTypeList(
-                       nameType(e.name, location=bogusLoc()),
-                       nilTypeList(location=bogusLoc()),
-                       location=bogusLoc()), 0),
-               p.2), rest.moduleTyDecls);
   local joinedOldJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
-            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+            (j, filter(\ c::ConstructorEnvItem ->
+                         c.name.base == j.ebUnknownNameK,
                        constrEnvsK)),
-          importedJdgs ++ isJdgs);
+          importedJdgs);
   local joinedNewJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
             (j, filter(\ c::ConstructorEnvItem ->
@@ -220,7 +221,20 @@ top::Module ::= name::String files::Files
   top.ebRulesByModule = [(name, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
   top.ebTranslationRules = files.ebTranslationRules;
-  top.ebStandInRules = files.ebStandInRules ++ blankStandInRules;
+
+  --To keep instantiated stand-in rules from being used with the DefR
+  --rule from the logic G, we add a premise of (0 = 0 -> false).  This
+  --is, of course, not derivable unless false is derivable, so it is
+  --safe to add, but hides the false well enough Abella doesn't
+  --recognize it and clear the subgoal.  Extensibella gets rid of this
+  --so it can't be used.
+  top.ebStandInRules =
+      map(\ p::(JudgmentEnvItem, Metaterm, [Metaterm], String) ->
+            (p.1, p.2, p.3 ++ [falsePrem], p.4),
+          files.ebStandInRules ++ blankStandInRules);
+  local zero::ExtensibellaTerm = extensibellaIntegerTerm(0);
+  local falsePrem::Metaterm =
+      impliesMetaterm(eqMetaterm(zero, zero), falseMetaterm());
 
   --automatically generate is relations
   local isRels::[(String, [ExtensibellaType])] =
