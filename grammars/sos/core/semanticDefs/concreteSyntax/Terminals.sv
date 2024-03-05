@@ -47,7 +47,7 @@ terminal Trans_t         '~~>';
 terminal Upright_t    '|';
 terminal ColonsEq_t   '::=';
 
-terminal Integer_t   /[0-9]+/;
+terminal Integer_t   /-?[0-9]+/;
 terminal String_t    /"([^"]|(\\"))*"/;
 
 
