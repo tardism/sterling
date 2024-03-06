@@ -173,6 +173,47 @@ top::ModuleList ::= m::Module rest::ModuleList
       instantiateExtensibellaTransRules(joinedNewJdgsK,
          m.ebTranslationRules); 
 
+  --extra defs for full file to pass along stand-in rule
+  local standInDefs::[Definition] =
+      map(\ p::(JudgmentEnvItem, Metaterm, [Metaterm], String) ->
+            let name::String =
+                "$stand-in_rule__" ++
+                case p.2 of
+                | relationMetaterm(rel, _) -> rel
+                | _ -> error("Head must be relationMetaterm")
+                end
+            in
+            let prems::[Metaterm] = init(p.3) --drop false prem
+            in
+            let defJdg::(String, [ExtensibellaType]) =
+                (name, decorate p.1.types with {
+                          tyEnv = m.tyEnv;
+                       }.eb)
+            in
+            let headM::Metaterm =
+                case p.2 of
+                | relationMetaterm(rel, args) ->
+                  relationMetaterm(name, args)
+                | _ -> error("Head must be relationMetaterm")
+                end
+            in
+            let headVars::[String] = headM.vars
+            in
+            let bodyVars::[String] =
+              removeAll(headVars, nub(flatMap((.vars), prems)))
+            in
+              definition([defJdg],
+                 oneDefs(
+                    if null(prems)
+                    then factDef(headM)
+                    else ruleDef(headM,
+                            if null(bodyVars)
+                            then foldr1(andMetaterm, prems)
+                            else existsMetaterm(bodyVars,
+                                    foldr1(andMetaterm, prems)))))
+            end end end end end end,
+          top.ebStandInRules);
+
   --contents of different Extensibella files
   top.defFileContents =
       buildExtensibellaFile(top.ebKinds,
@@ -190,7 +231,10 @@ top::ModuleList ::= m::Module rest::ModuleList
          top.ebJudgments, top.ebRulesByModule,
          instantiatedTransRules,
          --no unknown rules in the non-extensible definition
-         []);
+         []) ++
+      --add stand-in-rule-passing defs specially
+      "\n\n%Stand-In Rules\n" ++
+      implode("", map((.pp), standInDefs));
 
   top.ebErrors =
       case intersect(map((.name), m.constructorDecls),
