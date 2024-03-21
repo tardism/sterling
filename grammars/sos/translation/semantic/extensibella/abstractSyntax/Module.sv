@@ -105,10 +105,12 @@ top::ModuleList ::= m::Module rest::ModuleList
                        nilTypeList(location=bogusLoc()),
                        location=bogusLoc()), 0),
                p.2), rest.moduleTyDecls);
+  local allJdgs::[JudgmentEnvItem] =
+      head(top.moduleJudgmentDecls).2 ++ isJdgs;
   local jdgSplit::([JudgmentEnvItem], [JudgmentEnvItem]) =
       partition(\ j::JudgmentEnvItem ->
                   j.name.baselessName == m.modName,
-                head(top.moduleJudgmentDecls).2 ++ isJdgs);
+                allJdgs);
   local newJdgs::[JudgmentEnvItem] = jdgSplit.1;
   local importedJdgs::[JudgmentEnvItem] = jdgSplit.2;
 
@@ -144,9 +146,13 @@ top::ModuleList ::= m::Module rest::ModuleList
   --rules for translation rules holding on unknown constructors
   local joinedNewJdgsI::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
-            (j, filter(\ c::ConstructorEnvItem -> j.pcType == c.type,
+            (j, filter(\ c::ConstructorEnvItem ->
+                         --same type
+                         j.pcType == c.type &&
+                         --and judgment is introduced separately from pc
+                         j.name.baselessName != j.pcType.name.baselessName,
                        constrEnvsI)),
-          newJdgs);
+          allJdgs);
   local rulesNewUnknownI::[Def] =
       instantiateExtensibellaTransRules(joinedNewJdgsI,
          top.ebTranslationRules);
