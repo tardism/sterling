@@ -95,16 +95,15 @@ top::ModuleList ::= m::Module rest::ModuleList
                   head(top.moduleTyDecls).2); --from all known
   --split relations into imported and new
   local isJdgs::[JudgmentEnvItem] =
-      flatMap(
-         \ p::(String, [TypeEnvItem]) -> 
-           map(\ e::TypeEnvItem ->
-                 extJudgmentEnvItem(
-                    toQName(e.name.ebIsName, bogusLoc()),
-                    consTypeList(
-                       nameType(e.name, location=bogusLoc()),
-                       nilTypeList(location=bogusLoc()),
-                       location=bogusLoc()), 0),
-               p.2), rest.moduleTyDecls);
+      map(\ e::TypeEnvItem ->
+            extJudgmentEnvItem(
+               toQName(e.name.ebIsName, bogusLoc()),
+               consTypeList(
+                  nameType(e.name, location=bogusLoc()),
+                  nilTypeList(location=bogusLoc()),
+                  location=bogusLoc()), 0),
+          nubBy(\ a::TypeEnvItem b::TypeEnvItem -> a.name == b.name,
+                flatMap(snd, rest.moduleTyDecls)));
   local allJdgs::[JudgmentEnvItem] =
       head(top.moduleJudgmentDecls).2 ++ isJdgs;
   local jdgSplit::([JudgmentEnvItem], [JudgmentEnvItem]) =
@@ -122,10 +121,12 @@ top::ModuleList ::= m::Module rest::ModuleList
             importedTys) ++
       flatMap(\ j::JudgmentEnvItem ->
                 if j.isExtensible
-                then [constrDecl(j.ebUnknownNameK, [],
-                         extensibellaNameTy(j.pcType.name.ebTypeName))]
-                else [],
-              jdgs ++ isJdgs);
+                then unsafeTracePrint([constrDecl(j.ebUnknownNameK, [],
+                         extensibellaNameTy(j.pcType.name.ebTypeName))],
+"\nUnknown K:  " ++ j.ebUnknownNameK ++ " for " ++ j.name.pp ++ "\n")
+                else [],unsafeTracePrint(
+              jdgs ++ isJdgs,
+"\nIsJdgs:  [" ++ implode(", ", map((.pp), map((.name), isJdgs))) ++ "]\n"));
   --env items for unknown constructors
   local constrEnvsI::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->
