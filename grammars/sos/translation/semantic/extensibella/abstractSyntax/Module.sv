@@ -121,12 +121,10 @@ top::ModuleList ::= m::Module rest::ModuleList
             importedTys) ++
       flatMap(\ j::JudgmentEnvItem ->
                 if j.isExtensible
-                then unsafeTracePrint([constrDecl(j.ebUnknownNameK, [],
-                         extensibellaNameTy(j.pcType.name.ebTypeName))],
-"\nUnknown K:  " ++ j.ebUnknownNameK ++ " for " ++ j.name.pp ++ "\n")
-                else [],unsafeTracePrint(
-              jdgs ++ isJdgs,
-"\nIsJdgs:  [" ++ implode(", ", map((.pp), map((.name), isJdgs))) ++ "]\n"));
+                then [constrDecl(j.ebUnknownNameK, [],
+                         extensibellaNameTy(j.pcType.name.ebTypeName))]
+                else [],
+              jdgs ++ isJdgs);
   --env items for unknown constructors
   local constrEnvsI::[ConstructorEnvItem] =
       map(\ t::TypeEnvItem ->
