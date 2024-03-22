@@ -3,15 +3,15 @@ Module basics:ext1
 /********************************************************************
  *                              SYNTAX                              *
  ********************************************************************/
-/*New constructor but no translation*/
-Error Expected "Missing rule for translating" {
-  term ::= ... | noTranslationConstructor
+/*New constructor but no projection*/
+Error Expected "Missing rule for projecting" {
+  term ::= ... | noProjectionConstructor
 }
 
 
-/*Redefine translation relation*/
+/*Redefine projection relation*/
 Error Expected "unknown" {
-  Translation ctx :
+  Projection ctx :
 }
 
 
@@ -19,49 +19,49 @@ Error Expected "unknown" {
 /********************************************************************
  *                              RULES                               *
  ********************************************************************/
-/*Define translation of imported constructor*/
-Error Expected "translation for a constructor from another module" {
-  -------------------------- [Trans-BaseTy]
+/*Define projection of imported constructor*/
+Error Expected "projection for a constructor from another module" {
+  -------------------------- [Proj-BaseTy]
   |{type}- baseTy ~~> baseTy
 }
 
-/*Translation of a variable*/
-Error Expected "translation for an unspecified constructor" {
-  ----------------- [Trans-VariableConstructor]
+/*Projection of a variable*/
+Error Expected "projection for an unspecified constructor" {
+  ----------------- [Proj-VariableConstructor]
   |{term}- T ~~> T2
 }
 
 
-/*Translation rule with non-variable PC*/
-Error Expected "in translation rule must be variable" {
-  Judgment transRuleSolidPC : type*
+/*Projection rule with non-variable PC*/
+Error Expected "in projection rule must be variable" {
+  Judgment projRuleSolidPC : type*
 
-  ----------------------- [TransRuleSolidPC]*
-  transRuleSolidPC baseTy
+  ---------------------- [ProjRuleSolidPC]*
+  projRuleSolidPC baseTy
 }
 
-/*Translation rule for translation judgment*/
-Error Expected "translation for an unspecified constructor" {
+/*Projection rule for Projection judgment*/
+Error Expected "projection for an unspecified constructor" {
   Error Expected "extensible relation judgment as its conclusion" {
-    Error Expected "translation rule for translation judgment" {
-      ----------------- [Trans-Trans]*
+    Error Expected "projection rule for projection judgment" {
+      ----------------- [Proj-Proj]*
       |{term}- T ~~> T2
     }
   }
 }
 
-/*Translation rules:  to few or too many*/
-Error Expected "Must define translation rule" {
-  Judgment noTransRule : type* string
+/*Projection rules:  to few or too many*/
+Error Expected "Must define projection rule" {
+  Judgment noProjRule : type* string
 }
-Error Expected "Can only define one translation rule" {
-  Judgment twoTransRule : type* string
+Error Expected "Can only define one projection rule" {
+  Judgment twoProjRule : type* string
 
-  ------------------ [TwoTransRule-1]*
-  twoTransRule T "1"
+  ------------------ [TwoProjRule-1]*
+  twoProjRule T "1"
 
-  ------------------ [TwoTransRule-2]*
-  twoTransRule T "2"
+  ------------------ [TwoProjRule-2]*
+  twoProjRule T "2"
 }
 
 
@@ -77,9 +77,9 @@ Error Expected "must be a constructor introduced in this module" {
   typeOf G var("X") baseTy
 }
 
-/*Translation rule for imported relation*/
+/*Projection rule for imported relation*/
 Error Expected "this module" {
-  ------------- [T-Trans]*
+  ------------- [T-Proj]*
   typeOf G A Ty
 }
 
@@ -97,7 +97,7 @@ Error Expected "imported" {
 /*Add same short type name; error when using short name*/
 Error Expected "Indeterminate type" {
   shortTy ::= shortTyConstructor2
-  Translation shortTy : ctx
+  Projection shortTy : ctx
 
   Judgment shortTyJudgment : shortTy*
 }
@@ -113,7 +113,7 @@ Error Expected "Indeterminate judgment" {
 /*Add same short constructor name; error when using short name*/
 Error Expected "Indeterminate constructor" {
   doubleConstructorTyExt ::= shortTyConstructor
-  Translation doubleConstructorTyExt :
+  Projection doubleConstructorTyExt :
 
   Judgment doubleConstructorJudgment : doubleConstructorTyExt*
 

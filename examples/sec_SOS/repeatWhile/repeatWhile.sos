@@ -7,7 +7,7 @@ c ::= ...
     | repeatWhile(c, e)
 
 
-------------------------------------- [Trans-RepeatWhile]
+------------------------------------- [Proj-RepeatWhile]
 |{c}- repeatWhile(Body, Cond) ~~>
          seq(Body, while(Cond, Body))
 

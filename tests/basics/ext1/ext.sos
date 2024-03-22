@@ -8,7 +8,7 @@ term ::= ...
        | ignore2(term, term)
 
 
----------------------------- [Trans-Term-Ignore2]
+---------------------------- [Proj-Term-Ignore2]
 |{term}- ignore2(A, B) ~~> B
 
 

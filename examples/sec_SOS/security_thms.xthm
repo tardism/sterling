@@ -1,21 +1,21 @@
 Module sec_SOS:security.
 
-Prove_Constraint sec_SOS:host:trans_e_unique.
-Prove_Constraint sec_SOS:host:trans_e_is.
-Prove_Constraint sec_SOS:host:trans_rf_unique.
-Prove_Constraint sec_SOS:host:trans_rf_is.
-Prove_Constraint sec_SOS:host:trans_c_unique.
+Prove_Constraint sec_SOS:host:proj_e_unique.
+Prove_Constraint sec_SOS:host:proj_e_is.
+Prove_Constraint sec_SOS:host:proj_rf_unique.
+Prove_Constraint sec_SOS:host:proj_rf_is.
+Prove_Constraint sec_SOS:host:proj_c_unique.
 %declareSec
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_c_is.
+Prove_Constraint sec_SOS:host:proj_c_is.
 %declareSec
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_recFields_unique.
-Prove_Constraint sec_SOS:host:trans_recFields_is.
-Prove_Constraint sec_SOS:host:trans_ty_unique.
-Prove_Constraint sec_SOS:host:trans_ty_is.
-Prove_Constraint sec_SOS:host:trans_value_unique.
-Prove_Constraint sec_SOS:host:trans_value_is.
+Prove_Constraint sec_SOS:host:proj_recFields_unique.
+Prove_Constraint sec_SOS:host:proj_recFields_is.
+Prove_Constraint sec_SOS:host:proj_ty_unique.
+Prove_Constraint sec_SOS:host:proj_ty_is.
+Prove_Constraint sec_SOS:host:proj_value_unique.
+Prove_Constraint sec_SOS:host:proj_value_is.
 
 Prove sec_SOS:host:vars_join,
       sec_SOS:host:vars_rf_join.
@@ -23,10 +23,10 @@ Prove sec_SOS:host:vars_join,
 Prove sec_SOS:host:vars_unique,
       sec_SOS:host:vars_rf_unique.
 
-Prove_Constraint sec_SOS:host:trans_e_vars_exist.
-Prove_Constraint sec_SOS:host:trans_e_vars.
-Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
-Prove_Constraint sec_SOS:host:trans_rf_vars.
+Prove_Constraint sec_SOS:host:proj_e_vars_exist.
+Prove_Constraint sec_SOS:host:proj_e_vars.
+Prove_Constraint sec_SOS:host:proj_rf_vars_exist.
+Prove_Constraint sec_SOS:host:proj_rf_vars.
 
 Prove sec_SOS:host:vars_is, sec_SOS:host:vars_rf_is.
 Prove sec_SOS:host:vars_exist, sec_SOS:host:vars_rf_exist.
@@ -36,32 +36,33 @@ Prove sec_SOS:host:typeOK_unique.
 %declareSec
  Ty2: case Ty2. apply typeOf_unique to Ty4 Ty5. search.
 
-Prove_Constraint sec_SOS:host:trans_eval_e.
+Prove_Constraint sec_SOS:host:proj_eval_e.
 
 Prove sec_SOS:host:eval_e_unique,
       sec_SOS:host:eval_rf_unique.
 
 Prove sec_SOS:host:update_rec_fields_unique.
 
-Prove_Constraint sec_SOS:host:trans_c_eval.
+Prove_Constraint sec_SOS:host:proj_c_eval.
 %declareSec
  Ev: case Hyp1. search.
 
+Add_Ext_Size sec_SOS:host:eval_c.
 Prove_Ext_Ind sec_SOS:host:eval_c.
 %declareSec
- Trans: assert |{c}- declareSec X S Ty E ~~> declare X Ty E.
- assert <eval_c {T}> G (declare X Ty E) ((X, V)::G). search 2.
+ Proj: assert |{c}- declareSec X S Ty E ~~> declare X Ty E.
+ assert <eval_c {P}> G (declare X Ty E) ((X, V)::G). search 2.
 
 Prove sec_SOS:host:eval_c_unique.
 %declareSec
  Ev2: case Ev2. apply eval_e_unique to Ev3 Ev2. search.
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results.
+Prove_Constraint sec_SOS:host:proj_c_eval_results.
 %declareSec
  Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
  search.
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
+Prove_Constraint sec_SOS:host:proj_c_eval_results_back.
 %declareSec
  Ev1: case Hyp1. Ev2: case Hyp2. apply eval_e_unique to Ev1 Ev2.
  search.
@@ -169,8 +170,8 @@ Extensible_Theorem
   %S-RecField
    Vars: case Vars. apply IH to Lev1 Vars Mem. search.
   %Preservability
-   V: apply trans_e_vars_exist to Lev1 Vars.
-   Mem: apply trans_e_vars to Lev1 Vars V Mem.
+   V: apply proj_e_vars_exist to Lev1 Vars.
+   Mem: apply proj_e_vars to Lev1 Vars V Mem.
    apply IH to Lev2 V Mem1. search.
 %level_public_vars_rf
   %S-RfEnd
@@ -183,8 +184,8 @@ Extensible_Theorem
      %mem DRest
       apply IH1 to Lev2 Vars1 Mem'. search.
   %Preservability
-   V: apply trans_rf_vars_exist to Lev1 Vars.
-   Mem: apply trans_rf_vars to Lev1 Vars V Mem.
+   V: apply proj_rf_vars_exist to Lev1 Vars.
+   Mem: apply proj_rf_vars to Lev1 Vars V Mem.
    apply IH1 to Lev2 V Mem1. search.
 
 
@@ -202,7 +203,7 @@ public_equiv S G1 G2 :=
       lookup S X public ->
       lookup G2 X V -> lookup G1 X V).
 
-Theorem public_equiv_trans : forall SG GA GB GC,
+Theorem public_equiv_proj : forall SG GA GB GC,
   public_equiv SG GA GB -> public_equiv SG GB GC ->
   public_equiv SG GA GC.
 intros PEAB PEBC. PEAB: case PEAB. PEBC: case PEBC. unfold.
@@ -291,7 +292,7 @@ Extensible_Theorem
  %S-RecField
   LevB: case LevB. apply IH to LevA1 LevB. search.
  %Preservability
-  LevB: case LevB. apply trans_e_unique to LevA1 LevB.
+  LevB: case LevB. apply proj_e_unique to LevA1 LevB.
   apply IH to LevA2 LevB1. search.
 %level_rf_unique
  %S-RFEnd
@@ -300,7 +301,7 @@ Extensible_Theorem
   LevB: case LevB. apply IH to LevA1 LevB. apply IH1 to LevA2 LevB1.
   apply join_unique to LevA3 LevB2. search.
  %Preservability
-  LevB: case LevB. apply trans_rf_unique to LevA1 LevB.
+  LevB: case LevB. apply proj_rf_unique to LevA1 LevB.
   apply IH1 to LevA2 LevB1. search.
 
 
@@ -359,8 +360,8 @@ Extensible_Theorem
       intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
     search.
 %Preservability
- Sec: case Sec. apply trans_c_unique to Ev2 Sec.
- apply IH to Sec1 Ev1 _. search.
+ Sec: case Sec. apply proj_c_unique to Ev1 Sec.
+ apply IH to Sec1 Ev2 _. search.
 
 
 Theorem public_equiv_swap : forall SG SG' GA GB,
@@ -398,7 +399,7 @@ Extensible_Theorem
  LkpEq1: assert (forall X, lookup SG X public -> lookup G3 X public).
    intros Lkp. apply stmt_public_branch to Sec Ev1 Lkp. search.
  Eq2: apply public_equiv_swap to LkpEq1 EqG2G1.
- apply public_equiv_trans to EqGG2 Eq2. search.
+ apply public_equiv_proj to EqGG2 Eq2. search.
 %E-Declare
  Sec: case Sec. apply NEq to _.
 %E-Assign
@@ -449,7 +450,7 @@ Extensible_Theorem
  assert NewPC = public -> false.
    intros Eq. case Eq. backchain NEq. apply join_public to Sec2. search.
  EqGG2: apply IH to Sec3 _ Ev2. EqG2G1: apply IH to _ _ Ev3.
- apply public_equiv_trans to EqGG2 EqG2G1. search.
+ apply public_equiv_proj to EqGG2 EqG2G1. search.
 %E-RecUpdate
  Sec: case Sec.
    %S-RecUpdatePublic
@@ -499,7 +500,7 @@ Extensible_Theorem
    %S-DeclareSecPublic
     apply NEq to _.
 %Preservability
- Sec: case Sec. apply trans_c_unique to Ev2 Sec. apply IH to _ _ Ev1.
+ Sec: case Sec. apply proj_c_unique to Ev1 Sec. apply IH to _ _ Ev2.
  search.
 
 
@@ -515,7 +516,7 @@ induction on 4. intros Sec Lev NEq Ev. Ev: case Ev.
    EqGG1: apply stmt_not_public_no_public_change to Sec2 _ Ev1.
      intros Eq. case Eq. apply join_public to Sec1.
      apply level_unique to Lev Sec. backchain NEq.
-   apply public_equiv_trans to EqGG1 EqG1G2. search.
+   apply public_equiv_proj to EqGG1 EqG1G2. search.
 
 
 Extensible_Theorem
@@ -653,10 +654,10 @@ Extensible_Theorem
       intros E. case E. apply join_public to Sec1. backchain NEq.
     EqGBGB': apply stmt_not_public_no_public_change to Sec3 _ EvB1.
       intros E. case E. apply join_public to Sec1.  backchain NEq.
-    EqGAGB': apply public_equiv_trans to Rel EqGBGB'.
+    EqGAGB': apply public_equiv_proj to Rel EqGBGB'.
     EqGA'GA: apply public_equiv_symm to EqGAGA'.
-    EqGA'GB: apply public_equiv_trans to EqGA'GA Rel.
-    apply public_equiv_trans to EqGA'GB EqGBGB'. search.
+    EqGA'GB: apply public_equiv_proj to EqGA'GA Rel.
+    apply public_equiv_proj to EqGA'GB EqGBGB'. search.
 %E-IfThenElseFalse
  Is: case Is. Sec: case Sec. EvB: case EvB.
    %EvB by E-IfThenElseTrue
@@ -666,10 +667,10 @@ Extensible_Theorem
       intros E. case E. apply join_public to Sec1. backchain NEq.
     EqGBGB': apply stmt_not_public_no_public_change to Sec2 _ EvB1.
       intros E. case E. apply join_public to Sec1. backchain NEq.
-    EqGAGB': apply public_equiv_trans to Rel EqGBGB'.
+    EqGAGB': apply public_equiv_proj to Rel EqGBGB'.
     EqGA'GA: apply public_equiv_symm to EqGAGA'.
-    EqGA'GB: apply public_equiv_trans to EqGA'GA Rel.
-    apply public_equiv_trans to EqGA'GB EqGBGB'. search.
+    EqGA'GB: apply public_equiv_proj to EqGA'GA Rel.
+    apply public_equiv_proj to EqGA'GB EqGBGB'. search.
    %EvB by E-IfThenElseFalse
     EqGA'GB': apply IH to _ _ _ EvA2 EvB1.
     LkpEq: assert forall X, lookup SG1 X public -> lookup GEl X public.
@@ -684,9 +685,9 @@ Extensible_Theorem
       intros Eq. case Eq. apply level_not_public to Is1 _ _ EvA1 EvB _.
     EqGBG2: apply stmt_not_public_no_public_change to Sec3 _ EvB1.
       intros Eq. case Eq. apply join_public to Sec2. backchain SNEq.
-    EqGA'G2: apply public_equiv_trans to Rel EqGBG2.
+    EqGA'G2: apply public_equiv_proj to Rel EqGBG2.
     EqG2GB': apply while_no_public_change to Sec Sec1 _ EvB2.
-    apply public_equiv_trans to EqGA'G2 EqG2GB'. search.
+    apply public_equiv_proj to EqGA'G2 EqG2GB'. search.
 %E-WhileTrue
  Is: case Is (keep). Sec: case Sec (keep). EvB: case EvB.
    %EvB by E-WhileFalse
@@ -695,9 +696,9 @@ Extensible_Theorem
     EqGAG1: apply stmt_not_public_no_public_change to Sec3 _ EvA2.
       intros Eq. case Eq. apply join_public to Sec2. backchain SNEq.
     EqG1GA': apply while_no_public_change to Sec Sec1 _ EvA3.
-    EqGAGA': apply public_equiv_trans to EqGAG1 EqG1GA'.
+    EqGAGA': apply public_equiv_proj to EqGAG1 EqG1GA'.
     EqGA'GA: apply public_equiv_symm to EqGAGA'.
-    apply public_equiv_trans to EqGA'GA Rel. search.
+    apply public_equiv_proj to EqGA'GA Rel. search.
    %EvB by E-WhileTrue
     EqG1G3: apply IH to _ _ _ EvA2 EvB1.
     LEq: assert forall X, lookup SG1 X public -> lookup G2 X public.
@@ -836,13 +837,12 @@ Extensible_Theorem
             %Lkp later
              Rel: case Rel. apply Rel2 to LkpSec1 Lkp1. search.
 %Preservability
- Sec: case Sec. apply trans_c_unique to EvA2 Sec.
- EvBTrans: apply trans_c_eval to EvA2 EvB.
- IsCT: apply trans_c_is to Sec Is.
- Equiv: apply IH to _ Sec1 Rel EvA1 EvBTrans.
+ Sec: case Sec. apply proj_c_unique to EvA1 Sec.
+ EvBProj: apply proj_c_eval to EvA1 EvB.
+ IsCT: apply proj_c_is to Sec Is.
+ Equiv: apply IH to _ Sec1 Rel EvA2 EvBProj.
  LkpGB'G': assert forall X V, lookup GB' X V -> lookup G' X V.
-   intros L. apply trans_c_eval_results to EvA2 EvB EvBTrans L. search.
-
+   intros L. apply proj_c_eval_results to EvA1 EvB EvBProj L. search.
  EqG'GB': assert public_equiv SG1 G' GB'.
    unfold.
      %First part
@@ -850,7 +850,7 @@ Extensible_Theorem
       apply lookup_unique to LkpG' Lkp. search.
      %Second part
       intros LkpSec LkpG'.
-      apply trans_c_eval_results_back to Sec EvB EvBTrans LkpG'. search.
+      apply proj_c_eval_results_back to Sec EvB EvBProj LkpG'. search.
      %Third part
       intros LkpSec LkpGB'. backchain LkpGB'G'.
- apply public_equiv_trans to Equiv EqG'GB'. search.
+ apply public_equiv_proj to Equiv EqG'GB'. search.

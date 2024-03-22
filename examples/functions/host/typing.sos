@@ -3,7 +3,7 @@ Module functions:host
 funtyctx ::= emptyFunTy
            | addFunTy(string, ty, [ty], funtyctx)
             /*function name, return type, parameter types, rest*/
-Translation funtyctx :
+Projection funtyctx :
 
 
 Judgment lookupFunTy : funtyctx* string ty [ty]

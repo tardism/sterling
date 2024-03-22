@@ -62,7 +62,7 @@ index consVal(Hd, Tl) Index V
 
 |{value}- V ~~> VT
 index VT I Result
------------------- [Index-Trans]*
+------------------ [Index-D]*
 index V I Result
 
 
@@ -80,7 +80,7 @@ length consVal(Hd, Tl) Len
 
 |{value}- V ~~> VT
 length VT Len
------------------- [Len-Trans]*
+------------------ [Len-D]*
 length V Len
 
 

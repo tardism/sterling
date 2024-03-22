@@ -17,11 +17,11 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-aspect production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+aspect production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
-  top.latex = transLaTeXJudgment(ty.latexTrans, args.latex, t.latex,
-                                 translation.latex);
+  top.latex = projLaTeXJudgment(ty.latexProj, args.latex, t.latex,
+                                projection.latex);
 }
 
 

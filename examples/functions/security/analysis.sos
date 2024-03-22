@@ -3,7 +3,7 @@ Module functions:security
 funsecctx ::= emptyFunSec
       | addFunSec(string, seclevel, seclevel, [seclevel], funsecctx)
            /*name, starting PC, return level, param sec levels, rest*/
-Translation funsecctx :
+Projection funsecctx :
 
 
 Judgment lookupFunSec : funsecctx* string seclevel seclevel [seclevel]
@@ -36,7 +36,7 @@ paramsToSecList addSecParams(X, S, Ty, Rest) S::SRest
 
 |{params}- P ~~> PT
 paramsToSecList PT S
--------------------- [PtSL-Trans]*
+-------------------- [PtSL-D]*
 paramsToSecList P S
 
 
@@ -158,7 +158,7 @@ level PC FG G recFieldAccess(Rec, Field) S
 
 |{e}- E ~~> ET
 level PC FG G ET S
------------------- [S-TransExpr]*
+------------------ [S-Expr-D]*
 level PC FG G E S
 
 
@@ -178,7 +178,7 @@ rf_level PC FG G addRecFieldExprs(L, E, Rest) S
 
 |{recFieldExprs}- RF ~~> RFT
 rf_level PC FG G RFT S
----------------------------- [S-RFTrans]*
+---------------------------- [S-RF-D]*
 rf_level PC FG G RF S
 
 
@@ -197,7 +197,7 @@ level_args PC FG G addArgs(E, Rest) S::SRest
 
 |{args}- A ~~> AT
 level_args PC FG G AT S
------------------------ [LA-Trans]*
+----------------------- [LA-D]*
 level_args PC FG G A S
 
 
@@ -271,7 +271,7 @@ secure public FG G printVal(E) G
 
 |{c}- C ~~> CT
 secure PC FG G CT G1
--------------------- [S-Trans]*
+-------------------- [S-D]*
 secure PC FG G C G1
 
 
@@ -293,7 +293,7 @@ secure_fun FG secfun(Name, PC, RetTy, RetSec, RetName,
 
 |{fun}- F ~~> FT
 secure_fun FG FT
----------------- [SF-Trans]*
+---------------- [SF-D]*
 secure_fun FG F
 
 
@@ -314,7 +314,7 @@ paramsToSecCtx addSecParams(X, S, Ty, Rest) (X, S)::SRest
 
 |{params}- P ~~> PT
 paramsToSecCtx PT S
-------------------- [PtSC-Trans]*
+------------------- [PtSC-D]*
 paramsToSecCtx P S
 
 
@@ -333,7 +333,7 @@ secure_program FG addProgram(Fun, Rest)
 
 |{program}- P ~~> PT
 secure_program FG PT
--------------------- [SP-Trans]*
+-------------------- [SP-D]*
 secure_program FG P
 
 
@@ -351,7 +351,7 @@ buildFunSecCtx addProgram(Fun, Rest
 
 |{program}- P ~~> PT
 buildFunSecCtx PT GS
--------------------- [BFSC-Trans]*
+-------------------- [BFSC-D]*
 buildFunSecCtx P GS
 
 
@@ -370,7 +370,7 @@ getFunSec secfun(Name, S, RetTy, RetSec, RetName, Params, Body
 
 |{fun}- F ~~> FT
 getFunSec FT Name S Ret SL
--------------------------- [GFS-Trans]*
+-------------------------- [GFS-D]*
 getFunSec F Name S Ret SL
 
 

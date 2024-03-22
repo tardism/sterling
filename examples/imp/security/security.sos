@@ -6,7 +6,7 @@ Builds on imp:host
 /*Security contexts hold public and private variables*/
 status ::= private
          | public
-Translation status :
+Projection status :
 
 
 
@@ -56,7 +56,7 @@ sec_level_a SC name(X) S
 
 |{a}- A ~~> A_t
 sec_level_a SC A_t S
--------------------- [S-A-Trans]*
+-------------------- [S-A-D]*
 sec_level_a SC A S
 
 
@@ -102,7 +102,7 @@ sec_level_b SC false public
 
 |{b}- B ~~> B_t
 sec_level_b SC B_t S
--------------------- [S-B-Trans]*
+-------------------- [S-B-D]*
 sec_level_b SC B S
 
 
@@ -151,6 +151,6 @@ is_secure PC SC while(B, C)
 
 |{c}- C ~~> C_t
 is_secure PC SC C_t
-------------------- [S-C-Trans]*
+------------------- [S-C-D]*
 is_secure PC SC C
 

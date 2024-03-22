@@ -16,9 +16,9 @@ typeOf (X, Ty1)::(Y, Ty1)::G T2 Ty2
 typeOf G letPair(X, Y, T1, T2) Ty2
 
 
-/*Translation Rule*/
+/*Projection Rule*/
 typeOf G T1 pairTy(Ty)
--------------------------- [Trans-LetPair]
+-------------------------- [Proj-LetPair]
 /*G |- let x, y = T1 in T2  ~~>
        let X = T1 in let Y = snd(X) in let X = fst(X) in T2*/
 G |{term}- letPair(X, Y, T1, T2) ~~>

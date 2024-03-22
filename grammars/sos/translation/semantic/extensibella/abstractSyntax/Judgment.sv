@@ -31,21 +31,21 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-aspect production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+aspect production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
   top.eb =
       case ty.fullTy of
       | nameType(n) ->
-        relationMetaterm(n.ebTranslationName,
-           args.eb ++ [t.eb, translation.eb])
+        relationMetaterm(n.ebProjectionName,
+           args.eb ++ [t.eb, projection.eb])
       | _ -> error("Not possible")
       end;
 
   top.pcVar = error("Can only access pcVar on relation");
 
-  top.allArgsVars = args.allArgsVars && t.isVar && translation.isVar;
-  top.argVars = args.argVars ++ t.argVars ++ translation.argVars;
+  top.allArgsVars = args.allArgsVars && t.isVar && projection.isVar;
+  top.argVars = args.argVars ++ t.argVars ++ projection.argVars;
 }
 
 

@@ -15,9 +15,9 @@ synthesized attribute ebConstrs::[ConstrDecl];
 
 --Gather rules
 synthesized attribute ebRules::[Def];
---Gather translation rules [(judgment, conclusion, premises, PC var)]
-synthesized attribute ebTranslationRules::[(JudgmentEnvItem, Metaterm,
-                                            [Metaterm], String)];
+--Gather projection rules [(judgment, conclusion, premises, PC var)]
+synthesized attribute ebProjectionRules::[(JudgmentEnvItem, Metaterm,
+                                           [Metaterm], String)];
 synthesized attribute ebStandInRules::[(JudgmentEnvItem, Metaterm,
                                         [Metaterm], String)];
 
@@ -33,7 +33,7 @@ synthesized attribute ebJudgments::[(String, [ExtensibellaType])];
 synthesized attribute ebErrors::[String];
 
 
---Variable for the PC in a translation rule's conclusion
+--Variable for the PC in a projection rule's conclusion
 synthesized attribute pcVar::String;
 
 

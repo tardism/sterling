@@ -1,26 +1,26 @@
 grammar sos:translation:semantic:prolog;
 
 
-attribute prologTranslationRules, prologRules occurs on Rule;
+attribute prologProjectionRules, prologRules occurs on Rule;
 
 aspect production extRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologTranslationRules = [];
+  top.prologProjectionRules = [];
   top.prologRules =
-      if conclusion.isTransJudgment
-      then [(baseName("translation___" ++
-                conclusion.transType.prolog, location=top.location),
+      if conclusion.isProjJudgment
+      then [(baseName("projection___" ++
+                conclusion.projType.prolog, location=top.location),
              premises.prolog, conclusion.prologTerm)]
       else [(conclusion.headRel.name, premises.prolog,
              conclusion.prologTerm)];
 }
 
 
-aspect production transRule
+aspect production projRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologTranslationRules =
+  top.prologProjectionRules =
       [(conclusion.headRel, conclusion.pcVar, premises.prolog,
         conclusion.prologTerm)];
   top.prologRules = [];
@@ -30,7 +30,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 aspect production fixedRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologTranslationRules = [];
+  top.prologProjectionRules = [];
   top.prologRules =
       [(conclusion.headRel.name, premises.prolog,
         conclusion.prologTerm)];

@@ -7,20 +7,20 @@ Module basics:base
 Error Expected "Found multiple declarations" {
   doubleTy ::= doubleTyA
   doubleTy ::= doubleTyB
-  Translation doubleTy :
+  Projection doubleTy :
 }
 
 /*Constructor declared twice*/
 Error Expected "Found multiple declarations" {
   doubleConstructorTy ::= doubleConstructor
                         | doubleConstructor
-  Translation doubleConstructorTy :
+  Projection doubleConstructorTy :
 }
 
 /*Constructor with var args*/
 Error Expected "cannot contain variable types" {
   constructorVarTy ::= constructorVarTy(int, A)
-  Translation constructorVarTy :
+  Projection constructorVarTy :
 }
 
 
@@ -30,27 +30,27 @@ Error Expected "only define new constructors for user-defined types" {
 }*/
 
 
-/*Translation for non-existent type*/
-Error Expected "Translation declared for unknown type" {
-  Translation nonexistentType : [(string, type)]
+/*Projection for non-existent type*/
+Error Expected "Projection declared for unknown type" {
+  Projection nonexistentType : [(string, type)]
 }
 
-/*Translation type not declared*/
-Error Expected "Must define translation relation type" {
-  noTransRelTy ::= noTransRelTyA
+/*Projection type not declared*/
+Error Expected "Must define projection relation type" {
+  noProjRelTy ::= noProjRelTyA
 }
 
-/*Translation type twice*/
-Error Expected "multiple translation relation type" {
-  twoTransRelTy ::= twoTransRelTyA
-  Translation twoTransRelTy : type
-  Translation twoTransRelTy : term
+/*Projection type twice*/
+Error Expected "multiple projection relation type" {
+  twoProjRelTy ::= twoProjRelTyA
+  Projection twoProjRelTy : type
+  Projection twoProjRelTy : term
 }
 
-/*Translation declared with variable args*/
+/*Projection declared with variable args*/
 Error Expected "contain variable" {
-  varTransType ::= varTransTypeA
-  Translation varTransType : A int string
+  varProjType ::= varProjTypeA
+  Projection varProjType : A int string
 }
 
 
@@ -105,26 +105,26 @@ Error Expected "fixed" {
 }
 
 
-/*Multiple translation rules*/
+/*Multiple projection rules*/
 Error Expected "only define one" {
-  Judgment multipleTranslationRules : ctx term*
+  Judgment multipleProjectionRules : ctx term*
 
-  ------------------ [Trans-MultipleTranslationRules1]*
-  multipleTranslationRules G T
+  ------------------ [Proj-MultipleProjectionRules1]*
+  multipleProjectionRules G T
 
-  ------------------ [Trans-MultipleTranslationRules2]*
-  multipleTranslationRules G T
+  ------------------ [Proj-MultipleProjectionRules2]*
+  multipleProjectionRules G T
 }
 
-/*Translation with unspecified form*/
+/*Projection with unspecified form*/
 Error Expected "constructor" {
-  ----------------- [Translate-Var]
+  ----------------- [Project-Var]
   |{type}- A ~~> A
 }
 
-/*Translation of base construct*/
+/*Projection of base construct*/
 Error Expected "for a constructor from the module declaring" {
-  -------------------------- [TranslateBaseConstruct]
+  -------------------------- [ProjectBaseConstruct]
   |{type}- baseTy ~~> baseTy
 }
 

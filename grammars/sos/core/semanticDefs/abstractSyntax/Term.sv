@@ -143,7 +143,7 @@ top::Term ::= constructor::QName args::TermList
 
   args.isConclusion = false;
   args.isExtensibleRule = false;
-  args.isTranslationRule = false;
+  args.isProjectionRule = false;
   args.expectedPC = nothing();
 
   args.lastConstructor = constructor;
@@ -193,7 +193,7 @@ top::Term ::= contents::TermList
                                location=top.location),
                      range(1, contents.len + 1))));
   contents.expectedPC = nothing();
-  contents.isTranslationRule = false;
+  contents.isProjectionRule = false;
   contents.isExtensibleRule = false;
   contents.isConclusion = false;
   contents.lastConstructor =
@@ -317,7 +317,7 @@ nonterminal TermList with
    expectedTypes, lastConstructor,
    downVarTypes, upVarTypes,
    toList<Term>, len,
-   expectedPC, isConclusion, isExtensibleRule, isTranslationRule,
+   expectedPC, isConclusion, isExtensibleRule, isProjectionRule,
    errors,
    location;
 propagate errors on TermList;
@@ -408,7 +408,7 @@ top::TermList ::= t::Term rest::TermList
   rest.expectedPC = bind(top.expectedPC, \ x::Integer -> just(x - 1));
   rest.isConclusion = top.isConclusion;
   rest.isExtensibleRule = top.isExtensibleRule;
-  rest.isTranslationRule = top.isTranslationRule;
+  rest.isProjectionRule = top.isProjectionRule;
   top.errors <-
       if !top.isConclusion
       then []
@@ -416,11 +416,11 @@ top::TermList ::= t::Term rest::TermList
       then []
       else case top.expectedPC of
            | just(0) ->
-             if top.isTranslationRule
+             if top.isProjectionRule
              then if t.isVariable then []
                   else [errorMessage("Primary component of " ++
                            "relation " ++ top.lastConstructor.pp ++
-                           " in translation rule must be variable;" ++
+                           " in projection rule must be variable;" ++
                            " found " ++ t.pp, location=top.location)]
              else if sameModule(top.moduleName, top.lastConstructor)
                   then [] --initial definition can define anything

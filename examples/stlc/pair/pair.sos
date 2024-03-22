@@ -30,13 +30,13 @@ typeOf G P pairTy(Ty)
 typeOf G snd(P) Ty
 
 
-/*Translation Rules*/
------------------------------------------------------------ [Trans-PairTy]
+/*Projection Rules*/
+----------------------------------------------------------- [Proj-PairTy]
 |{type}- pairTy(Ty) ~~> arrow(arrow(Ty, arrow(Ty, Ty)), Ty)
 
 
 typeOf G pair(T1, T2) pairTy(Ty)
------------------------------------------------- [Trans-Pair]
+------------------------------------------------ [Proj-Pair]
 /*G |- (T1, T2) ~~> (\ a. \ b. \ s. s a b) T1 T2*/
 G |{term}- pair(T1, T2) ~~>
            app(app(abs("a", Ty, abs("b", Ty,
@@ -46,13 +46,13 @@ G |{term}- pair(T1, T2) ~~>
 
 
 typeOf G P pairTy(Ty)
-------------------------------------------------- [Trans-Fst]
+------------------------------------------------- [Proj-Fst]
 G |{stlc:host:term}- fst(P) ~~>
                      app(P, abs("a", Ty, abs("b", Ty, var("a"))))
 
 
 typeOf G P pairTy(Ty)
-------------------------------------------------- [Trans-Snd]
+------------------------------------------------- [Proj-Snd]
 G |{term}- snd(P) ~~>
            app(P, abs("a", Ty, abs("b", Ty, var("a"))))
 

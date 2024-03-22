@@ -33,17 +33,17 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
 
 
 
-aspect production translationTypeDecl
+aspect production projectionTypeDecl
 top::JudgmentDecl ::= tyname::String args::TypeList
 {
   local ty::ExtensibellaType =
       extensibellaNameTy(fullTyName.ebTypeName);
   top.ebJudgments =
-      [(fullTyName.ebTranslationName, args.eb ++ [ty, ty])];
+      [(fullTyName.ebProjectionName, args.eb ++ [ty, ty])];
 }
 
 
-aspect production errorTranslationDecl
+aspect production errorProjectionDecl
 top::JudgmentDecl ::= errs::[Message] tyname::String args::TypeList
 {
   top.ebJudgments =

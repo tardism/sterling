@@ -2,7 +2,7 @@ Module sos_imp_proc:host
 
 tyctx ::= emptyTy
         | addTy(string, ty, tyctx)
-Translation tyctx :
+Projection tyctx :
 
 
 Judgment lookupTy : tyctx* string ty
@@ -33,7 +33,7 @@ noTy addTy(Y, YTy, Rest) X
 funtyctx ::= emptyFunTy
            | addFunTy(string, tyList, funtyctx)
             /*function name, parameter types, rest*/
-Translation funtyctx :
+Projection funtyctx :
 
 
 Judgment lookupFunTy : funtyctx* string tyList

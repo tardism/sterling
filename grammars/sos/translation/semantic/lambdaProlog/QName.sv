@@ -8,7 +8,7 @@ flowtype lp {} on QName;
 synthesized attribute lpTypeName::String occurs on QName;
 synthesized attribute lpConstructorName::String occurs on QName;
 synthesized attribute lpJudgmentName::String occurs on QName;
-synthesized attribute lpTranslationName::String occurs on QName;
+synthesized attribute lpProjectionName::String occurs on QName;
 
 aspect production baseName
 top::QName ::= name::String
@@ -18,7 +18,7 @@ top::QName ::= name::String
   top.lpTypeName = "ty_**_" ++ top.lp;
   top.lpConstructorName = "constr_**_" ++ top.lp;
   top.lpJudgmentName = "jdg_**_" ++ top.lp;
-  top.lpTranslationName = "trans_**_" ++ top.lp;
+  top.lpProjectionName = "proj_**_" ++ top.lp;
 }
 
 
@@ -30,5 +30,5 @@ top::QName ::= name::String rest::QName
   top.lpTypeName = "ty_**_" ++ top.lp;
   top.lpConstructorName = "constr_**_" ++ top.lp;
   top.lpJudgmentName = "jdg_**_" ++ top.lp;
-  top.lpTranslationName = "trans_**_" ++ top.lp;
+  top.lpProjectionName = "proj_**_" ++ top.lp;
 }

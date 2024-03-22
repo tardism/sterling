@@ -2,7 +2,7 @@ Module sos_imp_proc:list
 
 Builds on sos_imp_proc:host
 
-/*New Expressions and Translations*/
+/*New Expressions and Projections*/
 e ::= ...
     | nil
     | cons(e, e)
@@ -13,13 +13,13 @@ e ::= ...
     | length(e)
 
 
---------------------------------------------- [Trans-Nil]
+--------------------------------------------- [Proj-Nil]
 |{e}- nil ~~>
       recBuild(addRecFieldExprs("null", true,
                endRecFieldExprs))
 
 
----------------------------------------------------------- [Trans-Cons]
+---------------------------------------------------------- [Proj-Cons]
 |{e}- cons(E1, E2) ~~>
       recBuild(
          addRecFieldExprs("null", false,
@@ -27,76 +27,76 @@ e ::= ...
          addRecFieldExprs("tail", E2, endRecFieldExprs))))
 
 
-------------------------------------------- [Trans-Null]
+------------------------------------------- [Proj-Null]
 |{e}- null(E) ~~> recFieldAccess(E, "null")
 
 
-------------------------------------------- [Trans-Head]
+------------------------------------------- [Proj-Head]
 |{e}- head(E) ~~> recFieldAccess(E, "head")
 
 
-------------------------------------------- [Trans-Tail]
+------------------------------------------- [Proj-Tail]
 |{e}- tail(E) ~~> recFieldAccess(E, "tail")
 
 
 /*To actually compute the length or index from records would require
-  conditionals, so we'll take advantage of the lax translation
-  constraints and translate to something unrelated to the actual
+  conditionals, so we'll take advantage of the lax projection
+  constraints and project to something unrelated to the actual
   value.*/
--------------------------------------------- [Trans-Index]
+-------------------------------------------- [Proj-Index]
 |{e}- index(Lst, Index) ~~> plus(Lst, Index)
 
 
---------------------- [Trans-Length]
+--------------------- [Proj-Length]
 |{e}- length(E) ~~> E
 
 
 
-/*New Statement and Translation*/
+/*New Statement and Projection*/
 /*c ::= ...
     | listUpdate(string, int, e)*/ /*lst[i] = e*/
 /*
-  Adding this listUpdate would break our translation constraint for
+  Adding this listUpdate would break our projection constraint for
   statements that the evaluation contexts coming out of the original
-  and translation must have the same values for all the variables.
+  and projection must have the same values for all the variables.
   This is because the result of the listUpdate would have the updated
-  var be a list value, while the translation would have the updated
+  var be a list value, while the projection would have the updated
   var be a record value.
 
   You can do this more verbosely with a loop.  Maybe we could do this?
-  Translation would probably need to depend on the typing context to
+  Projection would probably need to depend on the typing context to
   be sure you were adding a fresh variable for the loop counter.
 */
 
 
 
-/*New Type and Translation*/
+/*New Type and Projection*/
 ty ::= ...
      | listTy(ty)
 
 
 /*Strictly speaking, an empty list doesn't have the head or tail
-  fields.  However, we don't have any translation constraints, so we
+  fields.  However, we don't have any projection constraints, so we
   can do whatever we want, and this is close.*/
------------------------------------------------------- [Trans-ListTy]
+------------------------------------------------------ [Proj-ListTy]
 |{ty}- listTy(T) ~~>
        recTy(addTy("head", T, addTy("tail", listTy(T),
              addTy("null", boolTy, emptyTy))))
 
 
 
-/*New Value and Translation*/
+/*New Value and Projection*/
 value ::= ...
         | nilVal
         | consVal(value, value)
 
 
----------------------------------------------------- [Trans-NilVal]
+---------------------------------------------------- [Proj-NilVal]
 |{value}- nilVal ~~>
           recVal(addVal("null", trueVal, emptyEval))
 
 
------------------------------------------ [Trans-ConsVal]
+----------------------------------------- [Proj-ConsVal]
 |{value}- consVal(Hd, Tl) ~~>
           recVal(addVal("head", Hd,
                  addVal("tail", Tl,

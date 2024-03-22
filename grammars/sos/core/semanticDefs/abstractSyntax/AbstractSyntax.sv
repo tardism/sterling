@@ -4,14 +4,14 @@ grammar sos:core:semanticDefs:abstractSyntax;
 nonterminal AbsSyntaxDecl with
    pp,
    moduleName,
-   constructorDecls, tyDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
-   transRuleConstructors_down,
+   constructorDecls, tyDecls, judgmentDecls, projectionDecls,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv,
+   projRuleConstructors_down,
    errors,
    location;
 propagate errors on AbsSyntaxDecl;
 
-inherited attribute expectedTransRules::Boolean;
+inherited attribute expectedProjRules::Boolean;
 
 --When we first declare a type and constructors
 abstract production initialAbsSyntaxDecl
@@ -28,25 +28,25 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
   top.constructorDecls = constructors.constructorDecls;
   top.tyDecls = typeEnvItem(fullName)::constructors.tyDecls;
   top.judgmentDecls = constructors.judgmentDecls;
-  top.translationDecls = [];
+  top.projectionDecls = [];
 
   constructors.tyEnv = top.tyEnv;
   constructors.constructorEnv = top.constructorEnv;
-  constructors.expectedTransRules = false;
-  constructors.transRuleConstructors_down =
-      top.transRuleConstructors_down;
+  constructors.expectedProjRules = false;
+  constructors.projRuleConstructors_down =
+      top.projRuleConstructors_down;
 
-  --Check there is exactly one translation relation declared
-  local possibleTrans::[TranslationEnvItem] =
-        lookupEnv(fullName, top.translationEnv);
+  --Check there is exactly one projection relation declared
+  local possibleProj::[ProjectionEnvItem] =
+        lookupEnv(fullName, top.projectionEnv);
   top.errors <-
-      case possibleTrans of
+      case possibleProj of
       | [] ->
-        [errorMessage("Must define translation relation type for " ++
+        [errorMessage("Must define projection relation type for " ++
             fullName.pp, location=top.location)]
       | [_] -> []
       | l ->
-        [errorMessage("Found multiple translation relation type " ++
+        [errorMessage("Found multiple projection relation type " ++
             "declarations for " ++ fullName.pp, location=top.location)]
       end;
 
@@ -71,14 +71,14 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   top.pp = type.pp ++ " ::= ...\n" ++ constructors.pp ++ "\n";
 
   constructors.moduleName = top.moduleName;
-  constructors.expectedTransRules =
+  constructors.expectedProjRules =
       type.tyFound &&
       case type.fullTy of
       | nameType(n) -> !sameModule(top.moduleName, n)
       | _ -> false
       end;
-  constructors.transRuleConstructors_down =
-      top.transRuleConstructors_down;
+  constructors.projRuleConstructors_down =
+      top.projRuleConstructors_down;
 
   type.tyEnv = top.tyEnv;
   constructors.builtType =
@@ -100,7 +100,7 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   top.constructorDecls = constructors.constructorDecls;
   top.tyDecls = constructors.tyDecls;
   top.judgmentDecls = constructors.judgmentDecls;
-  top.translationDecls = [];
+  top.projectionDecls = [];
 
   constructors.tyEnv = top.tyEnv;
   constructors.constructorEnv = top.constructorEnv;
@@ -115,7 +115,7 @@ nonterminal AbsConstructorDecls with
    moduleName,
    constructorDecls, tyDecls, judgmentDecls,
    tyEnv, constructorEnv,
-   expectedTransRules, transRuleConstructors_down,
+   expectedProjRules, projRuleConstructors_down,
    errors,
    location;
 propagate errors on AbsConstructorDecls;
@@ -149,10 +149,10 @@ top::AbsConstructorDecls ::= d1::AbsConstructorDecls
   d1.builtType = top.builtType;
   d2.builtType = top.builtType;
 
-  d1.expectedTransRules = top.expectedTransRules;
-  d2.expectedTransRules = top.expectedTransRules;
-  d1.transRuleConstructors_down = top.transRuleConstructors_down;
-  d2.transRuleConstructors_down = top.transRuleConstructors_down;
+  d1.expectedProjRules = top.expectedProjRules;
+  d2.expectedProjRules = top.expectedProjRules;
+  d1.projRuleConstructors_down = top.projRuleConstructors_down;
+  d2.projRuleConstructors_down = top.projRuleConstructors_down;
 
   top.constructorDecls = d1.constructorDecls ++ d2.constructorDecls;
   top.tyDecls = d1.tyDecls ++ d2.tyDecls;
@@ -199,12 +199,12 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
                fullName.pp ++ " cannot contain variable types",
                location=top.location)];
 
-  --Must have a translation rule if one is expected
+  --Must have a projection rule if one is expected
   top.errors <-
-      if top.expectedTransRules
-      then if contains(fullName, top.transRuleConstructors_down)
+      if top.expectedProjRules
+      then if contains(fullName, top.projRuleConstructors_down)
            then []
-           else [errorMessage("Missing rule for translating " ++
+           else [errorMessage("Missing rule for projecting " ++
                     fullName.pp, location=top.location)]
       else [];
 }

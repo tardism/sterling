@@ -1,7 +1,7 @@
 grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 attribute
-  ebRules, ebTranslationRules
+  ebRules, ebProjectionRules
 occurs on Rule;
 
 aspect production extRule
@@ -21,15 +21,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                     existsMetaterm(binds,
                        foldr1(andMetaterm, premises.eb)))];
 
-  top.ebTranslationRules = [];
+  top.ebProjectionRules = [];
 }
 
-aspect production transRule
+aspect production projRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.ebRules = [];
 
-  top.ebTranslationRules =
+  top.ebProjectionRules =
       [(conclusion.headRel, conclusion.eb, premises.eb,
         conclusion.pcVar)];
 }
@@ -51,7 +51,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
                     existsMetaterm(binds,
                        foldr1(andMetaterm, premises.eb)))];
 
-  top.ebTranslationRules = [];
+  top.ebProjectionRules = [];
 }
 
 

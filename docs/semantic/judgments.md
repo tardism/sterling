@@ -73,11 +73,11 @@ available operations are
 * `%`:  Modulus of two integers
 * `++`:  Append either two strings or two lists holding the same type
 
-Another form is the translation of a constructor, written as
+Another form is the projection of a constructor, written as
 ```
-<args> |{<category>}- <term> ~~> <translation>
+<args> |{<category>}- <term> ~~> <projection>
 ```
-This is discussed in the [document about translation](translation.md).
+This is discussed in the [document about projection](projection.md).
 
 One final form of built-in judgment is the negation of a relation
 judgment, written as `! <rel> <args>` (e.g. `! mem X L`).  This holds
@@ -190,20 +190,20 @@ judgment exists to define it for them.
 
 We solve this problem by having the module introducing an extensible
 judgment give a rule for defining it for unknown constructors,
-generally by copying from the translation.  This is similar to the
+generally by copying from the projection.  This is similar to the
 idea of [forwarding in
 Silver](https://melt.cs.umn.edu/silver/ref/stmt/forwarding/).
 
-These translation rules are written using the same syntax as other
-rules for extensible languages, but they are marked as translation
+These projection rules are written using the same syntax as other
+rules for extensible languages, but they are marked as projection
 rules with a star after the name.  For example, our typing relation
-might have this translation rule:
+might have this projection rule:
 ```
-|{expr}- E ~~> E_Trans
-typeOf Ctx E_Trans Ty
----------------------- [T-Trans]*
+|{expr}- E ~~> E_Proj
+typeOf Ctx E_Proj Ty
+--------------------- [T-Proj]*
 typeOf Ctx E Ty
 ```
 In a composed language including `modExpr`, `modType`, and `modOther`,
 any expression form introduced by `modOther` will have `typeOf`
-defined for it by copying its type from its translation.
+defined for it by copying its type from its projection.

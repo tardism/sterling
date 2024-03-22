@@ -1,7 +1,7 @@
 Module sec_SOS:list.
 
 
-Prove_Constraint sec_SOS:host:trans_e_unique.
+Prove_Constraint sec_SOS:host:proj_e_unique.
 %nil
  case Hyp1. search.
 %cons
@@ -16,7 +16,7 @@ Prove_Constraint sec_SOS:host:trans_e_unique.
  case Hyp1. search.
 %length
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_e_is.
+Prove_Constraint sec_SOS:host:proj_e_is.
 %nil
  search 8. %too big to solve at default depth
 %cons
@@ -33,28 +33,28 @@ Prove_Constraint sec_SOS:host:trans_e_is.
  case Hyp1. search.
 
 
-Prove_Constraint sec_SOS:host:trans_rf_unique.
-Prove_Constraint sec_SOS:host:trans_rf_is.
-Prove_Constraint sec_SOS:host:trans_c_unique.
-Prove_Constraint sec_SOS:host:trans_c_is.
-Prove_Constraint sec_SOS:host:trans_recFields_unique.
-Prove_Constraint sec_SOS:host:trans_recFields_is.
+Prove_Constraint sec_SOS:host:proj_rf_unique.
+Prove_Constraint sec_SOS:host:proj_rf_is.
+Prove_Constraint sec_SOS:host:proj_c_unique.
+Prove_Constraint sec_SOS:host:proj_c_is.
+Prove_Constraint sec_SOS:host:proj_recFields_unique.
+Prove_Constraint sec_SOS:host:proj_recFields_is.
 
 
-Prove_Constraint sec_SOS:host:trans_ty_unique.
+Prove_Constraint sec_SOS:host:proj_ty_unique.
 %listTy
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_ty_is.
+Prove_Constraint sec_SOS:host:proj_ty_is.
 %listTy
  case Hyp1. search 11.
 
 
-Prove_Constraint sec_SOS:host:trans_value_unique.
+Prove_Constraint sec_SOS:host:proj_value_unique.
 %nilVal
  case Hyp1. search.
 %consVal
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_value_is.
+Prove_Constraint sec_SOS:host:proj_value_is.
 %nilVal
  search 9.
 %consVal
@@ -104,7 +104,7 @@ Prove sec_SOS:host:vars_unique,
   Vars2: case Vars2. apply IH to Vars3 Vars2. search.
 
 
-Prove_Constraint sec_SOS:host:trans_e_vars_exist.
+Prove_Constraint sec_SOS:host:proj_e_vars_exist.
 %nil
  search.
 %cons
@@ -133,7 +133,7 @@ Prove_Constraint sec_SOS:host:trans_e_vars_exist.
  Vars: case Hyp1. search.
 %length
  case Hyp1. search.
-Prove_Constraint sec_SOS:host:trans_e_vars.
+Prove_Constraint sec_SOS:host:proj_e_vars.
 %nil
  case Hyp2. case H1. case H2. case H3. case H4. case Hyp1. search.
 %cons
@@ -159,8 +159,8 @@ Prove_Constraint sec_SOS:host:trans_e_vars.
  search.
 %length
  case Hyp1. apply vars_unique to Hyp2 H1. search.
-Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
-Prove_Constraint sec_SOS:host:trans_rf_vars.
+Prove_Constraint sec_SOS:host:proj_rf_vars_exist.
+Prove_Constraint sec_SOS:host:proj_rf_vars.
 
 
 Prove sec_SOS:host:vars_is,
@@ -233,7 +233,7 @@ Prove sec_SOS:host:typeOf_unique,
 Prove sec_SOS:host:typeOK_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_eval_e.
+Prove_Constraint sec_SOS:host:proj_eval_e.
 %nil
  search.
 %cons
@@ -302,7 +302,7 @@ Extensible_Theorem
     apply minus_integer_unique to Index3 Index2.
     apply IH to Index4 Index5. search.
 %Preservability
- Index2: case Index2. apply trans_value_unique to Index3 Index2.
+ Index2: case Index2. apply proj_value_unique to Index3 Index2.
  apply IH to Index4 Index5. search.
 
 Extensible_Theorem
@@ -329,7 +329,7 @@ Extensible_Theorem
  Len2: case Len2. apply IH to Len3 Len2.
  apply plus_integer_unique to Len4 Len5. search.
 %Preservability
- Len2: case Len2. apply trans_value_unique to Len3 Len2.
+ Len2: case Len2. apply proj_value_unique to Len3 Len2.
  apply IH to Len4 Len5. search.
 
 
@@ -367,17 +367,18 @@ Prove sec_SOS:host:eval_e_unique,
 Prove sec_SOS:host:update_rec_fields_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval.
+Prove_Constraint sec_SOS:host:proj_c_eval.
 
 
+Add_Ext_Size sec_SOS:host:eval_c.
 Prove_Ext_Ind sec_SOS:host:eval_c.
 
 
 Prove sec_SOS:host:eval_c_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results.
-Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
+Prove_Constraint sec_SOS:host:proj_c_eval_results.
+Prove_Constraint sec_SOS:host:proj_c_eval_results_back.
 
 
 Prove sec_SOS:host:vars_eval_same_result,

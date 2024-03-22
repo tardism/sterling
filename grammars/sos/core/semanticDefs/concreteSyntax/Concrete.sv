@@ -62,9 +62,9 @@ concrete productions top::JudgmentDecl_c
   { top.ast = fixedJudgmentDecl(name.lexeme, type.ast,
                                 location=top.location);
   }
-| 'Translation' tyname::LowerId_t ':' type::TypeList_c Newline_t
-  { top.ast = translationTypeDecl(tyname.lexeme, type.ast,
-                                  location=top.location);
+| 'Projection' tyname::LowerId_t ':' type::TypeList_c Newline_t
+  { top.ast = projectionTypeDecl(tyname.lexeme, type.ast,
+                                 location=top.location);
   }
 {-
   Sometimes judgment types get really long and you need to split
@@ -83,10 +83,10 @@ concrete productions top::JudgmentDecl_c
   { top.ast = fixedJudgmentDecl(name.lexeme, type.ast,
                                 location=top.location);
   }
-| 'Translation' tyname::LowerId_t ':' '{' x::EmptyNewlines
+| 'Projection' tyname::LowerId_t ':' '{' x::EmptyNewlines
   type::TypeListArbitrarySpace_c '}'
-  { top.ast = translationTypeDecl(tyname.lexeme, type.ast,
-                                  location=top.location);
+  { top.ast = projectionTypeDecl(tyname.lexeme, type.ast,
+                                 location=top.location);
   }
 
 
@@ -183,8 +183,8 @@ concrete productions top::Rule_c
 | premises::JudgmentList_c
   ExtLine_t '[' r::RuleName_t ']' '*' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
-  { top.ast = transRule(premises.ast, r.lexeme, conclusion.ast,
-                        location=top.location); }
+  { top.ast = projRule(premises.ast, r.lexeme, conclusion.ast,
+                       location=top.location); }
 | premises::JudgmentList_c
   FixedLine_t '[' r::RuleName_t ']' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
@@ -235,28 +235,28 @@ concrete productions top::Judgment_c
                                location=top.location); }
 | '|{' ty::LowerId_t '}-' t1::Term_c x2::EmptyNewlines '~~>'
                                      x3::EmptyNewlines t2::Term_c
-  { top.ast = transJudgment(nilTermList(location=top.location),
-                            toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(nilTermList(location=top.location),
+                           toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | '|{' ty::LowerQName_t '}-' t1::Term_c x2::EmptyNewlines '~~>'
                                         x3::EmptyNewlines t2::Term_c
-  { top.ast = transJudgment(nilTermList(location=top.location),
-                            toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(nilTermList(location=top.location),
+                           toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | args::CommaTermList_c '|{' ty::LowerId_t '}-' x1::EmptyNewlines
                           t1::Term_c x2::EmptyNewlines '~~>'
                                      x3::EmptyNewlines t2::Term_c
-  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | args::CommaTermList_c '|{' ty::LowerQName_t '}-' x1::EmptyNewlines
                          t1::Term_c x2::EmptyNewlines '~~>'
                                     x3::EmptyNewlines t2::Term_c
-  { top.ast = transJudgment(args.ast, toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(args.ast, toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | t1::Term_c op::BinOp_c t2::Term_c '=' t3::Term_c
   { top.ast = binOpJudgment(t1.ast, op.ast, t2.ast, t3.ast,
                             location=top.location); }
@@ -317,27 +317,27 @@ concrete productions top::JudgmentArbitrarySpace_c
   t2::Term_c x4::EmptyNewlines
   { top.ast = topBinOpJudgment(t1.ast, op.ast, t2.ast,
                                location=top.location); }
---translations
+--projections
 | '|{' ty::LowerId_t '}-' x2::EmptyNewlines
    t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
    x5::EmptyNewlines
-  { top.ast = transJudgment(nilTermList(location=top.location),
-                            toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(nilTermList(location=top.location),
+                           toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | '|{' ty::LowerQName_t '}-' x2::EmptyNewlines
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
-  { top.ast = transJudgment(nilTermList(location=top.location),
-                            toQName(ty.lexeme, ty.location),
-                            t1.ast, t2.ast,
-                            location=top.location); }
+  { top.ast = projJudgment(nilTermList(location=top.location),
+                           toQName(ty.lexeme, ty.location),
+                           t1.ast, t2.ast,
+                           location=top.location); }
 | ta::LowerId_t x1::EmptyNewlines --one arg Id_t, ty Id_t
   '|{' ty::LowerId_t '}-' x2::EmptyNewlines
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=ta.location),
               nilTermList(location=top.location), location=top.location),
@@ -348,7 +348,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=ta.location),
               nilTermList(location=top.location), location=top.location),
@@ -359,7 +359,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=ta.location),
               nilTermList(location=top.location), location=top.location),
@@ -370,7 +370,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=ta.location),
               nilTermList(location=top.location), location=top.location),
@@ -381,7 +381,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(ta.ast, nilTermList(location=top.location),
                         location=top.location),
            toQName(ty.lexeme, ty.location), t1.ast, t2.ast,
@@ -391,7 +391,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   t1::Term_c x3::EmptyNewlines '~~>' x4::EmptyNewlines t2::Term_c
   x5::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(ta.ast, nilTermList(location=top.location),
                         location=top.location),
            toQName(ty.lexeme, ty.location), t1.ast, t2.ast,
@@ -402,7 +402,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=top.location),
                         args.ast, location=top.location),
@@ -414,7 +414,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=top.location),
                         args.ast, location=top.location),
@@ -426,7 +426,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=top.location),
                         args.ast, location=top.location),
@@ -438,7 +438,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(const(toQName(ta.lexeme, ta.location),
                               location=top.location),
                         args.ast, location=top.location),
@@ -450,7 +450,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(ta.ast, args.ast, location=top.location),
            toQName(ty.lexeme, ty.location), t1.ast, t2.ast,
            location=top.location); }
@@ -460,7 +460,7 @@ concrete productions top::JudgmentArbitrarySpace_c
   x4::EmptyNewlines '~~>' x5::EmptyNewlines t2::Term_c
   x6::EmptyNewlines
   { top.ast =
-        transJudgment(
+        projJudgment(
            consTermList(ta.ast, args.ast, location=top.location),
            toQName(ty.lexeme, ty.location), t1.ast, t2.ast,
            location=top.location); }

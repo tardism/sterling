@@ -21,19 +21,19 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
          is_ty X
   -}
   local is::String = fullName.ebIsName;
-  local trans::TranslationEnvItem =
-      head(lookupEnv(fullName, top.translationEnv));
-  local transArgs::[ExtensibellaTerm] =
+  local proj::ProjectionEnvItem =
+      head(lookupEnv(fullName, top.projectionEnv));
+  local projArgs::[ExtensibellaTerm] =
       map(varExtensibellaTerm,
           map(\ x::Integer -> "A" ++ toString(x),
-              range(1, trans.types.len + 1)) ++ ["X", "X_T"]);
+              range(1, proj.types.len + 1)) ++ ["X", "X_T"]);
   top.ebStandInRules =
       [(extJudgmentEnvItem(toQName(is, bogusLoc()),
            consTypeList(nameType(fullName, location=bogusLoc()),
                         nilTypeList(location=bogusLoc()),
                         location=bogusLoc()), 0),
         relationMetaterm(is, [varExtensibellaTerm("X")]),
-        [relationMetaterm(fullName.ebTranslationName, transArgs),
+        [relationMetaterm(fullName.ebProjectionName, projArgs),
          relationMetaterm(is, [varExtensibellaTerm("X_T")])],
         "X")];
 }

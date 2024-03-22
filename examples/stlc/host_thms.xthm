@@ -4,7 +4,6 @@ Extensible_Theorem
   ty_unique : forall G T Ty1 Ty2,
     Type1: typeOf G T Ty1 -> Type2: typeOf G T Ty2 -> Ty1 = Ty2
   on Type1.
-  case Type2. apply lookup_unique to Type3 H1. search.
 %Subgoal 1:  app
  case Type2. apply IH to Type3 H1. search.
 %Subogal 2:  abs

@@ -28,8 +28,8 @@ has [built-in types](#built-in-types) that can be used as arguments.
 If a constructor takes no arguments, we may optionally leave the
 parentheses out, as we did with `true` and `false` above.
 
-Each new syntactic category must also declare its translation type,
-discussed [elsewhere](translation.md).
+Each new syntactic category must also declare its projection type,
+discussed [elsewhere](projection.md).
 
 
 ## Adding to Syntactic Categories
@@ -48,9 +48,9 @@ fact that this category already exists and we are only adding
 constructors, as opposed to creating a new category.  The constructor
 declarations are then as before.
 
-Each new constructor must be given a rule defining its translation as
+Each new constructor must be given a rule defining its projection as
 well, discussed as part of the [broader discussion of
-translation](translation.md).
+projection](projection.md).
 
 
 ## Built-In Types

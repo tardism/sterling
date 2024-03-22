@@ -28,7 +28,7 @@
 
 
 (setq sterling-semantic-keywords-list
-      '("Module" "Builds" "on" "Judgment" "Fixed" "Translation"))
+      '("Module" "Builds" "on" "Judgment" "Fixed" "Projection"))
 (setq sterling-semantic-type-list '("int" "string"))
 
 (defvar sterling-font-lock-keywords
@@ -51,15 +51,15 @@
    ;;Types
    '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)"
      (1 font-lock-type-face)) ;judgment types
-   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)"
-     (1 font-lock-type-face)) ;translation types
+   '("Projection[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*\\(\\([ \ta-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)"
+     (1 font-lock-type-face)) ;projection types
    '("Judgment[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)}"
      (1 font-lock-type-face)) ;judgment types in curly braces
-   '("Translation[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)}"
-     (1 font-lock-type-face)) ;translation types in curly braces
+   '("Projection[ \t\n]+[a-zA-Z0-9_]+[ \t\n]*:[ \t]*{\\(\\([ \t\na-zA-Z0-9_:,\\*\\[()]\\|\\]\\)+\\)}"
+     (1 font-lock-type-face)) ;projection types in curly braces
    '("\\([a-zA-Z0-9:_]+\\)[ ]+::=" ;defined categories
      (1 font-lock-type-face))
-   '("|{\\([a-zA-Z0-9:_]+\\)}-" ;translation types
+   '("|{\\([a-zA-Z0-9:_]+\\)}-" ;projection types
      (1 font-lock-type-face))
    ;;Rule names
    '("-----[ \t\n]*\\[\\([-a-zA-Z0-9_]+\\)\\]"

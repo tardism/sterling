@@ -15,8 +15,8 @@ typeOf (X, Ty1)::G T2 Ty2
 typeOf G let(X, T1, T2) Ty2
 
 
-/*Translation Rule*/
+/*Projection Rule*/
 typeOf G T1 Ty1
------------------------------------------------------- [Trans-Let]
+------------------------------------------------------ [Proj-Let]
 G |{term}- let(X, T1, T2) ~~> app(abs(X, Ty1, T2), T1)
 

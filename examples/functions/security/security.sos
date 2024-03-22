@@ -2,12 +2,12 @@ Module functions:security
 
 Builds on functions:host
 
-/*New Statement and Translation*/
+/*New Statement and Projection*/
 c ::= ...
     | declareSec(string, seclevel, ty, e)
 
 
---------------------------------------------------- [Trans-DeclareSec]
+--------------------------------------------------- [Proj-DeclareSec]
 |{c}- declareSec(X, S, Ty, E) ~~> declare(X, Ty, E)
 
 
@@ -16,7 +16,7 @@ params ::= ...
          | addSecParams(string, seclevel, ty, params)
 
 
-------------------------------------------- [Trans-AddSecParams]
+------------------------------------------- [Proj-AddSecParams]
 |{params}- addSecParams(X, S, Ty, Rest) ~~>
            addParams(X, Ty, Rest)
 
@@ -26,13 +26,13 @@ params ::= ...
 fun ::= ...
       | secfun(string, seclevel, ty, seclevel, string, params, c)
 
-------------------------------------------------------- [Trans-Secfun]
+------------------------------------------------------- [Proj-Secfun]
 |{fun}- secfun(Name, Sec, RetTy, RetSec, RetName, Params, Body) ~~>
         fun(Name, RetTy, RetName, Params, Body)
 
 
 seclevel ::= public | private
-Translation seclevel :
+Projection seclevel :
 
 
 

@@ -14,9 +14,9 @@ type ::= arrow(type, type)
 /*Judgments*/
 Judgment typeOf : [(string, type)] term* type
 
-/*Translation Types*/
-Translation term : [(string, type)] /*ctx |- term ~~> term*/
-Translation type :                  /*|- type ~~> type*/
+/*Projection Types*/
+Projection term : [(string, type)] /*ctx |- term ~~> term*/
+Projection type :                  /*|- type ~~> type*/
 
 
 /*Typing Rules*/

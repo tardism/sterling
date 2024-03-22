@@ -487,7 +487,7 @@ String ::= kinds::[KindDecl] constrs::[ConstrDecl]
                          contains(p.1, l), jdgs)
             in
               definition(defjdgs,
-                 if null(deflist) --e.g. translation rels in host
+                 if null(deflist) --e.g. projection rels in host
                  then oneDefs(
                          ruleDef(
                             relationMetaterm(head(defjdgs).1,
@@ -526,22 +526,22 @@ String ::= modName::String buildsOns::[(String, [String])]
 
 
 --go through a list of judgments and constructors to fill in the
---translation rules of the judgments for the constructors
-function instantiateExtensibellaTransRules
+--projection rules of the judgments for the constructors
+function instantiateExtensibellaProjRules
 [Def] ::= newRuleComs::[(JudgmentEnvItem, [ConstructorEnvItem])]
-   ebTransRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
+   ebProjRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
 {
   local headJdg::JudgmentEnvItem = head(newRuleComs).1;
   local newConstrs::[ConstructorEnvItem] = head(newRuleComs).2;
 
-  --get translation rule
-  local transRule::Maybe<(Metaterm, [Metaterm], String)> =
+  --get projection rule
+  local projRule::Maybe<(Metaterm, [Metaterm], String)> =
       lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                  j1.name == j2.name,
-               headJdg, ebTransRules);
-  local conc::Metaterm = transRule.fromJust.1;
-  local prems::[Metaterm] = transRule.fromJust.2;
-  local pc::String = transRule.fromJust.3;
+               headJdg, ebProjRules);
+  local conc::Metaterm = projRule.fromJust.1;
+  local prems::[Metaterm] = projRule.fromJust.2;
+  local pc::String = projRule.fromJust.3;
 
   --get vars
   local used_vars::[String] = flatMap((.vars), prems) ++ conc.vars;
@@ -551,18 +551,18 @@ function instantiateExtensibellaTransRules
      case newRuleComs of
      | [] -> []
      | _::rest ->
-       case transRule of
+       case projRule of
        | just(_) ->
-         instantiateExtensibellaTransRules_help(
+         instantiateExtensibellaProjRules_help(
             newConstrs, conc, prems, pc, pcless_vars)
-       | nothing() -> [] --if PC type is new, no translation rule
+       | nothing() -> [] --if PC type is new, no projection rule
        end ++
-       instantiateExtensibellaTransRules(rest, ebTransRules)
+       instantiateExtensibellaProjRules(rest, ebProjRules)
      end;
 }
 --go through the list of constructors to instantiate a particular
---translation rule for it
-function instantiateExtensibellaTransRules_help
+--projection rule for it
+function instantiateExtensibellaProjRules_help
 [Def] ::= constrs::[ConstructorEnvItem] conc::Metaterm
           prems::[Metaterm] pc::String pcless_vars::[String]
 {
@@ -604,7 +604,7 @@ function instantiateExtensibellaTransRules_help
   return case constrs of
          | [] -> []
          | _::rest ->
-           finalDef::instantiateExtensibellaTransRules_help(
+           finalDef::instantiateExtensibellaProjRules_help(
                         rest, conc, prems, pc, pcless_vars)
          end;
 }

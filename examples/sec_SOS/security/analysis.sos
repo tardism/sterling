@@ -88,7 +88,7 @@ level G recFieldAccess(Rec, Field) S
 
 |{e}- E ~~> ET
 level G ET S
--------------- [S-TransExpr]*
+-------------- [S-Expr-D]*
 level G E S
 
 
@@ -108,7 +108,7 @@ rf_level G addRecFieldExprs(L, E, Rest) S
 
 |{recFieldExprs}- RF ~~> RFT
 rf_level G RFT S
----------------------------- [S-RFTrans]*
+---------------------------- [S-RF-D]*
 rf_level G RF S
 
 
@@ -191,6 +191,6 @@ secure PC G while(Cond, Body) G
 
 |{c}- C ~~> CT
 secure PC G CT G1
------------------ [S-Trans]*
+----------------- [S-D]*
 secure PC G C G1
 

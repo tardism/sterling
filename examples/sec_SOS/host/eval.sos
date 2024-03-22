@@ -172,6 +172,14 @@ update_rec_fields RecFields Fields V Result
              (Rec, recVal(Result))::G}
 
 
+Extensibella_Stand_In {
+  |{c}- C ~~> T
+  eval_c G T G1
+  ------------- [E-Q]
+  eval_c G C G1
+}
+
+
 /*Update the associations in the first tyCtx for the fields,
   descending through it to place the value in the final one, producing
   the ending tyCtx*/

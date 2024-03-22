@@ -31,18 +31,18 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
 
 
 
-aspect production translationTypeDecl
+aspect production projectionTypeDecl
 top::JudgmentDecl ::= tyname::String args::TypeList
 {
-  local transTy::LambdaPrologType = nameLPType(fullTyName.lpTypeName);
+  local projTy::LambdaPrologType = nameLPType(fullTyName.lpTypeName);
   top.lpDecls =
-      [typeDeclaration(fullTyName.lpTranslationName,
+      [typeDeclaration(fullTyName.lpProjectionName,
           foldr(arrowLPType, oLPType(),
-                args.types.lp ++ [transTy, transTy]))];
+                args.types.lp ++ [projTy, projTy]))];
 }
 
 
-aspect production errorTranslationDecl
+aspect production errorProjectionDecl
 top::JudgmentDecl ::= errs::[Message] tyname::String args::TypeList
 {
   top.lpDecls = error("Should not translate in presence of errors");

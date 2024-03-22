@@ -3,7 +3,7 @@ Module imp:host
 
 /*Because we don't have Booleans built in, roll our own Boolean values*/
 bval ::= btrue | bfalse
-Translation bval :
+Projection bval :
 
 
 Judgment eval_a : [(string, int)] a* int

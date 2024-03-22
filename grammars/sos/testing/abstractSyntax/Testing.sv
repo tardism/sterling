@@ -17,10 +17,10 @@ top::Decls ::= err::String decls::Decls
   decls.tyEnv = top.tyEnv;
   decls.constructorEnv = top.constructorEnv;
   decls.judgmentEnv = top.judgmentEnv;
-  decls.translationEnv = top.translationEnv;
+  decls.projectionEnv = top.projectionEnv;
   decls.ruleEnv = top.ruleEnv;
 
-  decls.transRuleConstructors_down = top.transRuleConstructors_down;
+  decls.projRuleConstructors_down = top.projRuleConstructors_down;
 
   --Don't want errors from decls propagating automatically
   top.errors := [];
@@ -56,10 +56,10 @@ top::Decls ::= wrn::String decls::Decls
   decls.tyEnv = top.tyEnv;
   decls.constructorEnv = top.constructorEnv;
   decls.judgmentEnv = top.judgmentEnv;
-  decls.translationEnv = top.translationEnv;
+  decls.projectionEnv = top.projectionEnv;
   decls.ruleEnv = top.ruleEnv;
 
-  decls.transRuleConstructors_down = top.transRuleConstructors_down;
+  decls.projRuleConstructors_down = top.projRuleConstructors_down;
 
   --Don't want errors from decls propagating automatically
   top.errors := [];
@@ -178,7 +178,7 @@ top::MainDecls ::= err::String decls::MainDecls
   decls.constructorEnv = top.constructorEnv;
   decls.tyEnv = top.tyEnv;
   decls.judgmentEnv = top.judgmentEnv;
-  decls.translationEnv = top.translationEnv;
+  decls.projectionEnv = top.projectionEnv;
   decls.funEnv = top.funEnv;
 
   --Don't want errors from decls propagating automatically
@@ -216,7 +216,7 @@ top::MainDecls ::= wrn::String decls::MainDecls
   decls.constructorEnv = top.constructorEnv;
   decls.tyEnv = top.tyEnv;
   decls.judgmentEnv = top.judgmentEnv;
-  decls.translationEnv = top.translationEnv;
+  decls.projectionEnv = top.projectionEnv;
   decls.funEnv = top.funEnv;
 
   --Don't want errors from decls propagating automatically

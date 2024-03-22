@@ -31,18 +31,18 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-aspect production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+aspect production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
   top.prolog = termPrologFormula(top.prologTerm);
   top.prologTerm =
       applicationTerm(
-         "translation___" ++ if ty.isQualified
-                             then ty.prolog
-                             else ty.fullTy.prolog,
+         "projection___" ++ if ty.isQualified
+                            then ty.prolog
+                            else ty.fullTy.prolog,
          consPrologTermList(t.prolog,
-         consPrologTermList(translation.prolog, args.prolog)));
-  top.pcVar = error("Cannot access pcVar on transJudgment");
+         consPrologTermList(projection.prolog, args.prolog)));
+  top.pcVar = error("Cannot access pcVar on projJudgment");
 }
 
 

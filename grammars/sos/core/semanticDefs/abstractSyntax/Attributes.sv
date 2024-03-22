@@ -5,14 +5,14 @@ imports sos:core:common:abstractSyntax;
 
 --Environments to pass things down
 inherited attribute judgmentEnv::Env<JudgmentEnvItem>;
-inherited attribute translationEnv::Env<TranslationEnvItem>;
+inherited attribute projectionEnv::Env<ProjectionEnvItem>;
 inherited attribute ruleEnv::Env<RuleEnvItem>;
 
 --Pass things up to build the environments
 synthesized attribute tyDecls::[TypeEnvItem];
 synthesized attribute constructorDecls::[ConstructorEnvItem];
 synthesized attribute judgmentDecls::[JudgmentEnvItem];
-synthesized attribute translationDecls::[TranslationEnvItem];
+synthesized attribute projectionDecls::[ProjectionEnvItem];
 synthesized attribute ruleDecls::[RuleEnvItem];
 synthesized attribute buildsOnDecls::[QName];
 
@@ -28,10 +28,10 @@ inherited attribute downVarTypes::[(String, Type)];
 synthesized attribute upVarTypes::[(String, Type)];
 
 
---Constructors for which translation rules are defined
---e.g. for translation rule `|{T}- c(A, B, C) ~~> X`, we get c
-synthesized attribute transRuleConstructors::[QName];
-inherited attribute transRuleConstructors_down::[QName];
+--Constructors for which projection rules are defined
+--e.g. for projection rule `|{T}- c(A, B, C) ~~> X`, we get c
+synthesized attribute projRuleConstructors::[QName];
+inherited attribute projRuleConstructors_down::[QName];
 
 
 synthesized attribute isExtensible::Boolean;

@@ -5,7 +5,7 @@ synthesized attribute eb_base::String occurs on QName;
 synthesized attribute ebTypeName::String occurs on QName;
 synthesized attribute ebConstructorName::String occurs on QName;
 synthesized attribute ebJudgmentName::String occurs on QName;
-synthesized attribute ebTranslationName::String occurs on QName;
+synthesized attribute ebProjectionName::String occurs on QName;
 
 synthesized attribute ebUnknownNameI::String occurs on QName;
 synthesized attribute ebIsName::String occurs on QName;
@@ -27,9 +27,9 @@ top::QName ::= name::String
       else error("Must have full constructor name for translation" ++
                  " (" ++ top.pp ++ ")");
   top.ebJudgmentName = top.fullJudgment.eb;
-  top.ebTranslationName =
+  top.ebProjectionName =
       error("Must have full type name for translation of " ++
-            "translation (" ++ top.pp ++ ") (" ++
+            "projection (" ++ top.pp ++ ") (" ++
             top.location.filename ++ ":" ++
             toString(top.location.line) ++ ":" ++
             toString(top.location.column) ++ ")");
@@ -50,7 +50,7 @@ top::QName ::= name::String rest::QName
   --Assume this is fully qualified, so no need to look things up
   top.ebTypeName = "$ty__" ++ top.eb_base;
   top.ebConstructorName = top.eb_base;
-  top.ebTranslationName = "$trans__" ++ top.eb_base;
+  top.ebProjectionName = "$proj__" ++ top.eb_base;
 
   top.ebUnknownNameI = "$unknownI__" ++ top.eb_base;
 

@@ -1,36 +1,36 @@
 Module sec_SOS:host.
 
-Translation_Constraint trans_e_unique : forall E E1 E2,
+Projection_Constraint proj_e_unique : forall E E1 E2,
   |{e}- E ~~> E1 -> |{e}- E ~~> E2 -> E1 = E2.
-Translation_Constraint trans_e_is : forall E E',
+Projection_Constraint proj_e_is : forall E E',
   |{e}- E ~~> E' -> is_e E -> is_e E'.
 
-Translation_Constraint trans_rf_unique : forall RF RF1 RF2,
+Projection_Constraint proj_rf_unique : forall RF RF1 RF2,
   |{recFieldExprs}- RF ~~> RF1 ->
   |{recFieldExprs}- RF ~~> RF2 ->
   RF1 = RF2.
-Translation_Constraint trans_rf_is : forall RF RF',
+Projection_Constraint proj_rf_is : forall RF RF',
   |{recFieldExprs}- RF ~~> RF' -> is_recFieldExprs RF ->
   is_recFieldExprs RF'.
 
-Translation_Constraint trans_c_unique : forall C C1 C2,
+Projection_Constraint proj_c_unique : forall C C1 C2,
   |{c}- C ~~> C1 -> |{c}- C ~~> C2 -> C1 = C2.
-Translation_Constraint trans_c_is : forall C C',
+Projection_Constraint proj_c_is : forall C C',
   |{c}- C ~~> C' -> is_c C -> is_c C'.
 
-Translation_Constraint trans_recFields_unique : forall RF RF1 RF2,
+Projection_Constraint proj_recFields_unique : forall RF RF1 RF2,
   |{recFields}- RF ~~> RF1 -> |{recFields}- RF ~~> RF2 -> RF1 = RF2.
-Translation_Constraint trans_recFields_is : forall RF RF',
+Projection_Constraint proj_recFields_is : forall RF RF',
   |{recFields}- RF ~~> RF' -> is_recFields RF -> is_recFields RF'.
 
-Translation_Constraint trans_ty_unique : forall Ty Ty1 Ty2,
+Projection_Constraint proj_ty_unique : forall Ty Ty1 Ty2,
   |{ty}- Ty ~~> Ty1 -> |{ty}- Ty ~~> Ty2 -> Ty1 = Ty2.
-Translation_Constraint trans_ty_is : forall Ty Ty',
+Projection_Constraint proj_ty_is : forall Ty Ty',
   |{ty}- Ty ~~> Ty' -> is_ty Ty -> is_ty Ty'.
 
-Translation_Constraint trans_value_unique : forall V V1 V2,
+Projection_Constraint proj_value_unique : forall V V1 V2,
   |{value}- V ~~> V1 -> |{value}- V ~~> V2 -> V1 = V2.
-Translation_Constraint trans_value_is : forall V V',
+Projection_Constraint proj_value_is : forall V V',
   |{value}- V ~~> V' -> is_value V -> is_value V'.
 
 Extensible_Theorem
@@ -132,24 +132,24 @@ Extensible_Theorem
   search.
 
 
-Translation_Constraint trans_e_vars_exist : forall E E' V,
+Projection_Constraint proj_e_vars_exist : forall E E' V,
   |{e}- E ~~> E' -> vars E V -> exists V', vars E' V'.
 
-%Rationale for TC:
+%Rationale for PC:
 %Evaluation depends on the variables in an expression.  In fact, by
 %the property vars_eval_same_result below, evaluation is determined
 %*entirely* by the variables in an expression.  Therefore making the
-%variables in an expression be a subset of those in its translation
+%variables in an expression be a subset of those in its projection
 %gives other extensions a handle on understanding the behavior of an
 %unknown expression in particular contexts.
-Translation_Constraint trans_e_vars : forall E E' V V' X,
+Projection_Constraint proj_e_vars : forall E E' V V' X,
   |{e}- E ~~> E' -> vars E V -> vars E' V' ->
   mem X V -> mem X V'.
 
-Translation_Constraint trans_rf_vars_exist : forall RF RF' V,
+Projection_Constraint proj_rf_vars_exist : forall RF RF' V,
   |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V ->
   exists V', vars_rf RF' V'.
-Translation_Constraint trans_rf_vars : forall RF RF' V V' X,
+Projection_Constraint proj_rf_vars : forall RF RF' V V' X,
   |{recFieldExprs}- RF ~~> RF' -> vars_rf RF V -> vars_rf RF' V' ->
   mem X V -> mem X V'.
 
@@ -348,7 +348,7 @@ Extensible_Theorem
  Ty2: case Ty2. search.
 
 
-Translation_Constraint trans_eval_e : forall G E E' V,
+Projection_Constraint proj_eval_e : forall G E E' V,
   |{e}- E ~~> E' -> eval_e G E V ->
   exists V', eval_e G E' V'.
 
@@ -475,11 +475,64 @@ Extensible_Theorem
  search.
 
 
-Translation_Constraint trans_c_eval : forall C C' G G2,
+Projection_Constraint proj_c_eval : forall C C' G G2,
   |{c}- C ~~> C' -> eval_c G C G2 -> exists G', eval_c G C' G'.
 
 
-Ext_Ind eval_c G C G1 with |{c}- C ~~> T.
+Ext_Size eval_c G C G1.
+Ext_Ind forall G C G1, eval_c G C G1.
+%E-Noop
+ search.
+%E-Seq
+ Acc': case Acc (keep). LE_N2: apply ext_size_pos_eval_c to R2.
+  LE_N3: apply ext_size_pos_eval_c to R3. OrN2: apply lt_left to R1 _ _.
+  apply ext_size_is_int_eval_c to R3. OrN3: apply lt_right to R1 _ _ _.
+  Ev1: apply drop_ext_size_eval_c to R2. LN2: case OrN2.
+    %N2 < N
+     A2: apply Acc' to _ LN2. apply IH to R2 A2.
+     Ev: apply drop_ext_size_eval_c to R2. LN3: case OrN3.
+       %N3 < N
+        A3: apply Acc' to _ LN3. apply IH to R3 A3. search.
+       %N3 = N
+        apply IH1 to R3 Acc. search.
+    %N2 = N
+     apply IH1 to R2 Acc. Ev: apply drop_ext_size_eval_c to R2.
+     LN3: case OrN3.
+       %N3 < N
+        A3: apply Acc' to _ LN3. apply IH1 to R3 A3. search.
+       %N3 = N
+        apply IH1 to R3 Acc. search.
+%E-Declare
+ search.
+%E-Assign
+ search.
+%E-IfThenElseTrue
+ apply IH1 to R2 Acc. search.
+%E-IfThenElseFalse
+ apply IH1 to R2 Acc. search.
+%E-WhileFalse
+ search.
+%E-WhileTrue
+ Acc': case Acc (keep). LE_N2: apply ext_size_pos_eval_c to R3.
+ LE_N3: apply ext_size_pos_eval_c to R4. OrN2: apply lt_left to R1 _ _.
+ apply ext_size_is_int_eval_c to R4. OrN3: apply lt_right to R1 _ _ _.
+ Ev1: apply drop_ext_size_eval_c to R3. LN2: case OrN2.
+   %N2 < N
+    A2: apply Acc' to _ LN2. apply IH to R3 A2.
+    Ev: apply drop_ext_size_eval_c to R3. LN3: case OrN3.
+      %N3 < N
+       A3: apply Acc' to _ LN3. apply IH to R4 A3. search.
+      %N3 = N
+       apply IH1 to R4 Acc. search.
+   %N2 = N
+    apply IH1 to R3 Acc. Ev: apply drop_ext_size_eval_c to R3.
+    LN3: case OrN3.
+      %N3 < N
+       A3: apply Acc' to _ LN3. apply IH1 to R4 A3. search.
+      %N3 = N
+       apply IH1 to R4 Acc. search.
+%E-RecUpdate
+ search.
 
 
 Extensible_Theorem
@@ -526,12 +579,12 @@ Extensible_Theorem
  apply update_rec_fields_unique to Ev5 Ev7. search.
 
 
-Translation_Constraint trans_c_eval_results :
+Projection_Constraint proj_c_eval_results :
   forall C C' G G1 G2 X V,
     |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
     lookup G1 X V -> lookup G2 X V.
 
-Translation_Constraint trans_c_eval_results_back :
+Projection_Constraint proj_c_eval_results_back :
   forall C C' G G1 G2 X V,
     |{c}- C ~~> C' -> eval_c G C G1 -> eval_c G C' G2 ->
     lookup G2 X V -> lookup G1 X V.

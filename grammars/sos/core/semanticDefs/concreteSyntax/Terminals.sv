@@ -10,7 +10,7 @@ terminal Builds_t       'Builds'        lexer classes {KEYWORD};
 terminal On_t           'on'            lexer classes {KEYWORD};
 terminal Jdgmt_t        'Judgment'      lexer classes {KEYWORD};
 terminal Fixed_t        'Fixed'         lexer classes {KEYWORD};
-terminal Translate_t    'Translation'   lexer classes {KEYWORD};
+terminal Project_t      'Projection'    lexer classes {KEYWORD};
 
 
 --Line for a rule is a minimum of three dashes/equals signs
@@ -40,9 +40,9 @@ terminal Cons_t     '::'   association=right;
 terminal LCurly_t   '{';
 terminal RCurly_t   '}';
 
-terminal TransStart_t    '|{';
-terminal TransEnd_t      '}-';
-terminal Trans_t         '~~>';
+terminal ProjStart_t    '|{';
+terminal ProjEnd_t      '}-';
+terminal Proj_t         '~~>';
 
 terminal Upright_t    '|';
 terminal ColonsEq_t   '::=';

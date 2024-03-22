@@ -3,13 +3,13 @@ grammar sos:core:main:abstractSyntax;
 nonterminal Expr with
    pp,
    tyEnv, constructorEnv, judgmentEnv, concreteEnv, funEnv,
-   translationEnv, moduleName,
+   projectionEnv, moduleName,
    type, upSubst, downSubst, finalSubst, finalType,
    downVarTypes,
    errors,
    location;
 propagate errors, funEnv, tyEnv, constructorEnv, judgmentEnv,
-          concreteEnv, translationEnv, moduleName on Expr;
+          concreteEnv, projectionEnv, moduleName on Expr;
 propagate finalSubst on Expr excluding deriveExpr;
 
 synthesized attribute finalType::Type;
@@ -191,7 +191,7 @@ top::Expr ::= j::Judgment useVars::[String] vars::[String]
 
   j.isConclusion = false;
   j.isExtensibleRule = false;
-  j.isTranslationRule = false;
+  j.isProjectionRule = false;
 
   j.downVarTypes =
       map(\ p::(String, Type) ->
@@ -773,13 +773,13 @@ nonterminal Args with
    len,
    types, upSubst, downSubst, finalSubst,
    downVarTypes,
-   tyEnv, constructorEnv, judgmentEnv, concreteEnv, translationEnv,
+   tyEnv, constructorEnv, judgmentEnv, concreteEnv, projectionEnv,
    moduleName,
    funEnv, expectedTypes, lastFun,
    errors,
    location;
 propagate errors, tyEnv, constructorEnv, judgmentEnv, concreteEnv,
-          translationEnv, funEnv, lastFun, moduleName, finalSubst
+          projectionEnv, funEnv, lastFun, moduleName, finalSubst
    on Args;
 
 abstract production nilArgs

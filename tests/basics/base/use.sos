@@ -4,17 +4,17 @@ Module basics:base
 
 type ::= baseTy
        | arrowTy(type, type)
-Translation type :
+Projection type :
 
 term ::= var(string)
        | app(term, term)
        | abs(string, type, term)
-Translation term :
+Projection term :
 
 
 ctx ::= nil
       | cons(string, type, ctx)
-Translation ctx :
+Projection ctx :
 
 
 Judgment typeOf : ctx term* type
@@ -51,7 +51,7 @@ lkp cons(Y, YTy, Rest) X Ty
 
 
 shortTy ::= shortTyConstructor
-Translation shortTy :
+Projection shortTy :
 
 
 Judgment judgment : term*

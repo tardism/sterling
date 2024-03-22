@@ -4,10 +4,10 @@ grammar sos:core:semanticDefs:abstractSyntax;
 nonterminal Rule with
    pp,
    moduleName,
-   tyDecls, constructorDecls, judgmentDecls, translationDecls,
+   tyDecls, constructorDecls, judgmentDecls, projectionDecls,
    ruleDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
-   transRuleConstructors,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv, ruleEnv,
+   projRuleConstructors,
    errors,
    location;
 propagate errors on Rule;
@@ -27,26 +27,26 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls = [];
+  top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
       then [extRuleEnvItem(fullName, conclusion.headRel.name, false)]
-      else if conclusion.isTransJudgment
-      then [translationRuleEnvItem(fullName, conclusion.transType)]
+      else if conclusion.isProjJudgment
+      then [projectionRuleEnvItem(fullName, conclusion.projType)]
       else [errorRuleEnvItem(fullName, false)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
   premises.judgmentEnv = top.judgmentEnv;
-  premises.translationEnv = top.translationEnv;
+  premises.projectionEnv = top.projectionEnv;
   conclusion.tyEnv = top.tyEnv;
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
-  conclusion.translationEnv = top.translationEnv;
+  conclusion.projectionEnv = top.projectionEnv;
 
   conclusion.isConclusion = true;
   conclusion.isExtensibleRule = true;
-  conclusion.isTranslationRule = false;
+  conclusion.isProjectionRule = false;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -61,19 +61,19 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
 
-  top.transRuleConstructors =
-      if conclusion.isTransJudgment
-      then conclusion.transRuleConstructors
+  top.projRuleConstructors =
+      if conclusion.isProjJudgment
+      then conclusion.projRuleConstructors
       else [];
 
   top.errors <-
       if !conclusion.isRelJudgment
-      then if !conclusion.isTransJudgment
+      then if !conclusion.isProjJudgment
            then [errorMessage("Extensible rule " ++ name ++
-                    " must have either a relation or translation " ++
+                    " must have either a relation or projection " ++
                     "as its conclusion",
                     location=conclusion.location)]
-           else [] --trans judgment is OK as conclusion
+           else [] --proj judgment is OK as conclusion
       else if !conclusion.headRel.isError &&
               conclusion.headRel.isExtensible
            then []
@@ -96,7 +96,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       end;
 }
 
-abstract production transRule
+abstract production projRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.pp =
@@ -111,7 +111,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls = [];
+  top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
       then [extRuleEnvItem(fullName, conclusion.headRel.name, true)]
@@ -120,15 +120,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
   premises.judgmentEnv = top.judgmentEnv;
-  premises.translationEnv = top.translationEnv;
+  premises.projectionEnv = top.projectionEnv;
   conclusion.tyEnv = top.tyEnv;
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
-  conclusion.translationEnv = top.translationEnv;
+  conclusion.projectionEnv = top.projectionEnv;
 
   conclusion.isConclusion = true;
   conclusion.isExtensibleRule = true;
-  conclusion.isTranslationRule = true;
+  conclusion.isProjectionRule = true;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -143,14 +143,14 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.downVarTypes = [];
   conclusion.downVarTypes = premises.upVarTypes;
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   --Check conclusion is extensible relation
   top.errors <-
       if !conclusion.isRelJudgment ||
          (!conclusion.headRel.isError &&
           !conclusion.headRel.isExtensible)
-      then [errorMessage("Translation rule " ++ name ++
+      then [errorMessage("Projection rule " ++ name ++
                " must have an extensible relation judgment as its " ++
                "conclusion", location=conclusion.location)]
       else [];
@@ -160,7 +160,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       if conclusion.isRelJudgment && !conclusion.headRel.isError
       then if sameModule(top.moduleName, conclusion.headRel.name)
            then []
-           else [errorMessage("Translation rule " ++ name ++
+           else [errorMessage("Projection rule " ++ name ++
                     " must have a relation from this module as " ++
                     "its conclusion", location=conclusion.location)]
       else [];
@@ -195,7 +195,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls = [];
+  top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
       then [fixedRuleEnvItem(fullName, conclusion.headRel.name)]
@@ -204,15 +204,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
   premises.judgmentEnv = top.judgmentEnv;
-  premises.translationEnv = top.translationEnv;
+  premises.projectionEnv = top.projectionEnv;
   conclusion.tyEnv = top.tyEnv;
   conclusion.constructorEnv = top.constructorEnv;
   conclusion.judgmentEnv = top.judgmentEnv;
-  conclusion.translationEnv = top.translationEnv;
+  conclusion.projectionEnv = top.projectionEnv;
 
   conclusion.isConclusion = true;
   conclusion.isExtensibleRule = false;
-  conclusion.isTranslationRule = false;
+  conclusion.isProjectionRule = false;
 
   premises.downSubst = emptySubst();
   conclusion.downSubst = premises.upSubst;
@@ -220,7 +220,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   premises.finalSubst = conclusion.upSubst;
   conclusion.finalSubst = conclusion.upSubst;
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   --get any unification errors
   top.errors <- errorsFromSubst(conclusion.upSubst);
@@ -260,7 +260,7 @@ nonterminal JudgmentList with
    pp,
    moduleName,
    toList<Judgment>,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv,
    errors, downSubst, upSubst, finalSubst,
    downVarTypes, upVarTypes,
    location;
@@ -292,15 +292,15 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   j.tyEnv = top.tyEnv;
   j.constructorEnv = top.constructorEnv;
   j.judgmentEnv = top.judgmentEnv;
-  j.translationEnv = top.translationEnv;
+  j.projectionEnv = top.projectionEnv;
   rest.tyEnv = top.tyEnv;
   rest.constructorEnv = top.constructorEnv;
   rest.judgmentEnv = top.judgmentEnv;
-  rest.translationEnv = top.translationEnv;
+  rest.projectionEnv = top.projectionEnv;
 
   j.isConclusion = false;
   j.isExtensibleRule = false;
-  j.isTranslationRule = false;
+  j.isProjectionRule = false;
 
   j.downSubst = top.downSubst;
   rest.downSubst = j.upSubst;

@@ -2,7 +2,7 @@ Module sos_imp_proc:host
 
 evalctx ::= emptyEval
           | addVal(string, value, evalctx)
-Translation evalctx :
+Projection evalctx :
 
 
 Judgment lookupVal : evalctx* string value
@@ -20,11 +20,11 @@ lookupVal addVal(Y, YV, Rest) X XV
 
 functx ::= emptyFun
          | addFun(string, nameList, c, functx)
-Translation functx :
+Projection functx :
 
 nameList ::= endNames
            | addNames(string, nameList)
-Translation nameList :
+Projection nameList :
 
 
 Judgment lookupFun : functx* string nameList c
@@ -54,7 +54,7 @@ paramsToNameList addParams(X, Ty, Rest) addNames(X, NRest)
 /*Output from the program printing*/
 output ::= emptyOutput
          | addOutput(value, output)
-Translation output :
+Projection output :
 
 
 

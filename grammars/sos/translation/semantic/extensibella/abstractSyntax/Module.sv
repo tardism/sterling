@@ -6,7 +6,7 @@ import sos:core:main:abstractSyntax only MainFile;
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules, ebStandInRules, ebErrors,
+   ebProjectionRules, ebStandInRules, ebErrors,
    defFileContents, interfaceFileContents, fullFileContents
 occurs on ModuleList;
 
@@ -22,7 +22,7 @@ top::ModuleList ::= files::Files
   top.ebConstrs = files.ebConstrs;
   top.ebRulesByModule = [(stdLibName, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
-  top.ebTranslationRules = files.ebTranslationRules;
+  top.ebProjectionRules = files.ebProjectionRules;
   top.ebStandInRules = files.ebStandInRules;
 
   --automatically generate is relations
@@ -76,16 +76,16 @@ top::ModuleList ::= m::Module rest::ModuleList
   top.ebKinds = m.ebKinds ++ rest.ebKinds;
   top.ebConstrs = m.ebConstrs ++ rest.ebConstrs;
   top.ebJudgments = m.ebJudgments ++ rest.ebJudgments;
-  top.ebTranslationRules =
-      m.ebTranslationRules ++ rest.ebTranslationRules;
+  top.ebProjectionRules =
+      m.ebProjectionRules ++ rest.ebProjectionRules;
   top.ebStandInRules =
       m.ebStandInRules ++ rest.ebStandInRules;
   top.ebRulesByModule =
       m.ebRulesByModule ++ rest.ebRulesByModule;
-  --fill in trans rules for constructors not known with them before
-  local instantiatedTransRules::[Def] =
-     instantiateExtensibellaTransRules(newRuleCombinations,
-        top.ebTranslationRules);
+  --fill in proj rules for constructors not known with them before
+  local instantiatedProjRules::[Def] =
+     instantiateExtensibellaProjRules(newRuleCombinations,
+        top.ebProjectionRules);
 
   --types known in this module but not defined here
   local importedTys::[TypeEnvItem] =
@@ -142,7 +142,7 @@ top::ModuleList ::= m::Module rest::ModuleList
                          j.pcType, nilTypeList(location=bogusLoc()))]
                 else [],
               jdgs ++ isJdgs);
-  --rules for translation rules holding on unknown constructors
+  --rules for projection rules holding on unknown constructors
   local joinedNewJdgsI::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
             (j, filter(\ c::ConstructorEnvItem ->
@@ -153,8 +153,8 @@ top::ModuleList ::= m::Module rest::ModuleList
                        constrEnvsI)),
           allJdgs);
   local rulesNewUnknownI::[Def] =
-      instantiateExtensibellaTransRules(joinedNewJdgsI,
-         top.ebTranslationRules);
+      instantiateExtensibellaProjRules(joinedNewJdgsI,
+         top.ebProjectionRules);
   --rules for stand-in rules holding on unknown constructors
   local joinedOldJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
       map(\ j::JudgmentEnvItem ->
@@ -172,11 +172,11 @@ top::ModuleList ::= m::Module rest::ModuleList
           m.judgmentDecls);
   local rulesNewUnknownK::[Def] =
       --stand-in rules from imported judgments
-      instantiateExtensibellaTransRules(joinedOldJdgsK,
+      instantiateExtensibellaProjRules(joinedOldJdgsK,
          top.ebStandInRules) ++
       --default rules for new judgments
-      instantiateExtensibellaTransRules(joinedNewJdgsK,
-         m.ebTranslationRules); 
+      instantiateExtensibellaProjRules(joinedNewJdgsK,
+         m.ebProjectionRules); 
 
   --extra defs for full file to pass along stand-in rule
   local standInDefs::[Definition] =
@@ -224,7 +224,7 @@ top::ModuleList ::= m::Module rest::ModuleList
       buildExtensibellaFile(top.ebKinds,
          top.ebConstrs ++ unknownConstrs,
          top.ebJudgments, top.ebRulesByModule,
-         instantiatedTransRules,
+         instantiatedProjRules,
          rulesNewUnknownI ++ rulesNewUnknownK);
   top.interfaceFileContents =
       buildExtensibellaInterfaceFile(m.modName,
@@ -234,7 +234,7 @@ top::ModuleList ::= m::Module rest::ModuleList
          --no unknown constructors in the non-extensible definition
          top.ebConstrs,
          top.ebJudgments, top.ebRulesByModule,
-         instantiatedTransRules,
+         instantiatedProjRules,
          --no unknown rules in the non-extensible definition
          []) ++
       --add stand-in-rule-passing defs specially
@@ -259,7 +259,7 @@ top::ModuleList ::= m::Module rest::ModuleList
 
 attribute
    ebKinds, ebConstrs, ebRulesByModule, ebJudgments,
-   ebTranslationRules, ebStandInRules
+   ebProjectionRules, ebStandInRules
 occurs on Module;
 
 aspect production module
@@ -269,7 +269,7 @@ top::Module ::= name::String files::Files
   top.ebConstrs = files.ebConstrs;
   top.ebRulesByModule = [(name, files.ebRules ++ isRules)];
   top.ebJudgments = files.ebJudgments ++ isRels;
-  top.ebTranslationRules = files.ebTranslationRules;
+  top.ebProjectionRules = files.ebProjectionRules;
 
   --To keep instantiated stand-in rules from being used with the DefR
   --rule from the logic G, we add a premise of (0 = 0 -> false).  This
@@ -351,7 +351,7 @@ top::Module ::= name::String files::Files
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebTranslationRules,
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebProjectionRules,
    ebStandInRules
 occurs on Files;
 
@@ -362,7 +362,7 @@ top::Files ::=
   top.ebConstrs = [];
   top.ebRules = [];
   top.ebJudgments = [];
-  top.ebTranslationRules = [];
+  top.ebProjectionRules = [];
   top.ebStandInRules = [];
 }
 
@@ -374,8 +374,8 @@ top::Files ::= filename::String f::File rest::Files
   top.ebConstrs = f.ebConstrs ++ rest.ebConstrs;
   top.ebRules = f.ebRules ++ rest.ebRules;
   top.ebJudgments = f.ebJudgments ++ rest.ebJudgments;
-  top.ebTranslationRules =
-      f.ebTranslationRules ++ rest.ebTranslationRules;
+  top.ebProjectionRules =
+      f.ebProjectionRules ++ rest.ebProjectionRules;
   top.ebStandInRules = f.ebStandInRules ++ rest.ebStandInRules;
 }
 
@@ -387,7 +387,7 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   top.ebConstrs = rest.ebConstrs;
   top.ebRules = rest.ebRules;
   top.ebJudgments = rest.ebJudgments;
-  top.ebTranslationRules = rest.ebTranslationRules;
+  top.ebProjectionRules = rest.ebProjectionRules;
   top.ebStandInRules = rest.ebStandInRules;
 }
 
@@ -399,6 +399,6 @@ top::Files ::= filename::String f::MainFile rest::Files
   top.ebConstrs = rest.ebConstrs;
   top.ebRules = rest.ebRules;
   top.ebJudgments = rest.ebJudgments;
-  top.ebTranslationRules = rest.ebTranslationRules;
+  top.ebProjectionRules = rest.ebProjectionRules;
   top.ebStandInRules = rest.ebStandInRules;
 }

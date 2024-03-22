@@ -57,10 +57,10 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
 
 
 
-nonterminal TranslationEnvItem with name, types, isError;
+nonterminal ProjectionEnvItem with name, types, isError;
 
-abstract production translationEnvItem
-top::TranslationEnvItem ::= name::QName args::TypeList
+abstract production projectionEnvItem
+top::ProjectionEnvItem ::= name::QName args::TypeList
 {
   top.name = name;
 
@@ -74,17 +74,17 @@ top::TranslationEnvItem ::= name::QName args::TypeList
 
 
 nonterminal RuleEnvItem with
-   name, isExtensible, definedRel, isTransRule, isError;
+   name, isExtensible, definedRel, isProjRule, isError;
 
 --relation being defined
 synthesized attribute definedRel::QName;
---translation rule for a relation
-synthesized attribute isTransRule::Boolean;
+--projection rule for a relation
+synthesized attribute isProjRule::Boolean;
 
 --Rule for an extensible relation
 abstract production extRuleEnvItem
 top::RuleEnvItem ::= name::QName definedRel::QName
-                     isTransRule::Boolean
+                     isProjRule::Boolean
 {
   top.name = name;
 
@@ -94,12 +94,12 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 
   top.definedRel = definedRel;
 
-  top.isTransRule = isTransRule;
+  top.isProjRule = isProjRule;
 }
 
 
---Rule defining a translation of a construct
-abstract production translationRuleEnvItem
+--Rule defining a projection of a construct
+abstract production projectionRuleEnvItem
 top::RuleEnvItem ::= name::QName ty::QName
 {
   top.name = name;
@@ -110,7 +110,7 @@ top::RuleEnvItem ::= name::QName ty::QName
 
   top.definedRel = baseName("", location=bogusLoc());
 
-  top.isTransRule = false;
+  top.isProjRule = false;
 }
 
 
@@ -126,14 +126,14 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 
   top.definedRel = definedRel;
 
-  top.isTransRule = false;
+  top.isProjRule = false;
 }
 
 
 --Rule which we can't determine the necessary information for a
 --more-specific RuleEnvItem production
 abstract production errorRuleEnvItem
-top::RuleEnvItem ::= name::QName isTransRule::Boolean
+top::RuleEnvItem ::= name::QName isProjRule::Boolean
 {
   top.name = name;
 
@@ -143,6 +143,6 @@ top::RuleEnvItem ::= name::QName isTransRule::Boolean
 
   top.definedRel = baseName("", location=bogusLoc());
 
-  top.isTransRule = isTransRule;
+  top.isProjRule = isProjRule;
 }
 

@@ -3,7 +3,7 @@ Module functions:host
 functx ::= emptyFun
          | addFun(string, string, [string], c, functx)
                 /*fun name, ret name, params, body, rest*/
-Translation functx :
+Projection functx :
 
 
 Judgment lookupFun : functx* string string [string] c
@@ -34,7 +34,7 @@ paramsToNameList addParams(X, Ty, Rest) X::NRest
 /*Output from the program printing*/
 output ::= emptyOutput
          | addOutput(output, value) /*snoc for appending always*/
-Translation output :
+Projection output :
 
 Judgment appendOutput : output output* output
 

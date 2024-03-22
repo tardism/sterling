@@ -29,12 +29,12 @@ top::Module ::= name::String files::Files
 {
   local syntaxMacros::String =
         implode("\n", map((.ppLaTeX), top.constructorEnv));
-  local transMacros::String =
-        implode("\n", map((.ppLaTeX), top.translationEnv));
+  local projMacros::String =
+        implode("\n", map((.ppLaTeX), top.projectionEnv));
   local relMacros::String =
         implode("\n", map((.ppLaTeX), top.judgmentEnv));
   local latexMacros::String =
-        syntaxMacros ++ "\n" ++ transMacros ++ "\n" ++ relMacros;
+        syntaxMacros ++ "\n" ++ projMacros ++ "\n" ++ relMacros;
   top.ppLaTeX = latexMacros ++ "\n" ++
                 implode("", map((.ppLaTeX), files.latexSyntax)) ++
                 implode("", map((.ppLaTeX), files.latexRules));

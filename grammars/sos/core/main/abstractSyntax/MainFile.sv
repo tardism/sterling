@@ -7,12 +7,12 @@ imports sos:core:semanticDefs:abstractSyntax;
 
 nonterminal MainFile with
    pp,
-   judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
+   judgmentEnv, projectionEnv, concreteEnv, tyEnv, constructorEnv,
    funEnv, funDecls,
    moduleName,
    errors,
    location;
-propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+propagate errors, judgmentEnv, projectionEnv, concreteEnv, tyEnv,
           constructorEnv, funEnv on MainFile;
 
 abstract production mainFile
@@ -37,12 +37,12 @@ top::MainFile ::= moduleName::QName contents::MainDecls
 
 nonterminal MainDecls with
    pp,
-   judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
+   judgmentEnv, projectionEnv, concreteEnv, tyEnv, constructorEnv,
    funEnv, funDecls,
    moduleName,
    errors,
    location;
-propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+propagate errors, judgmentEnv, projectionEnv, concreteEnv, tyEnv,
           constructorEnv, funEnv, moduleName on MainDecls;
 
 abstract production emptyMainDecls
@@ -77,12 +77,12 @@ top::MainDecls ::= f::FunDecl
 
 nonterminal FunDecl with
    pp,
-   judgmentEnv, translationEnv, concreteEnv, tyEnv, constructorEnv,
+   judgmentEnv, projectionEnv, concreteEnv, tyEnv, constructorEnv,
    funEnv, funDecls,
    moduleName,
    errors,
    location;
-propagate errors, judgmentEnv, translationEnv, concreteEnv, tyEnv,
+propagate errors, judgmentEnv, projectionEnv, concreteEnv, tyEnv,
           constructorEnv, funEnv, moduleName on FunDecl;
 
 abstract production funDecl

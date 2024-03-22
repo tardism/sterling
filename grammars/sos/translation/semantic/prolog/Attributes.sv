@@ -13,15 +13,15 @@ synthesized attribute prolog<a>::a;
 synthesized attribute prologTerm::PrologTerm;
 
 
---variable name for PC in a translation rule
+--variable name for PC in a projection rule
 synthesized attribute pcVar::String;
 
 
---Pass up translation rules
+--Pass up projection rules
 --[(judgment being defined, PC var name, premises, conclusion)]
 synthesized attribute
-   prologTranslationRules::[(JudgmentEnvItem, String,
-                             Maybe<PrologFormula>, PrologTerm)];
+   prologProjectionRules::[(JudgmentEnvItem, String,
+                            Maybe<PrologFormula>, PrologTerm)];
 
 
 --Pass up all rules so we can output them in groups by name

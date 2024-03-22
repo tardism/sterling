@@ -4,8 +4,8 @@ grammar sos:core:semanticDefs:abstractSyntax;
 nonterminal JudgmentDecl with
    pp,
    moduleName,
-   tyDecls, constructorDecls, judgmentDecls, translationDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+   tyDecls, constructorDecls, judgmentDecls, projectionDecls,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv, ruleEnv,
    errors,
    location;
 propagate errors on JudgmentDecl;
@@ -25,7 +25,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
       if ty.foundPC
       then [extJudgmentEnvItem(fullName, ty.types, ty.pcIndex)]
       else [errorJudgmentEnvItem(fullName, ty.types)];
-  top.translationDecls = [];
+  top.projectionDecls = [];
 
   ty.tyEnv = top.tyEnv;
 
@@ -67,7 +67,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
                       location=top.location)]
            end;
 
-  --Check there is a translation rule if this is not the module
+  --Check there is a projection rule if this is not the module
   --introducing the PC type
   top.errors <-
       if !pcFound
@@ -75,27 +75,27 @@ top::JudgmentDecl ::= name::String ty::TypeList
       else
          case pcType of
          | nameType(name) when !sameModule(top.moduleName, name) ->
-           --must have translation rule when PC is from another module
+           --must have projection rule when PC is from another module
            case findAllEnv(
                    \ r::RuleEnvItem ->
-                     !r.isError && r.isTransRule &&
+                     !r.isError && r.isProjRule &&
                      fullName == r.definedRel, top.ruleEnv) of
-           | [] -> [errorMessage("Must define translation rule " ++
+           | [] -> [errorMessage("Must define projection rule " ++
                        "for " ++ fullName.pp, location=top.location)]
            | [_] -> []
-           | l -> [errorMessage("Can only define one translation " ++
+           | l -> [errorMessage("Can only define one projection " ++
                       "rule for " ++ fullName.pp,
                       location=top.location)]
            end
          | nameType(_) ->
-           --may have translation rule, but not required
+           --may have projection rule, but not required
            case findAllEnv(
                    \ r::RuleEnvItem ->
-                     !r.isError && r.isTransRule &&
+                     !r.isError && r.isProjRule &&
                      fullName == r.definedRel, top.ruleEnv) of
            | [] -> []
            | [_] -> []
-           | l -> [errorMessage("Can only define one translation " ++
+           | l -> [errorMessage("Can only define one projection " ++
                       "rule for " ++ fullName.pp,
                       location=top.location)]
            end
@@ -119,7 +119,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
   top.judgmentDecls =
       [fixedJudgmentEnvItem(addQNameBase(top.moduleName, name),
                             ty.types)];
-  top.translationDecls = [];
+  top.projectionDecls = [];
 
   ty.tyEnv = top.tyEnv;
 
@@ -158,7 +158,7 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
   top.judgmentDecls =
       [errorJudgmentEnvItem(addQNameBase(top.moduleName, name),
                             ty.types)];
-  top.translationDecls = [];
+  top.projectionDecls = [];
 
   ty.tyEnv = top.tyEnv;
 
@@ -181,18 +181,18 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
 
 
 
---Type for the translation relation for a particular type
---e.g. Translation term : ctx  means  ctx |- term ~~> term
-abstract production translationTypeDecl
+--Type for the projection relation for a particular type
+--e.g. Projection term : ctx  means  ctx |- term ~~> term
+abstract production projectionTypeDecl
 top::JudgmentDecl ::= tyname::String args::TypeList
 {
-  top.pp = "Translation " ++ tyname ++ " : " ++ args.pp_space ++ "\n";
+  top.pp = "Projection " ++ tyname ++ " : " ++ args.pp_space ++ "\n";
 
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls =
-      [translationEnvItem(fullTyName, args.types)];
+  top.projectionDecls =
+      [projectionEnvItem(fullTyName, args.types)];
 
   production fullTyName::QName = addQNameBase(top.moduleName, tyname);
 
@@ -204,7 +204,7 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   top.errors <-
       case possibleTys of
       | [] ->
-        [errorMessage("Translation declared for unknown type " ++
+        [errorMessage("Projection declared for unknown type " ++
             tyname, location=top.location)]
       --we won't do an error here for multiple decls of tyname
       --that will be handled in the type declarations
@@ -214,24 +214,24 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   --Cannot contain variable types in declared judgment args
   top.errors <-
       if !args.containsVars then []
-      else [errorMessage("Declared type arguments to translation " ++
+      else [errorMessage("Declared type arguments to projection " ++
                " for " ++ tyname ++ " cannot contain variable types",
                location=top.location)];
 }
 
 
 --Error for 
-abstract production errorTranslationDecl
+abstract production errorProjectionDecl
 top::JudgmentDecl ::= errs::[Message] tyname::String args::TypeList
 {
-  top.pp = "#Error translation declaration:  " ++ tyname ++ "#\n";
+  top.pp = "#Error projection declaration:  " ++ tyname ++ "#\n";
 
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls =
-      [translationEnvItem(addQNameBase(top.moduleName, tyname),
-                          args.types)];
+  top.projectionDecls =
+      [projectionEnvItem(addQNameBase(top.moduleName, tyname),
+                         args.types)];
 
   args.tyEnv = top.tyEnv;
 

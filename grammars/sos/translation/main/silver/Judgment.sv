@@ -24,15 +24,15 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-aspect production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+aspect production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
   top.silver_pp =
       case ty.fullTy of
       | nameType(n) ->
-        "transJudgment(" ++ args.silver_pp ++ ", " ++
+        "projJudgment(" ++ args.silver_pp ++ ", " ++
             n.silver_pp ++ ", " ++ t.silver_pp ++ ", " ++
-            translation.silver_pp ++ ", location=bogusLoc())"
+            projection.silver_pp ++ ", location=bogusLoc())"
       | _ -> error("Should not access")
       end;
 }

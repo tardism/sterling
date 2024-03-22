@@ -12,11 +12,11 @@ e ::= num(int)
     | false
     | recBuild(recFieldExprs)
     | recFieldAccess(e, string)
-Translation e :
+Projection e :
 
 recFieldExprs ::= endRecFieldExprs
                 | addRecFieldExprs(string, e, recFieldExprs)
-Translation recFieldExprs :
+Projection recFieldExprs :
 
 
 /*Statement Commands*/
@@ -27,18 +27,18 @@ c ::= noop
     | ifThenElse(e, c, c)
     | while(e, c)
     | recUpdate(string, recFields, e) /*rec.field = e*/
-Translation c :
+Projection c :
 
 recFields ::= oneField(string)
             | addField(string, recFields)
-Translation recFields :
+Projection recFields :
 
 
 /*Types*/
 ty ::= intTy
      | boolTy
      | recTy([(string, ty)])
-Translation ty :
+Projection ty :
 
 
 /*Evaluation Values*/
@@ -46,5 +46,5 @@ value ::= intVal(int)
         | trueVal
         | falseVal
         | recVal([(string, value)])
-Translation value :
+Projection value :
 

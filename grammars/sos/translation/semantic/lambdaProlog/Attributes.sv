@@ -19,14 +19,14 @@ synthesized attribute lpRules::[LambdaPrologRule];
 synthesized attribute lpTerm::LambdaPrologTerm;
 
 
---variable name for PC in a translation rule
+--variable name for PC in a projection rule
 synthesized attribute pcVar::String;
 
 
---Pass up translation rules
+--Pass up projection rules
 --[(judgment being defined, PC var name, rule)]
 synthesized attribute
-   lpTranslationRules::[(JudgmentEnvItem, String, LambdaPrologRule)];
+   lpProjectionRules::[(JudgmentEnvItem, String, LambdaPrologRule)];
 
 
 

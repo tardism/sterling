@@ -12,15 +12,15 @@ e ::= num(int)
     | false
     | recBuild(recFieldExprs)
     | recFieldAccess(e, string)
-Translation e :
+Projection e :
 
 recFieldExprs ::= endRecFieldExprs
                 | addRecFieldExprs(string, e, recFieldExprs)
-Translation recFieldExprs :
+Projection recFieldExprs :
 
 args ::= endArgs
        | addArgs(e, args)
-Translation args :
+Projection args :
 
 
 /*Statement Commands*/
@@ -33,38 +33,38 @@ c ::= noop
     | recUpdate(string, recFields, e) /*rec.field = e*/
     | printVal(e)
     | call(string, args)
-Translation c :
+Projection c :
 
 recFields ::= oneField(string)
             | addField(string, recFields)
-Translation recFields :
+Projection recFields :
 
 
 /*Functions*/
 fun ::= fun(string, params, c) /*name, params, body*/
 /*For simplicity in defining evaluation, our functions don't return*/
-Translation fun :
+Projection fun :
 
 params ::= endParams
          | addParams(string, ty, params)
-Translation params :
+Projection params :
 
 
 /*Program*/
 program ::= endProgram(c) /*main function (no args)*/
           | addProgram(fun, program) /*other functions*/
-Translation program :
+Projection program :
 
 
 /*Types*/
 ty ::= intTy
      | boolTy
      | recTy(tyctx)
-Translation ty :
+Projection ty :
 
 tyList ::= endTyList
          | addTyList(ty, tyList)
-Translation tyList :
+Projection tyList :
 
 
 /*Evaluation Values*/
@@ -72,5 +72,5 @@ value ::= intVal(int)
         | trueVal
         | falseVal
         | recVal(evalctx)
-Translation value :
+Projection value :
 

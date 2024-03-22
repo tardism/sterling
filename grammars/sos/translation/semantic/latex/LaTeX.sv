@@ -57,12 +57,12 @@ top::LaTeXJudgment ::= t::LaTeXTerm
 }
 
 
-abstract production transLaTeXJudgment
+abstract production projLaTeXJudgment
 top::LaTeXJudgment ::= macro::String args::LaTeXTermList t::LaTeXTerm
-                       trans::LaTeXTerm
+                       proj::LaTeXTerm
 {
   top.ppLaTeX = "\\" ++ macro ++ args.ppLaTeX ++ "{" ++ t.ppLaTeX ++
-                "}{" ++ trans.ppLaTeX ++ "}";
+                "}{" ++ proj.ppLaTeX ++ "}";
 }
 
 
@@ -188,7 +188,7 @@ top::LaTeXAbsSyn ::= ty::String constrs::LaTeXAbsConstructorDecls
 
 
 --ppLaTeX on these is defining the macro
-attribute ppLaTeX occurs on JudgmentEnvItem, TranslationEnvItem,
+attribute ppLaTeX occurs on JudgmentEnvItem, ProjectionEnvItem,
                             ConstructorEnvItem;
 
 aspect production extJudgmentEnvItem
@@ -231,11 +231,11 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
 
 
 
-aspect production translationEnvItem
-top::TranslationEnvItem ::= name::QName args::TypeList
+aspect production projectionEnvItem
+top::ProjectionEnvItem ::= name::QName args::TypeList
 {
   --\newcommand{\rel}[n + 2]{#1, #2, ... #n |- #n+1 ~~> #n+2}
-  top.ppLaTeX = "\\newcommand{\\" ++ transMacro(name) ++ "}" ++
+  top.ppLaTeX = "\\newcommand{\\" ++ projMacro(name) ++ "}" ++
                 "[" ++ toString(args.len + 2) ++ "]" ++
                 "{\\ensuremath{" ++ argsString ++
                 " \\vdash_{" ++ base ++ "} " ++

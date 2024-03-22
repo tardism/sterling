@@ -32,20 +32,20 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-aspect production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+aspect production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
   top.lp = termLambdaPrologFormula(top.lpTerm);
 
   top.lpTerm = foldl(applicationLambdaPrologTerm,
                      case ty.fullTy of
                      | nameType(q) ->
-                       constLambdaPrologTerm(q.lpTranslationName)
+                       constLambdaPrologTerm(q.lpProjectionName)
                      | _ -> error("Must be a nameType")
                      end,
-                     args.lp ++ [t.lp, translation.lp]);
+                     args.lp ++ [t.lp, projection.lp]);
 
-  top.pcVar = error("Should not access pcVar on a translation");
+  top.pcVar = error("Should not access pcVar on a projection");
 }
 
 

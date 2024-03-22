@@ -2,7 +2,7 @@ Module sos_imp_proc:host
 
 domain ::= emptyDomain
          | addDomain(string, domain)
-Translation domain :
+Projection domain :
 
 
 Judgment joinDomains : domain* domain domain

@@ -4,12 +4,12 @@ grammar sos:core:semanticDefs:abstractSyntax;
 nonterminal Judgment with
    pp,
    moduleName,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv,
    upSubst, downSubst, finalSubst,
    downVarTypes, upVarTypes,
-   headRel, isRelJudgment, isTransJudgment, transType,
-   isConclusion, isExtensibleRule, isTranslationRule,
-   transRuleConstructors,
+   headRel, isRelJudgment, isProjJudgment, projType,
+   isConclusion, isExtensibleRule, isProjectionRule,
+   projRuleConstructors,
    errors,
    location;
 propagate errors on Judgment;
@@ -17,13 +17,13 @@ propagate errors on Judgment;
 --relation being applied to form a judgment
 synthesized attribute headRel::JudgmentEnvItem;
 synthesized attribute isRelJudgment::Boolean;
---whether this is a translation, and of what type
-synthesized attribute isTransJudgment::Boolean;
-synthesized attribute transType::QName;
+--whether this is a projection, and of what type
+synthesized attribute isProjJudgment::Boolean;
+synthesized attribute projType::QName;
 
 inherited attribute isConclusion::Boolean;
 inherited attribute isExtensibleRule::Boolean;
-inherited attribute isTranslationRule::Boolean;
+inherited attribute isProjectionRule::Boolean;
 
 abstract production relation
 top::Judgment ::= rel::QName args::TermList
@@ -63,17 +63,17 @@ top::Judgment ::= rel::QName args::TermList
        else nothing();
   args.isConclusion = top.isConclusion;
   args.isExtensibleRule = top.isExtensibleRule;
-  args.isTranslationRule = top.isTranslationRule;
+  args.isProjectionRule = top.isProjectionRule;
 
   args.downVarTypes = top.downVarTypes;
   top.upVarTypes = args.upVarTypes;
 
   top.headRel = rel.fullJudgment;
   top.isRelJudgment = true;
-  top.isTransJudgment = false;
-  top.transType = error("Should not access");
+  top.isProjJudgment = false;
+  top.projType = error("Should not access");
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion && !top.isExtensibleRule
@@ -121,17 +121,17 @@ top::Judgment ::= rel::QName args::TermList
        else nothing();
   args.isConclusion = top.isConclusion;
   args.isExtensibleRule = top.isExtensibleRule;
-  args.isTranslationRule = top.isTranslationRule;
+  args.isProjectionRule = top.isProjectionRule;
 
   args.downVarTypes = top.downVarTypes;
   top.upVarTypes = args.upVarTypes;
 
   top.headRel = rel.fullJudgment;
   top.isRelJudgment = true;
-  top.isTransJudgment = false;
-  top.transType = error("Should not access");
+  top.isProjJudgment = false;
+  top.projType = error("Should not access");
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion
@@ -141,97 +141,97 @@ top::Judgment ::= rel::QName args::TermList
 }
 
 
-abstract production transJudgment
-top::Judgment ::= args::TermList ty::QName t::Term translation::Term
+abstract production projJudgment
+top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 {
   top.pp =
       args.pp_comma ++ " |{" ++ ty.pp ++ "}- " ++ t.pp ++ " ~~> " ++
-                                                  translation.pp;
+                                                  projection.pp;
 
   args.moduleName = top.moduleName;
   t.moduleName = top.moduleName;
-  translation.moduleName = top.moduleName;
+  projection.moduleName = top.moduleName;
 
   args.tyEnv = top.tyEnv;
   args.constructorEnv = top.constructorEnv;
   t.tyEnv = top.tyEnv;
   t.constructorEnv = top.constructorEnv;
-  translation.tyEnv = top.tyEnv;
-  translation.constructorEnv = top.constructorEnv;
+  projection.tyEnv = top.tyEnv;
+  projection.constructorEnv = top.constructorEnv;
 
   ty.tyEnv = top.tyEnv;
   top.errors <- ty.tyErrors;
 
   args.downSubst = top.downSubst;
   t.downSubst = args.upSubst;
-  translation.downSubst = t.upSubst;
+  projection.downSubst = t.upSubst;
   local unifyT::TypeUnify =
         typeUnify(t.type, ty.fullTy, location=t.location);
-  local unifyTranslation::TypeUnify =
-        typeUnify(translation.type, ty.fullTy,
-                  location=translation.location);
-  unifyT.downSubst = translation.upSubst;
-  unifyTranslation.downSubst = unifyT.upSubst;
+  local unifyProjection::TypeUnify =
+        typeUnify(projection.type, ty.fullTy,
+                  location=projection.location);
+  unifyT.downSubst = projection.upSubst;
+  unifyProjection.downSubst = unifyT.upSubst;
   args.lastConstructor =
-       toQName("<translation>", top.location);
+       toQName("<projection>", top.location);
   args.expectedTypes =
        if ty.tyFound
        then case ty.fullTy of
             | nameType(name)
-              when lookupEnv(name, top.translationEnv)
+              when lookupEnv(name, top.projectionEnv)
                    matches [tenvi] ->
               just(tenvi.types)
             | _ -> nothing()
             end
        else nothing();
-  top.upSubst = unifyTranslation.upSubst;
+  top.upSubst = unifyProjection.upSubst;
 
   args.finalSubst = top.finalSubst;
   t.finalSubst = top.finalSubst;
-  translation.finalSubst = top.finalSubst;
+  projection.finalSubst = top.finalSubst;
 
   args.expectedPC = nothing();
   args.isConclusion = false;
   args.isExtensibleRule = false;
-  args.isTranslationRule = false;
+  args.isProjectionRule = false;
 
   args.downVarTypes = top.downVarTypes;
   t.downVarTypes = args.upVarTypes;
-  translation.downVarTypes = t.upVarTypes;
-  top.upVarTypes = translation.upVarTypes;
+  projection.downVarTypes = t.upVarTypes;
+  top.upVarTypes = projection.upVarTypes;
 
   top.headRel =
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
-  top.isTransJudgment = true;
-  top.transType = if ty.tyFound
-                  then case ty.fullTy of
-                       | nameType(name) -> name
-                       | _ -> ty
-                       end
-                  else ty;
+  top.isProjJudgment = true;
+  top.projType = if ty.tyFound
+                 then case ty.fullTy of
+                      | nameType(name) -> name
+                      | _ -> ty
+                      end
+                 else ty;
 
-  top.transRuleConstructors = [t.headConstructor];
+  top.projRuleConstructors = [t.headConstructor];
 
   top.errors <-
-      if top.isConclusion && top.isTranslationRule
-      then [errorMessage("Cannot write a translation rule for " ++
-               "translation judgments", location=top.location)]
+      if top.isConclusion && top.isProjectionRule
+      then [errorMessage("Cannot write a projection rule for " ++
+               "projection judgments", location=top.location)]
       else [];
 
   top.errors <-
       if !top.isConclusion
       then []
       else if t.isVariable
-      then [errorMessage("Cannot write a rule for translation for " ++
+      then [errorMessage("Cannot write a rule for projection for " ++
                "an unspecified constructor", location=t.location)]
       else if ty.tyFound &&
               sameModule(top.moduleName, ty.fullTy.name)
-      then [errorMessage("Cannot write a rule for translation for " ++
+      then [errorMessage("Cannot write a rule for projection for " ++
                "a constructor from the module declaring the type " ++
                "it builds", location=top.location)]
       else if t.headIsConstructor && !t.headConstructorCurrentModule
-      then [errorMessage("Cannot write a rule for translation for " ++
+      then [errorMessage("Cannot write a rule for projection for " ++
                "a constructor from another module",
                location=top.location)]
       else [];
@@ -273,16 +273,16 @@ top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
   top.headRel =
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
-  top.isTransJudgment = false;
-  top.transType =
-      error("Should not access transType on non-translation");
+  top.isProjJudgment = false;
+  top.projType =
+      error("Should not access projType on non-projection");
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion
       then [errorMessage("Conclusion of rule must be a relation or" ++
-               " translation; found binary operation",
+               " projection; found binary operation",
                location=top.location)]
       else [];
 }
@@ -315,16 +315,16 @@ top::Judgment ::= t1::Term op::TopBinOp t2::Term
   top.headRel =
       error("Should not access headRel on non-relation");
   top.isRelJudgment = false;
-  top.isTransJudgment = false;
-  top.transType =
-      error("Should not access transType on non-translation");
+  top.isProjJudgment = false;
+  top.projType =
+      error("Should not access projType on non-projection");
 
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   top.errors <-
       if top.isConclusion
       then [errorMessage("Conclusion of rule must be a relation or" ++
-               " translation; found binary operation",
+               " projection; found binary operation",
                location=top.location)]
       else [];
 }

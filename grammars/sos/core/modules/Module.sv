@@ -21,7 +21,7 @@ import silver:util:graph as graph;
 synthesized attribute moduleTyDecls::[(String, [TypeEnvItem])];
 synthesized attribute moduleConstructorDecls::[(String, [ConstructorEnvItem])];
 synthesized attribute moduleJudgmentDecls::[(String, [JudgmentEnvItem])];
-synthesized attribute moduleTranslationDecls::[(String, [TranslationEnvItem])];
+synthesized attribute moduleProjectionDecls::[(String, [ProjectionEnvItem])];
 synthesized attribute moduleRuleDecls::[(String, [RuleEnvItem])];
 synthesized attribute moduleConcreteDecls::[(String, [ConcreteEnvItem])];
 synthesized attribute moduleFunctionDecls::[(String, [FunctionEnvItem])];
@@ -62,7 +62,7 @@ global stdLibName::String = "sterling:stdLib";
 nonterminal ModuleList with
    nameList,
    moduleTyDecls, moduleConstructorDecls, moduleJudgmentDecls,
-   moduleTranslationDecls, moduleRuleDecls, moduleConcreteDecls,
+   moduleProjectionDecls, moduleRuleDecls, moduleConcreteDecls,
    moduleFunctionDecls,
    buildsOns,
    errorString;
@@ -76,19 +76,19 @@ top::ModuleList ::= files::Files
   files.tyEnv = buildEnv(files.tyDecls);
   files.constructorEnv = buildEnv(files.constructorDecls);
   files.judgmentEnv = buildEnv(files.judgmentDecls);
-  files.translationEnv = buildEnv(files.translationDecls);
+  files.projectionEnv = buildEnv(files.projectionDecls);
   files.ruleEnv = buildEnv(files.ruleDecls);
   files.concreteEnv = buildEnv(files.concreteDecls);
   files.funEnv = buildEnv(files.funDecls);
-  files.transRuleConstructors_down = files.transRuleConstructors;
+  files.projRuleConstructors_down = files.projRuleConstructors;
 
   top.moduleTyDecls = [(stdLibName, files.tyDecls)];
   top.moduleConstructorDecls =
       [(stdLibName, files.constructorDecls)];
   top.moduleJudgmentDecls =
       [(stdLibName, files.judgmentDecls)];
-  top.moduleTranslationDecls =
-      [(stdLibName, files.translationDecls)];
+  top.moduleProjectionDecls =
+      [(stdLibName, files.projectionDecls)];
   top.moduleRuleDecls = [(stdLibName, files.ruleDecls)];
   top.moduleConcreteDecls = [(stdLibName, files.concreteDecls)];
   top.moduleFunctionDecls =
@@ -150,11 +150,11 @@ top::ModuleList ::= m::Module rest::ModuleList
                 j1.name == j2.name,
            lookupAllModules(fullBuildsOnDecls,
               rest.moduleJudgmentDecls)) ++ m.judgmentDecls;
-  production trns::[TranslationEnvItem] =
-        nubBy(\ t1::TranslationEnvItem t2::TranslationEnvItem ->
+  production projs::[ProjectionEnvItem] =
+        nubBy(\ t1::ProjectionEnvItem t2::ProjectionEnvItem ->
                 t1.name == t2.name,
            lookupAllModules(fullBuildsOnDecls,
-              rest.moduleTranslationDecls)) ++ m.translationDecls;
+              rest.moduleProjectionDecls)) ++ m.projectionDecls;
   production rules::[RuleEnvItem] =
         nubBy(\ r1::RuleEnvItem r2::RuleEnvItem -> r1.name == r2.name,
            lookupAllModules(fullBuildsOnDecls,
@@ -174,8 +174,8 @@ top::ModuleList ::= m::Module rest::ModuleList
       (m.modName, cons)::rest.moduleConstructorDecls;
   top.moduleJudgmentDecls =
       (m.modName, jdgs)::rest.moduleJudgmentDecls;
-  top.moduleTranslationDecls =
-      (m.modName, trns)::rest.moduleTranslationDecls;
+  top.moduleProjectionDecls =
+      (m.modName, projs)::rest.moduleProjectionDecls;
   top.moduleRuleDecls =
       (m.modName, rules)::rest.moduleRuleDecls;
   top.moduleConcreteDecls =
@@ -198,7 +198,7 @@ top::ModuleList ::= m::Module rest::ModuleList
 
   {-
     Pairs of judgments and the constructors that don't know about them
-    Useful for translations to fill in translation rules
+    Useful for projections to fill in projection rules
 
     Note that this is *all* the new rule combinations for *all* the modules.
     If you us this from all the modules, you will generally end up with
@@ -218,11 +218,11 @@ top::ModuleList ::= m::Module rest::ModuleList
   m.tyEnv = buildEnv(tys);
   m.constructorEnv = buildEnv(cons);
   m.judgmentEnv = buildEnv(jdgs);
-  m.translationEnv = buildEnv(trns);
+  m.projectionEnv = buildEnv(projs);
   m.ruleEnv = buildEnv(rules);
   m.concreteEnv = buildEnv(concretes);
   m.funEnv = buildEnv(functions);
-  m.transRuleConstructors_down = m.transRuleConstructors;
+  m.projRuleConstructors_down = m.projRuleConstructors;
 
   top.errorString =
       if rest.errorString == ""
@@ -328,11 +328,11 @@ function produceAllPairs
 
 
 nonterminal Module with
-   tyDecls, constructorDecls, judgmentDecls, translationDecls,
+   tyDecls, constructorDecls, judgmentDecls, projectionDecls,
    ruleDecls, buildsOnDecls, concreteDecls, funDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv, ruleEnv,
    concreteEnv, funEnv,
-   transRuleConstructors, transRuleConstructors_down,
+   projRuleConstructors, projRuleConstructors_down,
    modName,
    errorString;
 
@@ -346,21 +346,21 @@ top::Module ::= name::String files::Files
   top.tyDecls = files.tyDecls;
   top.constructorDecls = files.constructorDecls;
   top.judgmentDecls = files.judgmentDecls;
-  top.translationDecls = files.translationDecls;
+  top.projectionDecls = files.projectionDecls;
   top.ruleDecls = files.ruleDecls;
   top.buildsOnDecls = toQName(stdLibName, bogusLoc())::files.buildsOnDecls;
   top.concreteDecls = files.concreteDecls;
   top.funDecls = files.funDecls;
-  top.transRuleConstructors = files.transRuleConstructors;
+  top.projRuleConstructors = files.projRuleConstructors;
 
   files.tyEnv = top.tyEnv;
   files.constructorEnv = top.constructorEnv;
   files.judgmentEnv = top.judgmentEnv;
-  files.translationEnv = top.translationEnv;
+  files.projectionEnv = top.projectionEnv;
   files.ruleEnv = top.ruleEnv;
   files.concreteEnv = top.concreteEnv;
   files.funEnv = top.funEnv;
-  files.transRuleConstructors_down = top.transRuleConstructors_down;
+  files.projRuleConstructors_down = top.projRuleConstructors_down;
 
   top.errorString =
       if files.errorString == ""
@@ -383,13 +383,13 @@ instance Ord Module {
 
 nonterminal Files with
    moduleName,
-   tyDecls, constructorDecls, judgmentDecls, translationDecls,
+   tyDecls, constructorDecls, judgmentDecls, projectionDecls,
    ruleDecls, buildsOnDecls, concreteDecls, funDecls,
-   tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+   tyEnv, constructorEnv, judgmentEnv, projectionEnv, ruleEnv,
    concreteEnv, funEnv,
-   transRuleConstructors, transRuleConstructors_down,
+   projRuleConstructors, projRuleConstructors_down,
    errorString;
-propagate tyEnv, constructorEnv, judgmentEnv, translationEnv, ruleEnv,
+propagate tyEnv, constructorEnv, judgmentEnv, projectionEnv, ruleEnv,
           concreteEnv, funEnv on Files;
 
 abstract production nilFiles
@@ -398,12 +398,12 @@ top::Files ::=
   top.tyDecls = [];
   top.constructorDecls = [];
   top.judgmentDecls = [];
-  top.translationDecls = [];
+  top.projectionDecls = [];
   top.ruleDecls = [];
   top.buildsOnDecls = [];
   top.concreteDecls = [];
   top.funDecls = [];
-  top.transRuleConstructors = [];
+  top.projRuleConstructors = [];
 
   top.errorString = "";
 }
@@ -418,16 +418,16 @@ top::Files ::= filename::String f::File rest::Files
   top.tyDecls = f.tyDecls ++ rest.tyDecls;
   top.constructorDecls = f.constructorDecls ++ rest.constructorDecls;
   top.judgmentDecls = f.judgmentDecls ++ rest.judgmentDecls;
-  top.translationDecls = f.translationDecls ++ rest.translationDecls;
+  top.projectionDecls = f.projectionDecls ++ rest.projectionDecls;
   top.ruleDecls = f.ruleDecls ++ rest.ruleDecls;
   top.buildsOnDecls = f.buildsOnDecls ++ rest.buildsOnDecls;
   top.concreteDecls = rest.concreteDecls;
   top.funDecls = rest.funDecls;
-  top.transRuleConstructors =
-      f.transRuleConstructors ++ rest.transRuleConstructors;
+  top.projRuleConstructors =
+      f.projRuleConstructors ++ rest.projRuleConstructors;
 
-  f.transRuleConstructors_down = top.transRuleConstructors_down;
-  rest.transRuleConstructors_down = top.transRuleConstructors_down;
+  f.projRuleConstructors_down = top.projRuleConstructors_down;
+  rest.projRuleConstructors_down = top.projRuleConstructors_down;
 
   top.errorString =
       if null(f.errors)
@@ -449,14 +449,14 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
   top.tyDecls = rest.tyDecls;
   top.constructorDecls = rest.constructorDecls;
   top.judgmentDecls = rest.judgmentDecls;
-  top.translationDecls = rest.translationDecls;
+  top.projectionDecls = rest.projectionDecls;
   top.ruleDecls = rest.ruleDecls;
   top.buildsOnDecls = rest.buildsOnDecls;
   top.concreteDecls = f.concreteDecls ++ rest.concreteDecls;
   top.funDecls = rest.funDecls;
-  top.transRuleConstructors = rest.transRuleConstructors;
+  top.projRuleConstructors = rest.projRuleConstructors;
 
-  rest.transRuleConstructors_down = top.transRuleConstructors_down;
+  rest.projRuleConstructors_down = top.projRuleConstructors_down;
 
   top.errorString =
       if null(f.errors)
@@ -478,14 +478,14 @@ top::Files ::= filename::String f::MainFile rest::Files
   top.tyDecls = rest.tyDecls;
   top.constructorDecls = rest.constructorDecls;
   top.judgmentDecls = rest.judgmentDecls;
-  top.translationDecls = rest.translationDecls;
+  top.projectionDecls = rest.projectionDecls;
   top.ruleDecls = rest.ruleDecls;
   top.buildsOnDecls = rest.buildsOnDecls;
   top.concreteDecls = rest.concreteDecls;
   top.funDecls = f.funDecls ++ rest.funDecls;
-  top.transRuleConstructors = rest.transRuleConstructors;
+  top.projRuleConstructors = rest.projRuleConstructors;
 
-  rest.transRuleConstructors_down = top.transRuleConstructors_down;
+  rest.projRuleConstructors_down = top.projRuleConstructors_down;
 
   top.errorString =
       if null(f.errors)

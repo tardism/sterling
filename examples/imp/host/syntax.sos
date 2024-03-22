@@ -4,7 +4,7 @@ Module imp:host
 a ::= num(int)
     | plus(a, a)
     | name(string)
-Translation a :
+Projection a :
 
 
 /*Boolean Expressions*/
@@ -14,7 +14,7 @@ b ::= greater(a, a)
     | or(b, b)
     | true
     | false
-Translation b :
+Projection b :
 
 
 /*Statement Commands*/
@@ -23,5 +23,5 @@ c ::= noop
     | assign(string, a)
     | ifThenElse(b, c, c)
     | while(b, c)
-Translation c :
+Projection c :
 

@@ -1,40 +1,40 @@
 Module sec_SOS:composed.
 
 
-Prove_Constraint sec_SOS:host:trans_e_unique.
+Prove_Constraint sec_SOS:host:proj_e_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_e_is.
+Prove_Constraint sec_SOS:host:proj_e_is.
 
 
-Prove_Constraint sec_SOS:host:trans_rf_unique.
+Prove_Constraint sec_SOS:host:proj_rf_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_rf_is.
+Prove_Constraint sec_SOS:host:proj_rf_is.
 
 
-Prove_Constraint sec_SOS:host:trans_c_unique.
+Prove_Constraint sec_SOS:host:proj_c_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_c_is.
+Prove_Constraint sec_SOS:host:proj_c_is.
 
 
-Prove_Constraint sec_SOS:host:trans_recFields_unique.
+Prove_Constraint sec_SOS:host:proj_recFields_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_recFields_is.
+Prove_Constraint sec_SOS:host:proj_recFields_is.
 
 
-Prove_Constraint sec_SOS:host:trans_ty_unique.
+Prove_Constraint sec_SOS:host:proj_ty_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_ty_is.
+Prove_Constraint sec_SOS:host:proj_ty_is.
 
 
-Prove_Constraint sec_SOS:host:trans_value_unique.
+Prove_Constraint sec_SOS:host:proj_value_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_value_is.
+Prove_Constraint sec_SOS:host:proj_value_is.
 
 
 Prove sec_SOS:host:vars_join,
@@ -45,16 +45,16 @@ Prove sec_SOS:host:vars_unique,
       sec_SOS:host:vars_rf_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_e_vars_exist.
+Prove_Constraint sec_SOS:host:proj_e_vars_exist.
 
 
-Prove_Constraint sec_SOS:host:trans_e_vars.
+Prove_Constraint sec_SOS:host:proj_e_vars.
 
 
-Prove_Constraint sec_SOS:host:trans_rf_vars_exist.
+Prove_Constraint sec_SOS:host:proj_rf_vars_exist.
 
 
-Prove_Constraint sec_SOS:host:trans_rf_vars.
+Prove_Constraint sec_SOS:host:proj_rf_vars.
 
 
 Prove sec_SOS:host:vars_is,
@@ -72,7 +72,7 @@ Prove sec_SOS:host:typeOf_unique,
 Prove sec_SOS:host:typeOK_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_eval_e.
+Prove_Constraint sec_SOS:host:proj_eval_e.
 
 
 Prove sec_SOS:list:index_is_integer.
@@ -97,19 +97,20 @@ Prove sec_SOS:host:eval_e_unique,
 Prove sec_SOS:host:update_rec_fields_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval.
+Prove_Constraint sec_SOS:host:proj_c_eval.
 
 
+Add_Ext_Size sec_SOS:host:eval_c.
 Prove_Ext_Ind sec_SOS:host:eval_c.
 
 
 Prove sec_SOS:host:eval_c_unique.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results.
+Prove_Constraint sec_SOS:host:proj_c_eval_results.
 
 
-Prove_Constraint sec_SOS:host:trans_c_eval_results_back.
+Prove_Constraint sec_SOS:host:proj_c_eval_results_back.
 
 
 Prove sec_SOS:host:vars_eval_same_result,
