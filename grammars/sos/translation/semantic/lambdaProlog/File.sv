@@ -2,7 +2,7 @@ grammar sos:translation:semantic:lambdaProlog;
 
 
 attribute
-   lpDecls, lpRules, lpProjectionRules
+   lpDecls, lpRules, lpDefaultRules
 occurs on File;
 
 aspect production file
@@ -11,7 +11,7 @@ top::File ::= moduleName::QName decls::Decls
   top.lpDecls = decls.lpDecls;
 
   top.lpRules = decls.lpRules;
-  top.lpProjectionRules = decls.lpProjectionRules;
+  top.lpDefaultRules = decls.lpDefaultRules;
 }
 
 
@@ -19,7 +19,7 @@ top::File ::= moduleName::QName decls::Decls
 
 
 attribute
-   lpDecls, lpRules, lpProjectionRules
+   lpDecls, lpRules, lpDefaultRules
 occurs on Decls;
 
 aspect production nilDecls
@@ -28,7 +28,7 @@ top::Decls ::=
   top.lpDecls = [];
 
   top.lpRules = [];
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
 
@@ -38,7 +38,7 @@ top::Decls ::= importName::QName
   top.lpDecls = [];
 
   top.lpRules = [];
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
 
@@ -48,7 +48,7 @@ top::Decls ::= r::Rule
   top.lpDecls = [];
 
   top.lpRules = r.lpRules;
-  top.lpProjectionRules = r.lpProjectionRules;
+  top.lpDefaultRules = r.lpDefaultRules;
 }
 
 
@@ -58,7 +58,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.lpDecls = a.lp;
 
   top.lpRules = [];
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
 
@@ -68,7 +68,7 @@ top::Decls ::= j::JudgmentDecl
   top.lpDecls = j.lpDecls;
 
   top.lpRules = [];
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
 
@@ -78,7 +78,7 @@ top::Decls ::= d1::Decls d2::Decls
   top.lpDecls = d1.lpDecls ++ d2.lpDecls;
 
   top.lpRules = d1.lpRules ++ d2.lpRules;
-  top.lpProjectionRules =
-      d1.lpProjectionRules ++ d2.lpProjectionRules;
+  top.lpDefaultRules =
+      d1.lpDefaultRules ++ d2.lpDefaultRules;
 }
 

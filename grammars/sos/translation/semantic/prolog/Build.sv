@@ -32,7 +32,7 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local message::IOToken = printT("Producing Prolog output\n", i);
 
   local prologProgram::PrologProgram =
-        buildPrologProgram(m.prologRules ++ m.instanProjPrologRules);
+        buildPrologProgram(m.prologRules ++ m.instanDefaultPrologRules);
   local prologString::String = prologProgram.pp;
 
   --write Prolog specification

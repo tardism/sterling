@@ -183,8 +183,8 @@ concrete productions top::Rule_c
 | premises::JudgmentList_c
   ExtLine_t '[' r::RuleName_t ']' '*' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t
-  { top.ast = projRule(premises.ast, r.lexeme, conclusion.ast,
-                       location=top.location); }
+  { top.ast = defaultRule(premises.ast, r.lexeme, conclusion.ast,
+                          location=top.location); }
 | premises::JudgmentList_c
   FixedLine_t '[' r::RuleName_t ']' Newline_t x::EmptyNewlines
   conclusion::Judgment_c Newline_t

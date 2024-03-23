@@ -10,7 +10,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 }
 
 
-aspect production projRule
+aspect production defaultRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.latex = latexRule(name, premises.latex, conclusion.latex);

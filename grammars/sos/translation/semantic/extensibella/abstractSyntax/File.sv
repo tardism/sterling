@@ -2,7 +2,7 @@ grammar sos:translation:semantic:extensibella:abstractSyntax;
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebProjectionRules,
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebDefaultRules,
    ebStandInRules
 occurs on File;
 
@@ -13,7 +13,7 @@ top::File ::= moduleName::QName decls::Decls
   top.ebConstrs = decls.ebConstrs;
   top.ebRules = decls.ebRules;
   top.ebJudgments = decls.ebJudgments;
-  top.ebProjectionRules = decls.ebProjectionRules;
+  top.ebDefaultRules = decls.ebDefaultRules;
   top.ebStandInRules = decls.ebStandInRules;
 }
 
@@ -22,7 +22,7 @@ top::File ::= moduleName::QName decls::Decls
 
 
 attribute
-   ebKinds, ebConstrs, ebRules, ebJudgments, ebProjectionRules,
+   ebKinds, ebConstrs, ebRules, ebJudgments, ebDefaultRules,
    ebStandInRules
 occurs on Decls;
 
@@ -33,7 +33,7 @@ top::Decls ::=
   top.ebConstrs = [];
   top.ebRules = [];
   top.ebJudgments = [];
-  top.ebProjectionRules = [];
+  top.ebDefaultRules = [];
   top.ebStandInRules = [];
 }
 
@@ -45,7 +45,7 @@ top::Decls ::= importName::QName
   top.ebConstrs = [];
   top.ebRules = [];
   top.ebJudgments = [];
-  top.ebProjectionRules = [];
+  top.ebDefaultRules = [];
   top.ebStandInRules = [];
 }
 
@@ -57,7 +57,7 @@ top::Decls ::= r::Rule
   top.ebConstrs = [];
   top.ebRules = r.ebRules;
   top.ebJudgments = [];
-  top.ebProjectionRules = r.ebProjectionRules;
+  top.ebDefaultRules = r.ebDefaultRules;
   top.ebStandInRules = [];
 }
 
@@ -69,7 +69,7 @@ top::Decls ::= a::AbsSyntaxDecl
   top.ebConstrs = a.ebConstrs;
   top.ebRules = [];
   top.ebJudgments = [];
-  top.ebProjectionRules = [];
+  top.ebDefaultRules = [];
   top.ebStandInRules = a.ebStandInRules;
 }
 
@@ -81,7 +81,7 @@ top::Decls ::= j::JudgmentDecl
   top.ebConstrs = [];
   top.ebRules = [];
   top.ebJudgments = j.ebJudgments;
-  top.ebProjectionRules = [];
+  top.ebDefaultRules = [];
   top.ebStandInRules = [];
 }
 
@@ -93,7 +93,7 @@ top::Decls ::= d1::Decls d2::Decls
   top.ebConstrs = d1.ebConstrs ++ d2.ebConstrs;
   top.ebRules = d1.ebRules ++ d2.ebRules;
   top.ebJudgments = d1.ebJudgments ++ d2.ebJudgments;
-  top.ebProjectionRules =
-      d1.ebProjectionRules ++ d2.ebProjectionRules;
+  top.ebDefaultRules =
+      d1.ebDefaultRules ++ d2.ebDefaultRules;
   top.ebStandInRules = d1.ebStandInRules ++ d2.ebStandInRules;
 }

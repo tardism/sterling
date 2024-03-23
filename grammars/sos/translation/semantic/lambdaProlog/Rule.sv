@@ -1,7 +1,7 @@
 grammar sos:translation:semantic:lambdaProlog;
 
 
-attribute lpRules, lpProjectionRules occurs on Rule;
+attribute lpRules, lpDefaultRules occurs on Rule;
 
 aspect production extRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
@@ -13,15 +13,15 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       then [factLambdaPrologRule(conclusion.lpTerm)]
       else [ruleLambdaPrologRule(conclusion.lpTerm, p)];
 
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
-aspect production projRule
+aspect production defaultRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.lpRules = [];
 
-  top.lpProjectionRules =
+  top.lpDefaultRules =
       [(conclusion.headRel, conclusion.pcVar,
         if null(premises.lp)
         then factLambdaPrologRule(conclusion.lpTerm)
@@ -41,7 +41,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       then [factLambdaPrologRule(conclusion.lpTerm)]
       else [ruleLambdaPrologRule(conclusion.lpTerm, p)];
 
-  top.lpProjectionRules = [];
+  top.lpDefaultRules = [];
 }
 
 

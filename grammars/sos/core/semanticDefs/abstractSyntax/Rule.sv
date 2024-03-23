@@ -96,7 +96,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
       end;
 }
 
-abstract production projRule
+abstract production defaultRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   top.pp =

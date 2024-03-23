@@ -56,7 +56,7 @@ top::Decls ::= r::Rule
       | fixedRule(_, _, _) ->
         [errorMessage("Extensibella stand-in rule must be " ++
             "extensible, not fixed", location=top.location)]
-      | projRule(_, _, _) ->
+      | defaultRule(_, _, _) ->
         [errorMessage("Extensibella stand-in rule cannot be a " ++
             "default rule; remove the *", location=top.location)]
       end;
@@ -65,7 +65,7 @@ top::Decls ::= r::Rule
   top.ebConstrs = [];
 
   top.ebRules = [];
-  top.ebProjectionRules = [];
+  top.ebDefaultRules = [];
   top.ebStandInRules =
       case r of
       | extRule(premises, _, conc) ->
@@ -89,7 +89,7 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 
   top.definedRel = definedRel;
 
-  top.isProjRule = false;
+  top.isDefaultRule = false;
 
   --is it a projection/default rule?  sort of
   forwards to extRuleEnvItem(name, definedRel, true);

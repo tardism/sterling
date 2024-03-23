@@ -15,9 +15,9 @@ synthesized attribute ebConstrs::[ConstrDecl];
 
 --Gather rules
 synthesized attribute ebRules::[Def];
---Gather projection rules [(judgment, conclusion, premises, PC var)]
-synthesized attribute ebProjectionRules::[(JudgmentEnvItem, Metaterm,
-                                           [Metaterm], String)];
+--Gather default rules [(judgment, conclusion, premises, PC var)]
+synthesized attribute ebDefaultRules::[(JudgmentEnvItem, Metaterm,
+                                        [Metaterm], String)];
 synthesized attribute ebStandInRules::[(JudgmentEnvItem, Metaterm,
                                         [Metaterm], String)];
 

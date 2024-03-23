@@ -1,12 +1,12 @@
 grammar sos:translation:semantic:prolog;
 
 
-attribute prologProjectionRules, prologRules occurs on Rule;
+attribute prologDefaultRules, prologRules occurs on Rule;
 
 aspect production extRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules =
       if conclusion.isProjJudgment
       then [(baseName("projection___" ++
@@ -17,10 +17,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 }
 
 
-aspect production projRule
+aspect production defaultRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologProjectionRules =
+  top.prologDefaultRules =
       [(conclusion.headRel, conclusion.pcVar, premises.prolog,
         conclusion.prologTerm)];
   top.prologRules = [];
@@ -30,7 +30,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 aspect production fixedRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules =
       [(conclusion.headRel.name, premises.prolog,
         conclusion.prologTerm)];

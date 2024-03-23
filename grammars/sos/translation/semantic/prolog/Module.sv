@@ -7,39 +7,39 @@ import sos:core:main:abstractSyntax only MainFile;
 
 
 attribute
-   prologProjectionRules, prologRules
+   prologDefaultRules, prologRules
 occurs on Module, ModuleList;
 
 --Instantiations for just the last module compiled
 synthesized attribute
-   instanProjPrologRules::[(QName, Maybe<PrologFormula>, PrologTerm)]
+   instanDefaultPrologRules::[(QName, Maybe<PrologFormula>, PrologTerm)]
 occurs on ModuleList;
 
 aspect production stdLibModuleList
 top::ModuleList ::= files::Files
 {
-  top.prologProjectionRules = files.prologProjectionRules;
+  top.prologDefaultRules = files.prologDefaultRules;
 
   top.prologRules = files.prologRules;
 
-  top.instanProjPrologRules = [];
+  top.instanDefaultPrologRules = [];
 }
 
 
 aspect production consModuleList
 top::ModuleList ::= m::Module rest::ModuleList
 {
-  top.prologProjectionRules =
-      m.prologProjectionRules ++ rest.prologProjectionRules;
+  top.prologDefaultRules =
+      m.prologDefaultRules ++ rest.prologDefaultRules;
 
   top.prologRules = m.prologRules ++ rest.prologRules;
 
-  top.instanProjPrologRules =
+  top.instanDefaultPrologRules =
      flatMap(
         \ p::(JudgmentEnvItem, [ConstructorEnvItem]) ->
           case lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                           j1.name == j2.name,
-                        p.1, top.prologProjectionRules) of
+                        p.1, top.prologDefaultRules) of
           | just((pc, premises, conclusion)) ->
             map(\ c::ConstructorEnvItem ->
                   let childNames::[String] =
@@ -79,7 +79,7 @@ top::ModuleList ::= m::Module rest::ModuleList
                     (p.1.name, newPrem, newConc)
                   end end end end,
                 p.2)
-          | nothing() -> [] --host relations have no projection rule
+          | nothing() -> [] --host relations have no default rule
           end,
         newRuleCombinations);
 }
@@ -90,7 +90,7 @@ top::ModuleList ::= m::Module rest::ModuleList
 aspect production module
 top::Module ::= name::String files::Files
 {
-  top.prologProjectionRules = files.prologProjectionRules;
+  top.prologDefaultRules = files.prologDefaultRules;
 
   top.prologRules = files.prologRules;
 }
@@ -98,13 +98,13 @@ top::Module ::= name::String files::Files
 
 
 attribute
-   prologRules, prologProjectionRules
+   prologRules, prologDefaultRules
 occurs on Files;
 
 aspect production nilFiles
 top::Files ::=
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules = [];
 }
 
@@ -112,8 +112,8 @@ top::Files ::=
 aspect production consAbstractFiles
 top::Files ::= filename::String f::File rest::Files
 {
-  top.prologProjectionRules =
-      f.prologProjectionRules ++ rest.prologProjectionRules;
+  top.prologDefaultRules =
+      f.prologDefaultRules ++ rest.prologDefaultRules;
 
   top.prologRules = f.prologRules ++ rest.prologRules;
 }
@@ -122,7 +122,7 @@ top::Files ::= filename::String f::File rest::Files
 aspect production consConcreteFiles
 top::Files ::= filename::String f::ConcreteFile rest::Files
 {
-  top.prologProjectionRules = rest.prologProjectionRules;
+  top.prologDefaultRules = rest.prologDefaultRules;
 
   top.prologRules = rest.prologRules;
 }
@@ -131,7 +131,7 @@ top::Files ::= filename::String f::ConcreteFile rest::Files
 aspect production consMainFiles
 top::Files ::= filename::String f::MainFile rest::Files
 {
-  top.prologProjectionRules = rest.prologProjectionRules;
+  top.prologDefaultRules = rest.prologDefaultRules;
 
   top.prologRules = rest.prologRules;
 }

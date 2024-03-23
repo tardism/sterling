@@ -23,10 +23,10 @@ synthesized attribute lpTerm::LambdaPrologTerm;
 synthesized attribute pcVar::String;
 
 
---Pass up projection rules
+--Pass up default rules
 --[(judgment being defined, PC var name, rule)]
 synthesized attribute
-   lpProjectionRules::[(JudgmentEnvItem, String, LambdaPrologRule)];
+   lpDefaultRules::[(JudgmentEnvItem, String, LambdaPrologRule)];
 
 
 

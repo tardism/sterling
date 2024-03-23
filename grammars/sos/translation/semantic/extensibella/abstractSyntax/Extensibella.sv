@@ -526,22 +526,22 @@ String ::= modName::String buildsOns::[(String, [String])]
 
 
 --go through a list of judgments and constructors to fill in the
---projection rules of the judgments for the constructors
-function instantiateExtensibellaProjRules
+--default rules of the judgments for the constructors
+function instantiateExtensibellaDefaultRules
 [Def] ::= newRuleComs::[(JudgmentEnvItem, [ConstructorEnvItem])]
-   ebProjRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
+   ebDefaultRules::[(JudgmentEnvItem, Metaterm, [Metaterm], String)]
 {
   local headJdg::JudgmentEnvItem = head(newRuleComs).1;
   local newConstrs::[ConstructorEnvItem] = head(newRuleComs).2;
 
-  --get projection rule
-  local projRule::Maybe<(Metaterm, [Metaterm], String)> =
+  --get default rule
+  local defaultRule::Maybe<(Metaterm, [Metaterm], String)> =
       lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                  j1.name == j2.name,
-               headJdg, ebProjRules);
-  local conc::Metaterm = projRule.fromJust.1;
-  local prems::[Metaterm] = projRule.fromJust.2;
-  local pc::String = projRule.fromJust.3;
+               headJdg, ebDefaultRules);
+  local conc::Metaterm = defaultRule.fromJust.1;
+  local prems::[Metaterm] = defaultRule.fromJust.2;
+  local pc::String = defaultRule.fromJust.3;
 
   --get vars
   local used_vars::[String] = flatMap((.vars), prems) ++ conc.vars;
@@ -551,18 +551,18 @@ function instantiateExtensibellaProjRules
      case newRuleComs of
      | [] -> []
      | _::rest ->
-       case projRule of
+       case defaultRule of
        | just(_) ->
-         instantiateExtensibellaProjRules_help(
+         instantiateExtensibellaDefaultRules_help(
             newConstrs, conc, prems, pc, pcless_vars)
-       | nothing() -> [] --if PC type is new, no projection rule
+       | nothing() -> [] --if PC type is new, no default rule
        end ++
-       instantiateExtensibellaProjRules(rest, ebProjRules)
+       instantiateExtensibellaDefaultRules(rest, ebDefaultRules)
      end;
 }
 --go through the list of constructors to instantiate a particular
---projection rule for it
-function instantiateExtensibellaProjRules_help
+--default rule for it
+function instantiateExtensibellaDefaultRules_help
 [Def] ::= constrs::[ConstructorEnvItem] conc::Metaterm
           prems::[Metaterm] pc::String pcless_vars::[String]
 {
@@ -604,7 +604,7 @@ function instantiateExtensibellaProjRules_help
   return case constrs of
          | [] -> []
          | _::rest ->
-           finalDef::instantiateExtensibellaProjRules_help(
+           finalDef::instantiateExtensibellaDefaultRules_help(
                         rest, conc, prems, pc, pcless_vars)
          end;
 }

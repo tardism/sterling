@@ -17,11 +17,11 @@ synthesized attribute prologTerm::PrologTerm;
 synthesized attribute pcVar::String;
 
 
---Pass up projection rules
+--Pass up default rules
 --[(judgment being defined, PC var name, premises, conclusion)]
 synthesized attribute
-   prologProjectionRules::[(JudgmentEnvItem, String,
-                            Maybe<PrologFormula>, PrologTerm)];
+   prologDefaultRules::[(JudgmentEnvItem, String,
+                         Maybe<PrologFormula>, PrologTerm)];
 
 
 --Pass up all rules so we can output them in groups by name

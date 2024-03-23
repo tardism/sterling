@@ -194,8 +194,8 @@ generally by copying from the projection.  This is similar to the
 idea of [forwarding in
 Silver](https://melt.cs.umn.edu/silver/ref/stmt/forwarding/).
 
-These projection rules are written using the same syntax as other
-rules for extensible languages, but they are marked as projection
+These default rules are written using the same syntax as other
+rules for extensible languages, but they are marked as default
 rules with a star after the name.  For example, our typing relation
 might have this projection rule:
 ```
@@ -206,4 +206,5 @@ typeOf Ctx E Ty
 ```
 In a composed language including `modExpr`, `modType`, and `modOther`,
 any expression form introduced by `modOther` will have `typeOf`
-defined for it by copying its type from its projection.
+defined for it by copying its type from its projection, as defined by
+this rule.

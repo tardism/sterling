@@ -2,14 +2,14 @@ grammar sos:translation:semantic:prolog;
 
 
 attribute
-   prologProjectionRules,
+   prologDefaultRules,
    prologRules
 occurs on File, Decls;
 
 aspect production file
 top::File ::= moduleName::QName decls::Decls
 {
-  top.prologProjectionRules = decls.prologProjectionRules;
+  top.prologDefaultRules = decls.prologDefaultRules;
 
   top.prologRules = decls.prologRules;
 }
@@ -19,7 +19,7 @@ top::File ::= moduleName::QName decls::Decls
 aspect production nilDecls
 top::Decls ::=
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules = [];
 }
 
@@ -27,7 +27,7 @@ top::Decls ::=
 aspect production buildsOnDecls
 top::Decls ::= importName::QName
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules = [];
 }
 
@@ -35,7 +35,7 @@ top::Decls ::= importName::QName
 aspect production ruleDecls
 top::Decls ::= r::Rule
 {
-  top.prologProjectionRules = r.prologProjectionRules;
+  top.prologDefaultRules = r.prologDefaultRules;
   top.prologRules = r.prologRules;
 }
 
@@ -43,7 +43,7 @@ top::Decls ::= r::Rule
 aspect production absSyntaxDecls
 top::Decls ::= a::AbsSyntaxDecl
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules = [];
 }
 
@@ -51,7 +51,7 @@ top::Decls ::= a::AbsSyntaxDecl
 aspect production judgmentDecls
 top::Decls ::= j::JudgmentDecl
 {
-  top.prologProjectionRules = [];
+  top.prologDefaultRules = [];
   top.prologRules = [];
 }
 
@@ -59,8 +59,8 @@ top::Decls ::= j::JudgmentDecl
 aspect production branchDecls
 top::Decls ::= d1::Decls d2::Decls
 {
-  top.prologProjectionRules =
-      d1.prologProjectionRules ++ d2.prologProjectionRules;
+  top.prologDefaultRules =
+      d1.prologDefaultRules ++ d2.prologDefaultRules;
   top.prologRules = d1.prologRules ++ d2.prologRules;
 }
 

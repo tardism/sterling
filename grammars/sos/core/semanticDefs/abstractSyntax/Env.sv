@@ -74,17 +74,17 @@ top::ProjectionEnvItem ::= name::QName args::TypeList
 
 
 nonterminal RuleEnvItem with
-   name, isExtensible, definedRel, isProjRule, isError;
+   name, isExtensible, definedRel, isDefaultRule, isError;
 
 --relation being defined
 synthesized attribute definedRel::QName;
 --projection rule for a relation
-synthesized attribute isProjRule::Boolean;
+synthesized attribute isDefaultRule::Boolean;
 
 --Rule for an extensible relation
 abstract production extRuleEnvItem
 top::RuleEnvItem ::= name::QName definedRel::QName
-                     isProjRule::Boolean
+                     isDefaultRule::Boolean
 {
   top.name = name;
 
@@ -94,7 +94,7 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 
   top.definedRel = definedRel;
 
-  top.isProjRule = isProjRule;
+  top.isDefaultRule = isDefaultRule;
 }
 
 
@@ -110,7 +110,7 @@ top::RuleEnvItem ::= name::QName ty::QName
 
   top.definedRel = baseName("", location=bogusLoc());
 
-  top.isProjRule = false;
+  top.isDefaultRule = false;
 }
 
 
@@ -126,14 +126,14 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 
   top.definedRel = definedRel;
 
-  top.isProjRule = false;
+  top.isDefaultRule = false;
 }
 
 
 --Rule which we can't determine the necessary information for a
 --more-specific RuleEnvItem production
 abstract production errorRuleEnvItem
-top::RuleEnvItem ::= name::QName isProjRule::Boolean
+top::RuleEnvItem ::= name::QName isDefaultRule::Boolean
 {
   top.name = name;
 
@@ -143,6 +143,6 @@ top::RuleEnvItem ::= name::QName isProjRule::Boolean
 
   top.definedRel = baseName("", location=bogusLoc());
 
-  top.isProjRule = isProjRule;
+  top.isDefaultRule = isDefaultRule;
 }
 

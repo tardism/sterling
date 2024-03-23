@@ -78,7 +78,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
            --must have projection rule when PC is from another module
            case findAllEnv(
                    \ r::RuleEnvItem ->
-                     !r.isError && r.isProjRule &&
+                     !r.isError && r.isDefaultRule &&
                      fullName == r.definedRel, top.ruleEnv) of
            | [] -> [errorMessage("Must define projection rule " ++
                        "for " ++ fullName.pp, location=top.location)]
@@ -91,7 +91,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
            --may have projection rule, but not required
            case findAllEnv(
                    \ r::RuleEnvItem ->
-                     !r.isError && r.isProjRule &&
+                     !r.isError && r.isDefaultRule &&
                      fullName == r.definedRel, top.ruleEnv) of
            | [] -> []
            | [_] -> []
