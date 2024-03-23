@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sterling functions:composed
-sterling imp:composed
-sterling sec_SOS:composed
-sterling sos_imp_proc:composed
-sterling stlc:letPair
+sterling $@ functions:composed
+sterling $@ imp:composed
+sterling $@ sec_SOS:composed
+sterling $@ sos_imp_proc:composed
+sterling $@ stlc:letPair

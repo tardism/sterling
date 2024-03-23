@@ -265,7 +265,7 @@ Extensible_Theorem
  IsSubIndex: apply IH to Index2.
  Is: apply minus_integer_is_integer_result to IsSubIndex Index1.
  search.
-%Preservability
+%Index-D
  backchain IH.
 Extensible_Theorem
   index_negative_false : forall L I V,
@@ -280,7 +280,7 @@ Extensible_Theorem
  apply less_integer__subtract_positive to _ _ Neg _ Index1.
  apply minus_integer_is_integer to _ _ Index1.
  apply IH to Index2 _.
-%Preservability
+%Index-D
  apply IH to Index2 Neg.
 Extensible_Theorem
   index_unique : forall L I V1 V2,
@@ -301,7 +301,7 @@ Extensible_Theorem
    %2 by Index-Step
     apply minus_integer_unique to Index3 Index2.
     apply IH to Index4 Index5. search.
-%Preservability
+%1 by Index-D
  Index2: case Index2. apply proj_value_unique to Index3 Index2.
  apply IH to Index4 Index5. search.
 
@@ -315,7 +315,7 @@ Extensible_Theorem
 %Len-Cons
  IsSubLen: apply IH to Len1.
  apply plus_integer_is_integer to _ _ Len2. search.
-%Preservability
+%Len-D
  apply IH to Len2. search.
 Extensible_Theorem
   length_unique : forall L V1 V2,
@@ -328,7 +328,7 @@ Extensible_Theorem
 %1 by Len-Cons
  Len2: case Len2. apply IH to Len3 Len2.
  apply plus_integer_unique to Len4 Len5. search.
-%Preservability
+%1 by Len-D
  Len2: case Len2. apply proj_value_unique to Len3 Len2.
  apply IH to Len4 Len5. search.
 

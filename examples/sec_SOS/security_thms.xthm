@@ -169,7 +169,7 @@ Extensible_Theorem
    Vars: case Vars. apply IH1 to Lev1 Vars Mem. search.
   %S-RecField
    Vars: case Vars. apply IH to Lev1 Vars Mem. search.
-  %Preservability
+  %S-D
    V: apply proj_e_vars_exist to Lev1 Vars.
    Mem: apply proj_e_vars to Lev1 Vars V Mem.
    apply IH to Lev2 V Mem1. search.
@@ -183,7 +183,7 @@ Extensible_Theorem
       apply IH to Lev1 Vars2 Mem'. search.
      %mem DRest
       apply IH1 to Lev2 Vars1 Mem'. search.
-  %Preservability
+  %S-RF-D
    V: apply proj_rf_vars_exist to Lev1 Vars.
    Mem: apply proj_rf_vars to Lev1 Vars V Mem.
    apply IH1 to Lev2 V Mem1. search.
@@ -291,7 +291,7 @@ Extensible_Theorem
   LevB: case LevB. apply IH1 to LevA1 LevB. search.
  %S-RecField
   LevB: case LevB. apply IH to LevA1 LevB. search.
- %Preservability
+ %S-D
   LevB: case LevB. apply proj_e_unique to LevA1 LevB.
   apply IH to LevA2 LevB1. search.
 %level_rf_unique
@@ -300,7 +300,7 @@ Extensible_Theorem
  %S-RFAdd
   LevB: case LevB. apply IH to LevA1 LevB. apply IH1 to LevA2 LevB1.
   apply join_unique to LevA3 LevB2. search.
- %Preservability
+ %S-RF-D
   LevB: case LevB. apply proj_rf_unique to LevA1 LevB.
   apply IH1 to LevA2 LevB1. search.
 
@@ -359,7 +359,7 @@ Extensible_Theorem
     assert X1 = X -> false.
       intros Eq. case Eq. apply no_lookup to Sec1 LkpSec.
     search.
-%Preservability
+%E-Q
  Sec: case Sec. apply proj_c_unique to Ev1 Sec.
  apply IH to Sec1 Ev2 _. search.
 
@@ -499,7 +499,7 @@ Extensible_Theorem
           search.
    %S-DeclareSecPublic
     apply NEq to _.
-%Preservability
+%E-Q
  Sec: case Sec. apply proj_c_unique to Ev1 Sec. apply IH to _ _ Ev2.
  search.
 
@@ -836,7 +836,7 @@ Extensible_Theorem
              apply LkpSec to _.
             %Lkp later
              Rel: case Rel. apply Rel2 to LkpSec1 Lkp1. search.
-%Preservability
+%E-Q
  Sec: case Sec. apply proj_c_unique to EvA1 Sec.
  EvBProj: apply proj_c_eval to EvA1 EvB.
  IsCT: apply proj_c_is to Sec Is.
