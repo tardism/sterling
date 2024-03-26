@@ -9,6 +9,7 @@ synthesized attribute ebProjectionName::String occurs on QName;
 
 synthesized attribute ebUnknownNameI::String occurs on QName;
 synthesized attribute ebIsName::String occurs on QName;
+synthesized attribute ebIsQName::QName occurs on QName;
 
 aspect production baseName
 top::QName ::= name::String
@@ -37,6 +38,7 @@ top::QName ::= name::String
   top.ebUnknownNameI =
       error("Must have full type for unknown name (" ++ top.pp ++ ")");
   top.ebIsName = error("Must have full type for is name");
+  top.ebIsQName = baseName("is_" ++ name, location=top.location);
 }
 
 
@@ -58,6 +60,8 @@ top::QName ::= name::String rest::QName
   top.ebIsName = "$ext__0__" ++
       substitute(":", name_sep, top.baselessName) ++
       name_sep ++ "is_" ++ top.base;
+  top.ebIsQName =
+      moduleLayerName(name, rest.ebIsQName, location=top.location);
 }
 
 

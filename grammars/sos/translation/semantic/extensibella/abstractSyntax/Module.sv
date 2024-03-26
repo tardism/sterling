@@ -96,8 +96,7 @@ top::ModuleList ::= m::Module rest::ModuleList
   --split relations into imported and new
   local isJdgs::[JudgmentEnvItem] =
       map(\ e::TypeEnvItem ->
-            extJudgmentEnvItem(
-               toQName(e.name.ebIsName, bogusLoc()),
+            extJudgmentEnvItem(e.name.ebIsQName,
                consTypeList(
                   nameType(e.name, location=bogusLoc()),
                   nilTypeList(location=bogusLoc()),
@@ -120,7 +119,8 @@ top::ModuleList ::= m::Module rest::ModuleList
                extensibellaNameTy(t.name.ebTypeName)),
             importedTys) ++
       flatMap(\ j::JudgmentEnvItem ->
-                if j.isExtensible
+                if j.isExtensible &&
+                   !sameModule(toQName(m.modName, bogusLoc()), j.name)
                 then [constrDecl(j.ebUnknownNameK, [],
                          extensibellaNameTy(j.pcType.name.ebTypeName))]
                 else [],
@@ -135,7 +135,8 @@ top::ModuleList ::= m::Module rest::ModuleList
           importedTys);
   local constrEnvsK::[ConstructorEnvItem] =
       flatMap(\ j::JudgmentEnvItem ->
-                if j.isExtensible
+                if j.isExtensible &&
+                   !sameModule(toQName(m.modName, bogusLoc()), j.name)
                 then [constructorEnvItem(
                          baseName(j.ebUnknownNameK,
                                   location=bogusLoc()),
@@ -157,18 +158,24 @@ top::ModuleList ::= m::Module rest::ModuleList
          top.ebDefaultRules);
   --rules for stand-in rules holding on unknown constructors
   local joinedOldJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
-      map(\ j::JudgmentEnvItem ->
-            (j, filter(\ c::ConstructorEnvItem ->
-                         c.name.base == j.ebUnknownNameK,
-                       constrEnvsK)),
-          importedJdgs);
+      flatMap(\ j::JudgmentEnvItem ->
+                if j.isExtensible
+                then [(j, filter(\ c::ConstructorEnvItem ->
+                                   c.name.base == j.ebUnknownNameK,
+                                 constrEnvsK))]
+                else [],
+              importedJdgs);
   local joinedNewJdgsK::[(JudgmentEnvItem, [ConstructorEnvItem])] =
-      map(\ j::JudgmentEnvItem ->
-            (j, filter(\ c::ConstructorEnvItem ->
-                         j.pcType == c.type &&
-                         c.name.base != j.ebUnknownNameK,
-          --instantiated default rules does not include K for same rel
-                       constrEnvsK)),
+      flatMap(
+          \ j::JudgmentEnvItem ->
+            if j.isExtensible
+            then [(j, filter(\ c::ConstructorEnvItem ->
+                               j.pcType == c.type &&
+                               c.name.base != j.ebUnknownNameK,
+                           --instantiated default rules does not include
+                           --   K for same rel
+                             constrEnvsK))]
+            else [],
           m.judgmentDecls);
   local rulesNewUnknownK::[Def] =
       --stand-in rules from imported judgments
@@ -176,7 +183,7 @@ top::ModuleList ::= m::Module rest::ModuleList
          top.ebStandInRules) ++
       --default rules for new judgments
       instantiateExtensibellaDefaultRules(joinedNewJdgsK,
-         m.ebDefaultRules); 
+         m.ebDefaultRules);
 
   --extra defs for full file to pass along stand-in rule
   local standInDefs::[Definition] =

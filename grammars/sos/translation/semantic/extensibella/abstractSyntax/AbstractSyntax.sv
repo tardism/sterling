@@ -28,7 +28,7 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
           map(\ x::Integer -> "A" ++ toString(x),
               range(1, proj.types.len + 1)) ++ ["X", "X_T"]);
   top.ebStandInRules =
-      [(extJudgmentEnvItem(toQName(is, bogusLoc()),
+      [(extJudgmentEnvItem(fullName.ebIsQName,
            consTypeList(nameType(fullName, location=bogusLoc()),
                         nilTypeList(location=bogusLoc()),
                         location=bogusLoc()), 0),
