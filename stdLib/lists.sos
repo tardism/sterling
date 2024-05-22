@@ -28,7 +28,7 @@ Fixed Judgment subset : [A] [A]
   the second list contains everything in the first list*/
 Fixed Judgment permutation : [A] [A]
 
-/*Count haw many times an item occurs in a list*/
+/*Count how many times an item occurs in a list*/
 Fixed Judgment count : A [A] int
 
 /*Domain of a list (first element of each pair)*/

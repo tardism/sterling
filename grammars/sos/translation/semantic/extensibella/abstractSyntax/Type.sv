@@ -33,7 +33,7 @@ top::Type ::=
 {
   top.eb = extensibellaIntTy();
 
-  top.ebIs = "is_integer";
+  top.ebIs = "extensibella:stdLib:is_integer";
 }
 
 
@@ -42,7 +42,7 @@ top::Type ::=
 {
   top.eb = extensibellaStringTy();
 
-  top.ebIs = "is_string";
+  top.ebIs = "extensibella:stdLib:is_string";
 }
 
 
@@ -51,9 +51,10 @@ top::Type ::= tys::TypeList
 {
   top.eb = foldr1(extensibellaPairTy, tys.eb);
 
-  top.ebIs = foldr1(\ a::String b::String ->
-                      "is_pair (" ++ a ++ ") (" ++ b ++ ")",
-                    tys.ebIses);
+  top.ebIs =
+      foldr1(\ a::String b::String ->
+               "extensibella:stdLib:is_pair (" ++ a ++ ") (" ++ b ++ ")",
+             tys.ebIses);
 }
 
 
@@ -62,7 +63,7 @@ top::Type ::= ty::Type
 {
   top.eb = extensibellaListTy(ty.eb);
 
-  top.ebIs = "is_list (" ++ ty.ebIs ++ ")";
+  top.ebIs = "extensibella:stdLib:is_list (" ++ ty.ebIs ++ ")";
 }
 
 
