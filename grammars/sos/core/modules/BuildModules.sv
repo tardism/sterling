@@ -56,7 +56,7 @@ IOVal<Either<String ModuleList>> ::=
 {
   local sorted::[QName] = sort(buildsOn);
   return buildModuleList_sorted(sorted, rootLocs, abstractFileParse,
-            concreteFileParse, mainFileParse, thusFar, ioIn);
+            concreteFileParse, mainFileParse, ^thusFar, ioIn);
 }
 --assumes buildsOn is sorted already
 function buildModuleList_sorted
@@ -76,25 +76,25 @@ IOVal<Either<String ModuleList>> ::=
   local subcallNextModule::IOVal<Either<String ModuleList>> =
         buildModuleList_helper(nextModule.buildsOnDecls, rootLocs,
            abstractFileParse, concreteFileParse, mainFileParse,
-           thusFar, buildNextModule.io);
+           ^thusFar, buildNextModule.io);
   local nextModuleList::ModuleList =
-        consModuleList(nextModule,
+        consModuleList(@nextModule,
                        subcallNextModule.iovalue.fromRight);
   --Build the rest of the modules from buildsOn
   local subcallRestCurrent::IOVal<Either<String ModuleList>> =
         buildModuleList_sorted(tail(buildsOn), rootLocs, abstractFileParse,
-           concreteFileParse, mainFileParse, nextModuleList,
+           concreteFileParse, mainFileParse, ^nextModuleList,
            subcallNextModule.io);
 
   return
      case buildsOn of
-     | [] -> ioval(ioIn, right(thusFar))
+     | [] -> ioval(ioIn, right(^thusFar))
      | mod::r ->
        --If anything else built on mod, it would already be in thusFar
        --along with all the modules it builds on
        if contains(mod.pp, thusFar.nameList)
        then buildModuleList_sorted(r, rootLocs, abstractFileParse,
-               concreteFileParse, mainFileParse, thusFar, ioIn)
+               concreteFileParse, mainFileParse, ^thusFar, ioIn)
        else case buildNextModule.iovalue of
             | left(err) -> ioval(buildNextModule.io, left(err))
             | right(_) ->
@@ -276,10 +276,10 @@ IOVal<Either<String Files>> ::=
         fileParse(fileContents.iovalue, head(files));
   local rest::IOVal<Either<String Files>> =
         buildFiles(directory, tail(files), fileParse, consFiles,
-                   base, fileContents.io);
+                   ^base, fileContents.io);
   return
      case files of
-     | [] -> ioval(ioIn, right(base))
+     | [] -> ioval(ioIn, right(^base))
      | f::r ->
        if !parsed.parseSuccess
        then ioval(fileContents.io,

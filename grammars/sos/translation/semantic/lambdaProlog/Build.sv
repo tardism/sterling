@@ -74,7 +74,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.semTranslations = rest.semTranslations;
   --once we modify this to be runnable, it will add to semTranslations
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 

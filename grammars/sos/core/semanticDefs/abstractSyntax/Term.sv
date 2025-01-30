@@ -56,7 +56,7 @@ top::Term ::= name::QName
   top.headConstructor =
       if name.constrFound
       then name.fullConstrName
-      else name;
+      else ^name;
 }
 
 
@@ -146,7 +146,7 @@ top::Term ::= constructor::QName args::TermList
   args.isProjectionRule = false;
   args.expectedPC = nothing();
 
-  args.lastConstructor = constructor;
+  args.lastConstructor = ^constructor;
   args.expectedTypes =
        if constructor.constrFound
        then just(constructor.constrTypeArgs)
@@ -287,13 +287,13 @@ top::Term ::= tm::Term ty::Type
   ty.tyEnv = top.tyEnv;
 
   local unify::TypeUnify =
-        typeUnify(tm.type, ty, location=top.location);
+        typeUnify(tm.type, @ty, location=top.location);
   tm.downSubst = top.downSubst;
   unify.downSubst = tm.upSubst;
   top.upSubst = unify.upSubst;
   tm.finalSubst = top.finalSubst;
 
-  top.type = ty;
+  top.type = ^ty;
 
   tm.downVarTypes = top.downVarTypes;
   top.upVarTypes = tm.upVarTypes;
@@ -367,14 +367,14 @@ top::TermList ::= t::Term rest::TermList
   rest.tyEnv = top.tyEnv;
   rest.constructorEnv = top.constructorEnv;
 
-  top.toList = t::rest.toList;
+  top.toList = ^t::rest.toList;
   top.len = 1 + rest.len;
 
   t.downSubst = top.downSubst;
   local unifyFirst::TypeUnify =
       case top.expectedTypes of
       | just(consTypeList(ty, l)) ->
-        typeUnify(t.type, ty, location=top.location)
+        typeUnify(t.type, ^ty, location=top.location)
              --unify useless as a placeholder
       | _ -> typeUnify(errorType(location=top.location), t.type,
                        location=top.location)
@@ -388,7 +388,7 @@ top::TermList ::= t::Term rest::TermList
   rest.lastConstructor = top.lastConstructor;
   rest.expectedTypes =
        case top.expectedTypes of
-       | just(consTypeList(_, l)) -> just(l)
+       | just(consTypeList(_, l)) -> just(^l)
        | _ -> nothing()
        end;
   top.errors <-

@@ -162,7 +162,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = "Prolog"::rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 

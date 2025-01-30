@@ -23,10 +23,10 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 
   production fullName::QName = addQNameBase(top.moduleName, type);
 
-  constructors.builtType = nameType(fullName, location=top.location);
+  constructors.builtType = nameType(^fullName, location=top.location);
 
   top.constructorDecls = constructors.constructorDecls;
-  top.tyDecls = typeEnvItem(fullName)::constructors.tyDecls;
+  top.tyDecls = typeEnvItem(^fullName)::constructors.tyDecls;
   top.judgmentDecls = constructors.judgmentDecls;
   top.projectionDecls = [];
 
@@ -38,7 +38,7 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 
   --Check there is exactly one projection relation declared
   local possibleProj::[ProjectionEnvItem] =
-        lookupEnv(fullName, top.projectionEnv);
+        lookupEnv(^fullName, top.projectionEnv);
   top.errors <-
       case possibleProj of
       | [] ->
@@ -51,7 +51,7 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
       end;
 
   --Check there is only one declaration of this type
-  local possibleTys::[TypeEnvItem] = lookupEnv(fullName, top.tyEnv);
+  local possibleTys::[TypeEnvItem] = lookupEnv(^fullName, top.tyEnv);
   top.errors <-
       case possibleTys of
       | [] -> error("Impossible:  Type " ++ fullName.pp ++
@@ -74,7 +74,7 @@ top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
   constructors.expectedProjRules =
       type.tyFound &&
       case type.fullTy of
-      | nameType(n) -> !sameModule(top.moduleName, n)
+      | nameType(n) -> !sameModule(top.moduleName, ^n)
       | _ -> false
       end;
   constructors.projRuleConstructors_down =
@@ -173,7 +173,7 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
   production fullName::QName = addQNameBase(top.moduleName, name);
 
   top.constructorDecls =
-      [constructorEnvItem(fullName, top.builtType, tyargs.types)];
+      [constructorEnvItem(^fullName, top.builtType, tyargs.types)];
   top.tyDecls = [];
   top.judgmentDecls = [];
 
@@ -181,7 +181,7 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
 
   --Check this constructor is only declared once
   local possibleCons::[ConstructorEnvItem] =
-        lookupEnv(fullName, top.constructorEnv);
+        lookupEnv(^fullName, top.constructorEnv);
   top.errors <-
       case possibleCons of
       | [] -> error("Impossible:  Constructor " ++ fullName.pp ++
@@ -202,7 +202,7 @@ top::AbsConstructorDecls ::= name::String tyargs::TypeList
   --Must have a projection rule if one is expected
   top.errors <-
       if top.expectedProjRules
-      then if contains(fullName, top.projRuleConstructors_down)
+      then if contains(^fullName, top.projRuleConstructors_down)
            then []
            else [errorMessage("Missing rule for projecting " ++
                     fullName.pp, location=top.location)]

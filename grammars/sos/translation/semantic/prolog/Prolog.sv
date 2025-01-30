@@ -11,7 +11,7 @@ top::PrologTerm ::= name::String
 {
   top.pp = name;
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.countVarOccurrences = [];
 }
@@ -25,7 +25,7 @@ top::PrologTerm ::= name::String
   top.replaced =
       if top.replaceVar == name
       then top.replaceVal
-      else top;
+      else ^top;
 
   top.countVarOccurrences = [(name, 1)];
 }
@@ -36,7 +36,7 @@ top::PrologTerm ::= i::Integer
 {
   top.pp = toString(i);
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.countVarOccurrences = [];
 }
@@ -47,7 +47,7 @@ top::PrologTerm ::= text::String
 {
   top.pp = "\"" ++ text ++ "\"";
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.countVarOccurrences = [];
 }
@@ -71,7 +71,7 @@ top::PrologTerm ::=
 {
   top.pp = "[]";
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.countVarOccurrences = [];
 }
@@ -120,7 +120,7 @@ top::PrologTermList ::=
 {
   top.pp = "";
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.countVarOccurrences = [];
 }
@@ -203,7 +203,7 @@ top::PrologFormula ::= t1::PrologTerm op::PrologBinOp t2::PrologTerm
   t1.replaceVal = top.replaceVal;
   t2.replaceVar = top.replaceVar;
   t2.replaceVal = top.replaceVal;
-  top.replaced = binOpPrologFormula(t1.replaced, op, t2.replaced);
+  top.replaced = binOpPrologFormula(t1.replaced, ^op, t2.replaced);
 
   top.countVarOccurrences =
       combineVarOccurrences(t1.countVarOccurrences,
@@ -223,7 +223,7 @@ top::PrologFormula ::= t1::PrologTerm op::PrologIsBinOp t2::PrologTerm result::P
   result.replaceVar = top.replaceVar;
   result.replaceVal = top.replaceVal;
   top.replaced =
-      isPrologFormula(t1.replaced, op, t2.replaced, result.replaced);
+      isPrologFormula(t1.replaced, ^op, t2.replaced, result.replaced);
 
   top.countVarOccurrences =
       combineVarOccurrences(t1.countVarOccurrences,
@@ -440,7 +440,7 @@ PrologRule ::= r::PrologRule
   return
      foldr(\ v::String rest::PrologRule ->
              decorate rest with
-                {replaceVar=v; replaceVal=underscore;}.replaced,
-           r, singletonVars);
+                {replaceVar=v; replaceVal=^underscore;}.replaced,
+           ^r, singletonVars);
 }
 

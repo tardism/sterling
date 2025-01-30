@@ -9,9 +9,9 @@ synthesized attribute pcType::Type;
 abstract production extJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.types = args;
+  top.types = ^args;
 
   top.isExtensible = true;
 
@@ -25,9 +25,9 @@ top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
 abstract production fixedJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.types = args;
+  top.types = ^args;
 
   top.isExtensible = false;
 
@@ -41,9 +41,9 @@ top::JudgmentEnvItem ::= name::QName args::TypeList
 abstract production errorJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.types = args;
+  top.types = ^args;
 
   top.isExtensible = true; --default to assuming this
 
@@ -62,9 +62,9 @@ nonterminal ProjectionEnvItem with name, types, isError;
 abstract production projectionEnvItem
 top::ProjectionEnvItem ::= name::QName args::TypeList
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.types = args;
+  top.types = ^args;
 
   top.isError = false;
 }
@@ -86,13 +86,13 @@ abstract production extRuleEnvItem
 top::RuleEnvItem ::= name::QName definedRel::QName
                      isDefaultRule::Boolean
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isExtensible = true;
 
   top.isError = false;
 
-  top.definedRel = definedRel;
+  top.definedRel = ^definedRel;
 
   top.isDefaultRule = isDefaultRule;
 }
@@ -102,7 +102,7 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 abstract production projectionRuleEnvItem
 top::RuleEnvItem ::= name::QName ty::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isExtensible = true;
 
@@ -118,13 +118,13 @@ top::RuleEnvItem ::= name::QName ty::QName
 abstract production fixedRuleEnvItem
 top::RuleEnvItem ::= name::QName definedRel::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isExtensible = false;
 
   top.isError = false;
 
-  top.definedRel = definedRel;
+  top.definedRel = ^definedRel;
 
   top.isDefaultRule = false;
 }
@@ -135,7 +135,7 @@ top::RuleEnvItem ::= name::QName definedRel::QName
 abstract production errorRuleEnvItem
 top::RuleEnvItem ::= name::QName isDefaultRule::Boolean
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isExtensible = false;
 

@@ -28,14 +28,14 @@ top::Judgment ::= args::TermList ty::QName t::Term projection::Term
 aspect production binOpJudgment
 top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
 {
-  top.latex = binOpLaTeXJudgment(t1.latex, op, t2.latex, result.latex);
+  top.latex = binOpLaTeXJudgment(t1.latex, ^op, t2.latex, result.latex);
 }
 
 
 aspect production topBinOpJudgment
 top::Judgment ::= t1::Term op::TopBinOp t2::Term
 {
-  top.latex = topBinOpLaTeXJudgment(t1.latex, op, t2.latex);
+  top.latex = topBinOpLaTeXJudgment(t1.latex, ^op, t2.latex);
 }
 
 

@@ -17,7 +17,7 @@ top::TerminalDecl ::= r::Regex
 
   r.moduleName = top.moduleName;
 
-  top.concreteDecls = [ignoreTerminalEnvItem(r)];
+  top.concreteDecls = [ignoreTerminalEnvItem(^r)];
 }
 
 
@@ -30,11 +30,11 @@ top::TerminalDecl ::= name::String r::Regex
 
   r.moduleName = top.moduleName;
 
-  top.concreteDecls = [useTerminalEnvItem(fullName, r)];
+  top.concreteDecls = [useTerminalEnvItem(^fullName, ^r)];
 
   --Check there is only one declaration of this name
   local possibleConcretes::[ConcreteEnvItem] =
-        lookupEnv(fullName, top.concreteEnv);
+        lookupEnv(^fullName, top.concreteEnv);
   top.errors <-
       case possibleConcretes of
       | [] -> error("Impossible:  Terminal " ++ fullName.pp ++
@@ -77,7 +77,7 @@ abstract production plusRegex
 top::Regex ::= r::Regex
 {
   top.pp = "(" ++ r.pp ++ ")+";
-  forwards to concatRegex(r, starRegex(r, location=top.location),
+  forwards to concatRegex(^r, starRegex(^r, location=top.location),
                           location=top.location);
 }
 

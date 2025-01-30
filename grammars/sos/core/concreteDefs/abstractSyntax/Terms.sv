@@ -277,7 +277,7 @@ top::TermList ::= t::Term
 {
   top.pp = t.pp;
 
-  top.toList = [t];
+  top.toList = [^t];
   top.len = 1;
 
   t.moduleName = top.moduleName;

@@ -23,15 +23,15 @@ top::JudgmentDecl ::= name::String ty::TypeList
   top.constructorDecls = [];
   top.judgmentDecls =
       if ty.foundPC
-      then [extJudgmentEnvItem(fullName, ty.types, ty.pcIndex)]
-      else [errorJudgmentEnvItem(fullName, ty.types)];
+      then [extJudgmentEnvItem(^fullName, ty.types, ty.pcIndex)]
+      else [errorJudgmentEnvItem(^fullName, ty.types)];
   top.projectionDecls = [];
 
   ty.tyEnv = top.tyEnv;
 
   --Check there is only one declaration of this judgment
   local possibleJudgments::[JudgmentEnvItem] =
-        lookupEnv(fullName, top.judgmentEnv);
+        lookupEnv(^fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
       | [] -> error("Impossible:  Extensible judgment " ++
@@ -74,12 +74,12 @@ top::JudgmentDecl ::= name::String ty::TypeList
       then []
       else
          case pcType of
-         | nameType(name) when !sameModule(top.moduleName, name) ->
+         | nameType(name) when !sameModule(top.moduleName, ^name) ->
            --must have projection rule when PC is from another module
            case findAllEnv(
                    \ r::RuleEnvItem ->
                      !r.isError && r.isDefaultRule &&
-                     fullName == r.definedRel, top.ruleEnv) of
+                     ^fullName == r.definedRel, top.ruleEnv) of
            | [] -> [errorMessage("Must define projection rule " ++
                        "for " ++ fullName.pp, location=top.location)]
            | [_] -> []
@@ -92,7 +92,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
            case findAllEnv(
                    \ r::RuleEnvItem ->
                      !r.isError && r.isDefaultRule &&
-                     fullName == r.definedRel, top.ruleEnv) of
+                     ^fullName == r.definedRel, top.ruleEnv) of
            | [] -> []
            | [_] -> []
            | l -> [errorMessage("Can only define one projection " ++
@@ -132,7 +132,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
 
   --Check there is only one declaration of this judgment
   local possibleJudgments::[JudgmentEnvItem] =
-        lookupEnv(fullName, top.judgmentEnv);
+        lookupEnv(^fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
       | [] -> error("Impossible:  Fixed judgment " ++ fullName.pp ++
@@ -166,7 +166,7 @@ top::JudgmentDecl ::= errs::[Message] name::String ty::TypeList
 
   --Check there is only one declaration of this judgment
   local possibleJudgments::[JudgmentEnvItem] =
-        lookupEnv(fullName, top.judgmentEnv);
+        lookupEnv(^fullName, top.judgmentEnv);
   top.errors <-
       case possibleJudgments of
       | [] -> error("Impossible:  Error judgment " ++ fullName.pp ++
@@ -192,7 +192,7 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   top.constructorDecls = [];
   top.judgmentDecls = [];
   top.projectionDecls =
-      [projectionEnvItem(fullTyName, args.types)];
+      [projectionEnvItem(^fullTyName, args.types)];
 
   production fullTyName::QName = addQNameBase(top.moduleName, tyname);
 

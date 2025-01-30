@@ -65,7 +65,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 

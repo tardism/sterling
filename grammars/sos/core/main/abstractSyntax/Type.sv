@@ -6,7 +6,7 @@ top::Type ::=
 {
   top.pp = "bool";
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -17,17 +17,17 @@ top::Type ::=
       | _ -> false
       end;
 
-  top.substituted = top;
+  top.substituted = ^top;
   top.upSubst =
       case top.unifyWith of
       | boolType() -> top.downSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
        addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                    top.pp, top.unifyLoc, top.downSubst)
       end;
 
-  top.freshen = top;
+  top.freshen = ^top;
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;
@@ -45,7 +45,7 @@ top::Type ::=
 {
   top.pp = "unit";
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -56,17 +56,17 @@ top::Type ::=
       | _ -> false
       end;
 
-  top.substituted = top;
+  top.substituted = ^top;
   top.upSubst =
       case top.unifyWith of
       | unitType() -> top.downSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
       end;
 
-  top.freshen = top;
+  top.freshen = ^top;
   top.freshenSubst = emptySubst();
 
   top.isExtensible = false;

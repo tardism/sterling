@@ -9,7 +9,7 @@ aspect production ignoreTerminal
 top::TerminalDecl ::= r::Regex
 {
   local concName::String = "IgnoreTerminal" ++ toString(genInt());
-  top.silverConc = ignoreTerminalSilverConcDecl(concName, r);
+  top.silverConc = ignoreTerminalSilverConcDecl(concName, ^r);
 }
 
 
@@ -18,5 +18,5 @@ top::TerminalDecl ::= name::String r::Regex
 {
   local silverName::String =
       toQName(name, top.location).silverConcTerminal;
-  top.silverConc = terminalSilverConcDecl(silverName, r);
+  top.silverConc = terminalSilverConcDecl(silverName, ^r);
 }

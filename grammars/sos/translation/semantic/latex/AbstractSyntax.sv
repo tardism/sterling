@@ -41,6 +41,6 @@ top::AbsConstructorDecls ::= d1::AbsConstructorDecls
 aspect production oneConstructorDecl
 top::AbsConstructorDecls ::= name::String tyargs::TypeList
 {
-  top.latex = oneLaTeXAbsConstructorDecls(constrMacro(fullName),
+  top.latex = oneLaTeXAbsConstructorDecls(constrMacro(^fullName),
                                           tyargs.latex);
 }

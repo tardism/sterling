@@ -28,11 +28,11 @@ top::ConcreteSyntaxDecl ::= name::String ty::Type d::ConcreteProdDecls
   d.constructorEnv = top.constructorEnv;
   d.concreteEnv = top.concreteEnv;
 
-  top.concreteDecls = [concreteNT(fullName, ty)];
+  top.concreteDecls = [concreteNT(^fullName, ^ty)];
 
   --Check there is only one declaration of this name
   local possibleConcretes::[ConcreteEnvItem] =
-        lookupEnv(fullName, top.concreteEnv);
+        lookupEnv(^fullName, top.concreteEnv);
   top.errors <-
       case possibleConcretes of
       | [] -> error("Impossible:  Terminal " ++ fullName.pp ++
@@ -185,8 +185,8 @@ top::ProductionElement ::= var::String n::QName
 
   top.gatherProdElems =
       if n.concreteFound
-      then [(var, n, n.concreteType, top.location)]
-      else [(var, n, errorType(location=top.location), top.location)];
+      then [(var, ^n, n.concreteType, top.location)]
+      else [(var, ^n, errorType(location=top.location), top.location)];
 }
 
 

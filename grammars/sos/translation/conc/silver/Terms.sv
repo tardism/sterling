@@ -69,7 +69,7 @@ top::Term ::= t::Term i1::Maybe<Integer> i2::Maybe<Integer>
                                 intLitSilverConcTerm(x))
       | just(x) -> intLitSilverConcTerm(x)
       end;
-  top.silverConc = substringSilverConcTerm(ind1, ind2, t.silverConc);
+  top.silverConc = substringSilverConcTerm(^ind1, ^ind2, t.silverConc);
 }
 
 

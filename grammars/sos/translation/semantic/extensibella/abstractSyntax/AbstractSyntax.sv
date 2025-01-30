@@ -22,14 +22,14 @@ top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
   -}
   local is::String = fullName.ebIsName;
   local proj::ProjectionEnvItem =
-      head(lookupEnv(fullName, top.projectionEnv));
+      head(lookupEnv(^fullName, top.projectionEnv));
   local projArgs::[ExtensibellaTerm] =
       map(varExtensibellaTerm,
           map(\ x::Integer -> "A" ++ toString(x),
               range(1, proj.types.len + 1)) ++ ["X", "X_T"]);
   top.ebStandInRules =
       [(extJudgmentEnvItem(fullName.ebIsQName,
-           consTypeList(nameType(fullName, location=bogusLoc()),
+           consTypeList(nameType(^fullName, location=bogusLoc()),
                         nilTypeList(location=bogusLoc()),
                         location=bogusLoc()), 0),
         relationMetaterm(is, [varExtensibellaTerm("X")]),

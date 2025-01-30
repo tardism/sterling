@@ -286,11 +286,11 @@ top::Module ::= name::String files::Files
   --so it can't be used.
   top.ebStandInRules =
       map(\ p::(JudgmentEnvItem, Metaterm, [Metaterm], String) ->
-            (p.1, p.2, p.3 ++ [falsePrem], p.4),
+            (p.1, p.2, p.3 ++ [^falsePrem], p.4),
           files.ebStandInRules ++ blankStandInRules);
   local zero::ExtensibellaTerm = extensibellaIntegerTerm(0);
   local falsePrem::Metaterm =
-      impliesMetaterm(eqMetaterm(zero, zero), falseMetaterm());
+      impliesMetaterm(eqMetaterm(^zero, ^zero), falseMetaterm());
 
   --automatically generate is relations
   local isRels::[(String, [ExtensibellaType])] =

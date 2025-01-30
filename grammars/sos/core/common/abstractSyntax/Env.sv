@@ -11,8 +11,8 @@ attribute name {} occurs on a => [a] ::= name::QName env::Env<a>
   return
      case env of
      | [] -> []
-     | x::rest when x.name == name -> x::lookupEnv(name, rest)
-     | _::rest -> lookupEnv(name, rest)
+     | x::rest when x.name == ^name -> x::lookupEnv(^name, rest)
+     | _::rest -> lookupEnv(^name, rest)
      end;
 }
 
@@ -41,7 +41,7 @@ nonterminal TypeEnvItem with name, isError;
 abstract production typeEnvItem
 top::TypeEnvItem ::= name::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isError = false;
 }
@@ -56,10 +56,10 @@ nonterminal ConstructorEnvItem with name, type, types, isError;
 abstract production constructorEnvItem
 top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.type = builtType;
-  top.types = args;
+  top.type = ^builtType;
+  top.types = ^args;
 
   top.isError = false;
 }
@@ -68,7 +68,7 @@ top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
 abstract production errorConstructorEnvItem
 top::ConstructorEnvItem ::= name::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.type = errorType(location=bogusLoc());
   top.types = nilTypeList(location=bogusLoc());

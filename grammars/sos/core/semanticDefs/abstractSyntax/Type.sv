@@ -18,7 +18,7 @@ occurs on Type;
 aspect production nameType
 top::Type ::= name::QName
 {
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   --assume all name types are extensible
@@ -46,13 +46,13 @@ top::Type ::= name::String index::Integer
 {
   top.pp = "<rigid ty var " ++ name ++ " " ++ toString(index) ++ ">";
 
-  top.substituted = top;
+  top.substituted = ^top;
 
   top.upSubst =
       case top.unifyWith of
       | rigidVarType(n, i) when n == name && i == index ->
         top.downSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
@@ -61,13 +61,13 @@ top::Type ::= name::String index::Integer
   top.freshen = error("Should not freshen with rigid vars");
   top.freshenSubst = top.freshenSubst_down;
 
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
   top.isPC = false;
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -80,7 +80,7 @@ top::Type ::= name::String index::Integer
 aspect production intType
 top::Type ::=
 {
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
@@ -91,7 +91,7 @@ top::Type ::=
 aspect production stringType
 top::Type ::=
 {
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
@@ -124,7 +124,7 @@ top::Type ::= ty::Type
 aspect production errorType
 top::Type ::=
 {
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   top.isExtensible = false;
@@ -144,7 +144,7 @@ top::Type ::= t::Type
 
   top.isPC = true;
 
-  forwards to t;
+  forwards to @t;
 }
 
 
@@ -159,7 +159,7 @@ occurs on TypeList;
 aspect production nilTypeList
 top::TypeList ::=
 {
-  top.rigidize = top;
+  top.rigidize = ^top;
   top.rigidizeSubst = emptySubst();
 
   top.pcIndex = error("pcIndex on nilTypeList");
@@ -171,7 +171,7 @@ aspect production consTypeList
 top::TypeList ::= t::Type rest::TypeList
 {
   local rigidizeSubstituted::TypeList =
-      performSubstitutionTypeList(rest, t.rigidizeSubst);
+      performSubstitutionTypeList(^rest, t.rigidizeSubst);
   top.rigidize =
       consTypeList(t.rigidize, rigidizeSubstituted.rigidize,
                    location=top.location);

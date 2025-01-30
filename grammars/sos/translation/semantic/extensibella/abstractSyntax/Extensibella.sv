@@ -23,7 +23,7 @@ top::ConstrDecl ::= name::String args::[ExtensibellaType]
                     produced::ExtensibellaType
 {
   top.pp = "Type " ++ name ++ "   " ++
-           foldr(extensibellaArrowTy, produced, args).pp ++ ".\n";
+           foldr(extensibellaArrowTy, ^produced, args).pp ++ ".\n";
 }
 
 
@@ -160,7 +160,7 @@ top::Metaterm ::=
   top.definedRel =
       error("trueMetaterm.definedRel should not be accessed");
 
-  top.replaced = top;
+  top.replaced = ^top;
 }
 
 
@@ -174,7 +174,7 @@ top::Metaterm ::=
   top.definedRel =
       error("falseMetaterm.definedRel should not be accessed");
 
-  top.replaced = top;
+  top.replaced = ^top;
 }
 
 
@@ -246,7 +246,7 @@ top::Metaterm ::= names::[String] body::Metaterm
   body.replaceVal = top.replaceVal;
   top.replaced =
       if contains(top.replaceVar, names)
-      then top
+      then ^top
       else existsMetaterm(names, body.replaced);
 }
 
@@ -298,7 +298,7 @@ top::ExtensibellaTerm ::= name::String
   top.replaced =
       if name == top.replaceVar
       then top.replaceVal
-      else top;
+      else ^top;
 }
 
 
@@ -324,7 +324,7 @@ top::ExtensibellaTerm ::=
 
   top.vars = [];
 
-  top.replaced = top;
+  top.replaced = ^top;
 }
 
 
@@ -339,8 +339,8 @@ ExtensibellaTerm ::= i::Integer
             nameExtensibellaTerm("$zero"), repeat("$succ", baseNum));
   return
      if i >= 0
-     then applicationExtensibellaTerm("$posInt", [numTrans])
-     else applicationExtensibellaTerm("$negSuccInt", [numTrans]);
+     then applicationExtensibellaTerm("$posInt", [^numTrans])
+     else applicationExtensibellaTerm("$negSuccInt", [^numTrans]);
 }
 
 function extensibellaStringTerm
@@ -538,7 +538,7 @@ function instantiateExtensibellaDefaultRules
   local defaultRule::Maybe<(Metaterm, [Metaterm], String)> =
       lookupBy(\ j1::JudgmentEnvItem j2::JudgmentEnvItem ->
                  j1.name == j2.name,
-               headJdg, ebDefaultRules);
+               ^headJdg, ebDefaultRules);
   local conc::Metaterm = defaultRule.fromJust.1;
   local prems::[Metaterm] = defaultRule.fromJust.2;
   local pc::String = defaultRule.fromJust.3;
@@ -554,7 +554,7 @@ function instantiateExtensibellaDefaultRules
        case defaultRule of
        | just(_) ->
          instantiateExtensibellaDefaultRules_help(
-            newConstrs, conc, prems, pc, pcless_vars)
+            newConstrs, ^conc, prems, pc, pcless_vars)
        | nothing() -> [] --if PC type is new, no default rule
        end ++
        instantiateExtensibellaDefaultRules(rest, ebDefaultRules)
@@ -580,32 +580,32 @@ function instantiateExtensibellaDefaultRules_help
          map(varExtensibellaTerm, childNames));
   --build new rule
   local newConc::Metaterm =
-      decorate conc with {
+      decorate @conc with {
          replaceVar = pc;
-         replaceVal = tm;
+         replaceVal = ^tm;
       }.replaced;
   local newPrems::[Metaterm] =
       map(\ m::Metaterm ->
             decorate m with {
                replaceVar = pc;
-               replaceVal = tm;
+               replaceVal = ^tm;
             }.replaced, prems);
   local newPremVars::[String] =
       removeAll(newConc.vars,
          unions(map((.vars), newPrems)));
   local finalDef::Def =
       if null(newPrems)
-      then factDef(newConc)
+      then factDef(@newConc)
       else if null(newPremVars)
-      then ruleDef(newConc, foldr1(andMetaterm, newPrems))
-      else ruleDef(newConc, existsMetaterm(newPremVars,
-                               foldr1(andMetaterm, newPrems)));
+      then ruleDef(@newConc, foldr1(andMetaterm, newPrems))
+      else ruleDef(@newConc, existsMetaterm(newPremVars,
+                                foldr1(andMetaterm, newPrems)));
   --walk through all constructors
   return case constrs of
          | [] -> []
          | _::rest ->
-           finalDef::instantiateExtensibellaDefaultRules_help(
-                        rest, conc, prems, pc, pcless_vars)
+           ^finalDef::instantiateExtensibellaDefaultRules_help(
+                        rest, ^conc, prems, pc, pcless_vars)
          end;
 }
 

@@ -16,7 +16,7 @@ aspect production baseName
 top::QName ::= name::String
 {
   production attribute possibleConcretes::[ConcreteEnvItem];
-  possibleConcretes = lookupEnv(top, top.concreteEnv);
+  possibleConcretes = lookupEnv(^top, top.concreteEnv);
   top.concreteErrors =
       case possibleConcretes of
       | [] -> [errorMessage("Unknown terminal or concrete " ++
@@ -40,7 +40,7 @@ aspect production moduleLayerName
 top::QName ::= name::String rest::QName
 {
   production attribute possibleConcretes::[ConcreteEnvItem];
-  possibleConcretes = lookupEnv(top, top.concreteEnv);
+  possibleConcretes = lookupEnv(^top, top.concreteEnv);
   top.concreteErrors =
       case possibleConcretes of
       | [] -> [errorMessage("Unknown terminal or concrete " ++

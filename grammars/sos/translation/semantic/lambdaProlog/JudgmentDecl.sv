@@ -38,7 +38,7 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   top.lpDecls =
       [typeDeclaration(fullTyName.lpProjectionName,
           foldr(arrowLPType, oLPType(),
-                args.types.lp ++ [projTy, projTy]))];
+                args.types.lp ++ [^projTy, ^projTy]))];
 }
 
 

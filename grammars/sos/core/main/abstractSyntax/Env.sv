@@ -6,9 +6,9 @@ nonterminal FunctionEnvItem with
 abstract production functionEnvItem
 top::FunctionEnvItem ::= name::QName args::TypeList retTy::Type
 {
-  top.name = name;
-  top.types = args;
-  top.type = retTy;
+  top.name = ^name;
+  top.types = ^args;
+  top.type = ^retTy;
 
   top.isError = false;
 }
@@ -17,7 +17,7 @@ top::FunctionEnvItem ::= name::QName args::TypeList retTy::Type
 abstract production errorFunctionEnvItem
 top::FunctionEnvItem ::= name::QName
 {
-  top.name = name;
+  top.name = ^name;
   top.types = error("errorFunctionEnvItem.types");
   top.type = error("errorFunctionEnvItem.type");
 

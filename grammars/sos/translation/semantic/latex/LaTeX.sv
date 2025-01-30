@@ -34,7 +34,7 @@ abstract production addLaTeXTermList
 top::LaTeXTermList ::= t::LaTeXTerm rest::LaTeXTermList
 {
   top.ppLaTeX = "{" ++ t.ppLaTeX ++ "}" ++ rest.ppLaTeX;
-  top.toList = t::rest.toList;
+  top.toList = ^t::rest.toList;
 }
 
 
@@ -195,7 +195,7 @@ aspect production extJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList pcIndex::Integer
 {
   --\newcommand{\rel}[n]{name(#1, #2, ... #n)}
-  top.ppLaTeX = "\\newcommand{\\" ++ relMacro(name) ++ "}" ++
+  top.ppLaTeX = "\\newcommand{\\" ++ relMacro(^name) ++ "}" ++
                 "[" ++ toString(args.len) ++ "]" ++
                 "{" ++ base ++ argsString ++ "}";
   local argsString::String =
@@ -211,7 +211,7 @@ aspect production fixedJudgmentEnvItem
 top::JudgmentEnvItem ::= name::QName args::TypeList
 {
   --\newcommand{\rel}[n]{name(#1, #2, ... #n)}
-  top.ppLaTeX = "\\newcommand{\\" ++ relMacro(name) ++ "}" ++
+  top.ppLaTeX = "\\newcommand{\\" ++ relMacro(^name) ++ "}" ++
                 "[" ++ toString(args.len) ++ "]" ++
                 "{" ++ base ++ argsString ++ "}";
   local argsString::String =
@@ -235,7 +235,7 @@ aspect production projectionEnvItem
 top::ProjectionEnvItem ::= name::QName args::TypeList
 {
   --\newcommand{\rel}[n + 2]{#1, #2, ... #n |- #n+1 ~~> #n+2}
-  top.ppLaTeX = "\\newcommand{\\" ++ projMacro(name) ++ "}" ++
+  top.ppLaTeX = "\\newcommand{\\" ++ projMacro(^name) ++ "}" ++
                 "[" ++ toString(args.len + 2) ++ "]" ++
                 "{\\ensuremath{" ++ argsString ++
                 " \\vdash_{" ++ base ++ "} " ++
@@ -256,7 +256,7 @@ aspect production constructorEnvItem
 top::ConstructorEnvItem ::= name::QName builtType::Type args::TypeList
 {
   --\newcommand{\constructor}[n]{name(#1, #2, ... #n)}
-  top.ppLaTeX = "\\newcommand{\\" ++ constrMacro(name) ++ "}" ++
+  top.ppLaTeX = "\\newcommand{\\" ++ constrMacro(^name) ++ "}" ++
                 "[" ++ toString(args.len) ++ "]" ++
                 "{" ++ base ++ argsString ++ "}";
   local argsString::String =

@@ -94,7 +94,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 
@@ -113,7 +113,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 

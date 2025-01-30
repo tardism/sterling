@@ -11,7 +11,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.lpRules =
       if null(premises.lp)
       then [factLambdaPrologRule(conclusion.lpTerm)]
-      else [ruleLambdaPrologRule(conclusion.lpTerm, p)];
+      else [ruleLambdaPrologRule(conclusion.lpTerm, ^p)];
 
   top.lpDefaultRules = [];
 }
@@ -39,7 +39,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.lpRules =
       if null(premises.lp)
       then [factLambdaPrologRule(conclusion.lpTerm)]
-      else [ruleLambdaPrologRule(conclusion.lpTerm, p)];
+      else [ruleLambdaPrologRule(conclusion.lpTerm, ^p)];
 
   top.lpDefaultRules = [];
 }

@@ -16,7 +16,7 @@ aspect production baseName
 top::QName ::= name::String
 {
   production attribute possibleJudgments::[JudgmentEnvItem];
-  possibleJudgments = lookupEnv(top, top.judgmentEnv);
+  possibleJudgments = lookupEnv(^top, top.judgmentEnv);
   top.judgmentErrors =
       case possibleJudgments of
       | [] -> [errorMessage("Unknown judgment " ++ top.pp,
@@ -33,7 +33,7 @@ top::QName ::= name::String
   top.fullJudgment =
       if top.judgmentFound
       then head(possibleJudgments)
-      else errorJudgmentEnvItem(top,
+      else errorJudgmentEnvItem(^top,
               nilTypeList(location=top.location));
 }
 
@@ -42,7 +42,7 @@ aspect production moduleLayerName
 top::QName ::= name::String rest::QName
 {
   production attribute possibleJudgments::[JudgmentEnvItem];
-  possibleJudgments = lookupEnv(top, top.judgmentEnv);
+  possibleJudgments = lookupEnv(^top, top.judgmentEnv);
   top.judgmentErrors =
       case possibleJudgments of
       | [] -> [errorMessage("Unknown judgment " ++ top.pp,

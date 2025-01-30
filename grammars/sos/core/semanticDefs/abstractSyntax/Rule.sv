@@ -30,10 +30,10 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
-      then [extRuleEnvItem(fullName, conclusion.headRel.name, false)]
+      then [extRuleEnvItem(^fullName, conclusion.headRel.name, false)]
       else if conclusion.isProjJudgment
-      then [projectionRuleEnvItem(fullName, conclusion.projType)]
-      else [errorRuleEnvItem(fullName, false)];
+      then [projectionRuleEnvItem(^fullName, conclusion.projType)]
+      else [errorRuleEnvItem(^fullName, false)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -84,7 +84,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 
   --Check there is only one declaration of this rule
   local possibleRules::[RuleEnvItem] =
-        lookupEnv(fullName, top.ruleEnv);
+        lookupEnv(^fullName, top.ruleEnv);
   top.errors <-
       case possibleRules of
       | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
@@ -114,8 +114,8 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
-      then [extRuleEnvItem(fullName, conclusion.headRel.name, true)]
-      else [errorRuleEnvItem(fullName, true)];
+      then [extRuleEnvItem(^fullName, conclusion.headRel.name, true)]
+      else [errorRuleEnvItem(^fullName, true)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -167,7 +167,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 
   --Check there is only one declaration of this rule
   local possibleRules::[RuleEnvItem] =
-        lookupEnv(fullName, top.ruleEnv);
+        lookupEnv(^fullName, top.ruleEnv);
   top.errors <-
       case possibleRules of
       | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
@@ -198,8 +198,8 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   top.projectionDecls = [];
   top.ruleDecls =
       if conclusion.isRelJudgment
-      then [fixedRuleEnvItem(fullName, conclusion.headRel.name)]
-      else [errorRuleEnvItem(fullName, false)];
+      then [fixedRuleEnvItem(^fullName, conclusion.headRel.name)]
+      else [errorRuleEnvItem(^fullName, false)];
 
   premises.tyEnv = top.tyEnv;
   premises.constructorEnv = top.constructorEnv;
@@ -240,7 +240,7 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 
   --Check there is only one declaration of this rule
   local possibleRules::[RuleEnvItem] =
-        lookupEnv(fullName, top.ruleEnv);
+        lookupEnv(^fullName, top.ruleEnv);
   top.errors <-
       case possibleRules of
       | [] -> error("Impossible:  Rule " ++ fullName.pp ++ " must " ++
@@ -287,7 +287,7 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   j.moduleName = top.moduleName;
   rest.moduleName = top.moduleName;
 
-  top.toList = j::rest.toList;
+  top.toList = ^j::rest.toList;
 
   j.tyEnv = top.tyEnv;
   j.constructorEnv = top.constructorEnv;

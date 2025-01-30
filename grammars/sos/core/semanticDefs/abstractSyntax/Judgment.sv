@@ -46,12 +46,12 @@ top::Judgment ::= rel::QName args::TermList
       else freshenTypeList(rel.judgmentType);
   args.expectedTypes =
        if rel.judgmentFound
-       then just(freshened)
+       then just(^freshened)
        else nothing();
   args.lastConstructor =
        if rel.judgmentFound
        then rel.fullJudgment.name
-       else rel;
+       else ^rel;
   args.downSubst = top.downSubst;
   top.upSubst = args.upSubst;
   args.finalSubst = top.finalSubst;
@@ -109,7 +109,7 @@ top::Judgment ::= rel::QName args::TermList
   args.lastConstructor =
        if rel.judgmentFound
        then rel.fullJudgment.name
-       else rel;
+       else ^rel;
   args.downSubst = top.downSubst;
   top.upSubst = args.upSubst;
   args.finalSubst = top.finalSubst;
@@ -178,7 +178,7 @@ top::Judgment ::= args::TermList ty::QName t::Term projection::Term
        if ty.tyFound
        then case ty.fullTy of
             | nameType(name)
-              when lookupEnv(name, top.projectionEnv)
+              when lookupEnv(^name, top.projectionEnv)
                    matches [tenvi] ->
               just(tenvi.types)
             | _ -> nothing()
@@ -206,10 +206,10 @@ top::Judgment ::= args::TermList ty::QName t::Term projection::Term
   top.isProjJudgment = true;
   top.projType = if ty.tyFound
                  then case ty.fullTy of
-                      | nameType(name) -> name
-                      | _ -> ty
+                      | nameType(name) -> ^name
+                      | _ -> ^ty
                       end
-                 else ty;
+                 else ^ty;
 
   top.projRuleConstructors = [t.headConstructor];
 

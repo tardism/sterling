@@ -14,7 +14,7 @@ top::ConcreteFile ::= moduleName::QName decls::ConcreteDecls
 {
   top.pp = "Module " ++ moduleName.pp ++ "\n\n" ++ decls.pp;
 
-  decls.moduleName = moduleName;
+  decls.moduleName = ^moduleName;
 
   top.errors <-
       if moduleName.pp == top.moduleName.pp

@@ -7,7 +7,7 @@ occurs on JudgmentDecl;
 aspect production extJudgmentDecl
 top::JudgmentDecl ::= name::String ty::TypeList
 {
-  local fullNameCopy::QName = fullName;
+  local fullNameCopy::QName = ^fullName;
   fullNameCopy.judgmentEnv = top.judgmentEnv;
   top.ebJudgments = [(fullNameCopy.ebJudgmentName, ty.eb)];
 }
@@ -16,7 +16,7 @@ top::JudgmentDecl ::= name::String ty::TypeList
 aspect production fixedJudgmentDecl
 top::JudgmentDecl ::= name::String ty::TypeList
 {
-  local fullNameCopy::QName = fullName;
+  local fullNameCopy::QName = ^fullName;
   fullNameCopy.judgmentEnv = top.judgmentEnv;
   top.ebJudgments = [(fullNameCopy.ebJudgmentName, ty.eb)];
 }
@@ -39,7 +39,7 @@ top::JudgmentDecl ::= tyname::String args::TypeList
   local ty::ExtensibellaType =
       extensibellaNameTy(fullTyName.ebTypeName);
   top.ebJudgments =
-      [(fullTyName.ebProjectionName, args.eb ++ [ty, ty])];
+      [(fullTyName.ebProjectionName, args.eb ++ [^ty, ^ty])];
 }
 
 

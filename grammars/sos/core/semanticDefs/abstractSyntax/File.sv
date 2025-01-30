@@ -82,7 +82,7 @@ top::Decls ::= importName::QName
   top.judgmentDecls = [];
   top.projectionDecls = [];
   top.ruleDecls = [];
-  top.buildsOnDecls = [importName];
+  top.buildsOnDecls = [^importName];
   top.projRuleConstructors = [];
 }
 

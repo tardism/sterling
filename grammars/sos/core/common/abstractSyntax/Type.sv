@@ -36,26 +36,26 @@ attribute compareTo, isEqual occurs on Type;
 abstract production nameType
 top::Type ::= name::QName
 {
-  top.substituted = nameType(name, location=top.location);
+  top.substituted = nameType(^name, location=top.location);
 
   top.upSubst =
       case top.unifyWith of
-      | nameType(n) when n == name -> top.downSubst
+      | nameType(n) when ^n == ^name -> top.downSubst
       | nameType(n) ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
       end;
 
-  top.freshen = nameType(name, location=top.location);
+  top.freshen = nameType(^name, location=top.location);
   top.freshenSubst = top.freshenSubst_down;
 
   top.pp = name.pp;
 
-  top.name = name;
+  top.name = ^name;
 
   name.tyEnv = top.tyEnv;
   top.errors <- name.tyErrors;
@@ -68,7 +68,7 @@ top::Type ::= name::QName
 
   top.isEqual =
       case top.compareTo of
-      | nameType(x) -> x == name
+      | nameType(x) -> ^x == ^name
       | errorType() -> true
       | _ -> false
       end;
@@ -107,7 +107,7 @@ top::Type ::= name::String
   top.freshenSubst =
       addSubst(name, top.freshen, top.freshenSubst_down);
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -129,7 +129,7 @@ top::Type ::=
   top.upSubst =
       case top.unifyWith of
       | intType() -> top.downSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
@@ -138,7 +138,7 @@ top::Type ::=
   top.freshen = intType(location=top.location);
   top.freshenSubst = top.freshenSubst_down;
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -164,7 +164,7 @@ top::Type ::=
   top.upSubst =
       case top.unifyWith of
       | stringType() -> top.downSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
@@ -173,7 +173,7 @@ top::Type ::=
   top.freshen = stringType(location=top.location);
   top.freshenSubst = top.freshenSubst_down;
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = false;
 
@@ -199,7 +199,7 @@ top::Type ::= ty::Type
   top.upSubst =
       case top.unifyWith of
       | listType(ty2) -> ty.upSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
@@ -222,7 +222,7 @@ top::Type ::= ty::Type
   ty.unifyLoc = top.unifyLoc;
   ty.unifyWith =
       case top.unifyWith of
-      | listType(ty2) -> ty2
+      | listType(ty2) -> ^ty2
       | _ -> error("Should not access")
       end;
 
@@ -253,13 +253,13 @@ top::Type ::= tys::TypeList
   tys.unifyLoc = top.unifyLoc;
   tys.unifyWith =
       case top.unifyWith of
-      | tupleType(t2) -> t2
+      | tupleType(t2) -> ^t2
       | _ -> error("Should not access")
       end;
   top.upSubst =
       case top.unifyWith of
       | tupleType(t2) -> tys.upSubst
-      | varType(v) -> addSubst(v, top, top.downSubst)
+      | varType(v) -> addSubst(v, ^top, top.downSubst)
       | _ ->
         addErrSubst("Cannot unify " ++ top.unifyWith.pp ++ " and " ++
                     top.pp, top.unifyLoc, top.downSubst)
@@ -303,7 +303,7 @@ top::Type ::=
   top.freshen = errorType(location=top.location);
   top.freshenSubst = top.freshenSubst_down;
 
-  top.type = top;
+  top.type = ^top;
 
   top.isError = true;
 
@@ -377,7 +377,7 @@ top::TypeList ::= t::Type rest::TypeList
   t.tyEnv = top.tyEnv;
   rest.tyEnv = top.tyEnv;
 
-  top.toList = t::rest.toList;
+  top.toList = ^t::rest.toList;
   top.len = 1 + rest.len;
 
   t.subst = top.subst;
@@ -400,14 +400,14 @@ top::TypeList ::= t::Type rest::TypeList
   t.unifyLoc = top.unifyLoc;
   t.unifyWith =
       case top.unifyWith of
-      | consTypeList(x, _) -> x
+      | consTypeList(x, _) -> ^x
       | _ -> error("Should not access")
       end;
   rest.downSubst = t.upSubst;
   rest.unifyLoc = top.unifyLoc;
   rest.unifyWith =
       case top.unifyWith of
-      | consTypeList(_, x) -> x
+      | consTypeList(_, x) -> ^x
       | _ -> error("Sholud not access")
       end;
   top.upSubst =
@@ -468,12 +468,12 @@ Substitution ::= varName::String ty::Type base::Substitution
      case base of
      | left(err) -> left(err)
      | right(lst) ->
-       right((varName, ty)::
+       right((varName, ^ty)::
           --replace any occurrences of varName with ty in base
           map(\ p::(String, Type) ->
                 (p.1,
                  performSubstitutionType(p.2,
-                    right([(varName, ty)]))),
+                    right([(varName, ^ty)]))),
               lst))
      end;
 }
@@ -553,10 +553,10 @@ nonterminal TypeUnify with upSubst, downSubst, finalSubst, location;
 abstract production typeUnify
 top::TypeUnify ::= ty1::Type ty2::Type
 {
-  local substTy1::Type = performSubstitutionType(ty1, top.downSubst);
-  local substTy2::Type = performSubstitutionType(ty2, top.downSubst);
+  local substTy1::Type = performSubstitutionType(^ty1, top.downSubst);
+  local substTy2::Type = performSubstitutionType(^ty2, top.downSubst);
   substTy1.unifyLoc = top.location;
-  substTy1.unifyWith = substTy2;
+  substTy1.unifyWith = ^substTy2;
   substTy1.downSubst = top.downSubst;
   top.upSubst = substTy1.upSubst;
 }

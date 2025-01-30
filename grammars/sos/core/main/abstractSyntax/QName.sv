@@ -15,7 +15,7 @@ aspect production baseName
 top::QName ::= name::String
 {
   production attribute possibleFunctions::[FunctionEnvItem];
-  possibleFunctions = lookupEnv(top, top.funEnv);
+  possibleFunctions = lookupEnv(^top, top.funEnv);
   top.functionErrors =
       case possibleFunctions of
       | [] -> [errorMessage("Unknown function " ++ top.pp,
@@ -33,7 +33,7 @@ top::QName ::= name::String
   top.fullFunction =
       if top.functionFound
       then head(possibleFunctions)
-      else errorFunctionEnvItem(top);
+      else errorFunctionEnvItem(^top);
 }
 
 
@@ -41,7 +41,7 @@ aspect production moduleLayerName
 top::QName ::= name::String rest::QName
 {
   production attribute possibleFunctions::[FunctionEnvItem];
-  possibleFunctions = lookupEnv(top, top.funEnv);
+  possibleFunctions = lookupEnv(^top, top.funEnv);
   top.functionErrors =
       case possibleFunctions of
       | [] -> [errorMessage("Unknown function " ++ top.pp,
@@ -59,5 +59,5 @@ top::QName ::= name::String rest::QName
   top.fullFunction =
       if top.functionFound
       then head(possibleFunctions)
-      else errorFunctionEnvItem(top);
+      else errorFunctionEnvItem(^top);
 }

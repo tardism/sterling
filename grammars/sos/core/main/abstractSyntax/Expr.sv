@@ -41,7 +41,7 @@ top::Expr ::= names::[String] e1::Expr e2::Expr
   local unify::TypeUnify =
       case names of
       | [_] -> blankUnify(location=e1.location)
-      | _ -> typeUnify(e1.type, namesTy, location=top.location)
+      | _ -> typeUnify(e1.type, @namesTy, location=top.location)
       end;
   e1.downSubst = top.downSubst;
   e2.downSubst = e1.upSubst;
@@ -709,7 +709,7 @@ top::Expr ::= fun::QName args::Args
       if fun.functionFound
       then just(fun.functionArgTypes)
       else nothing();
-  args.lastFun = fun;
+  args.lastFun = ^fun;
   args.downVarTypes = top.downVarTypes;
 
   args.downSubst = top.downSubst;
@@ -747,12 +747,12 @@ top::Expr ::= l::Expr i::Expr
   local varty::Type =
       varType("X" ++ toString(genInt()), location=top.location);
   local unifyList::TypeUnify =
-      typeUnify(listType(varty, location=top.location), l.type,
+      typeUnify(listType(@varty, location=top.location), l.type,
                 location=top.location);
   local unifyInt::TypeUnify =
       typeUnify(intType(location=top.location), i.type,
                 location=top.location);
-  top.type = varty;
+  top.type = ^varty;
 
   l.downSubst = top.downSubst;
   i.downSubst = l.upSubst;
@@ -819,7 +819,7 @@ top::Args ::= e::Expr rest::Args
   local unify::TypeUnify =
       case top.expectedTypes of
       | just(consTypeList(ty, _)) ->
-        typeUnify(e.type, ty, location=e.location)
+        typeUnify(e.type, ^ty, location=e.location)
       | _ -> blankUnify(location=e.location)
       end;
   e.downSubst = top.downSubst;
@@ -829,7 +829,7 @@ top::Args ::= e::Expr rest::Args
 
   rest.expectedTypes =
       case top.expectedTypes of
-      | just(consTypeList(_, l)) -> just(l)
+      | just(consTypeList(_, l)) -> just(^l)
       | _ -> nothing()
       end;
   top.errors <-

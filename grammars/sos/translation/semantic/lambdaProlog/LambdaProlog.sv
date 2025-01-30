@@ -115,7 +115,7 @@ top::LambdaPrologTerm ::= name::String
   top.isAtomic = true;
   top.isApp = false;
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.vars = [];
 }
@@ -153,7 +153,7 @@ top::LambdaPrologTerm ::= name::String
   top.replaced =
       if top.replaceVar == name
       then top.replaceVal
-      else top;
+      else ^top;
 
   top.vars = [name];
 }
@@ -166,7 +166,7 @@ top::LambdaPrologTerm ::= i::Integer
   top.isAtomic = true;
   top.isApp = false;
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.vars = [];
 }
@@ -179,7 +179,7 @@ top::LambdaPrologTerm ::= text::String
   top.isAtomic = true;
   top.isApp = false;
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.vars = [];
 }
@@ -196,7 +196,7 @@ top::LambdaPrologTerm ::= var::String body::LambdaPrologTerm
   body.replaceVal = top.replaceVal;
   top.replaced =
       if var == top.replaceVar
-      then top
+      then ^top
       else abstractionLambdaPrologTerm(var, body.replaced);
 
   top.vars = remove(var, body.vars);
@@ -264,7 +264,7 @@ top::LambdaPrologFormula ::=
   top.pp = "fail";
   top.isAtomic = true;
 
-  top.replaced = top;
+  top.replaced = ^top;
 
   top.vars = [];
 }
@@ -365,7 +365,7 @@ top::LambdaPrologFormula ::= t1::LambdaPrologTerm op::LambdaPrologBinOp
   t1.replaceVal = top.replaceVal;
   t2.replaceVar = top.replaceVar;
   t2.replaceVal = top.replaceVal;
-  top.replaced = binOpLambdaPrologFormula(t1.replaced, op, t2.replaced);
+  top.replaced = binOpLambdaPrologFormula(t1.replaced, ^op, t2.replaced);
 
   top.vars = union(t1.vars, t2.vars);
 }
@@ -385,7 +385,7 @@ top::LambdaPrologFormula ::= t1::LambdaPrologTerm op::LambdaPrologIsBinOp
   result.replaceVar = top.replaceVar;
   result.replaceVal = top.replaceVal;
   top.replaced =
-      isLambdaPrologFormula(t1.replaced, op, t2.replaced, result.replaced);
+      isLambdaPrologFormula(t1.replaced, ^op, t2.replaced, result.replaced);
 
   top.vars = union(t1.vars, union(t2.vars, result.vars));
 }

@@ -18,7 +18,7 @@ top::ConcreteEnvItem ::= r::Regex
 abstract production useTerminalEnvItem
 top::ConcreteEnvItem ::= name::QName r::Regex
 {
-  top.name = name;
+  top.name = ^name;
 
   --regular terminals produce strings
   top.type = stringType(location=bogusLoc());
@@ -30,9 +30,9 @@ top::ConcreteEnvItem ::= name::QName r::Regex
 abstract production concreteNT
 top::ConcreteEnvItem ::= name::QName ty::Type
 {
-  top.name = name;
+  top.name = ^name;
 
-  top.type = ty;
+  top.type = ^ty;
 
   top.isConcreteNt = true;
 }
@@ -41,7 +41,7 @@ top::ConcreteEnvItem ::= name::QName ty::Type
 abstract production errorConcreteNT
 top::ConcreteEnvItem ::= name::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.type = errorType(location=bogusLoc());
 

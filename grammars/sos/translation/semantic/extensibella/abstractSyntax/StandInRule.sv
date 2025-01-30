@@ -20,7 +20,7 @@ top::Decls ::= r::Rule
         if conc.isRelJudgment
         then case r.ruleDecls of
              | [extRuleEnvItem(fullName, _, _)] ->
-               [standInRuleEnvItem(fullName, conc.headRel.name)]
+               [standInRuleEnvItem(^fullName, conc.headRel.name)]
              | _ -> [] --impossible without error
              end
         else []
@@ -81,16 +81,16 @@ top::Decls ::= r::Rule
 abstract production standInRuleEnvItem
 top::RuleEnvItem ::= name::QName definedRel::QName
 {
-  top.name = name;
+  top.name = ^name;
 
   top.isExtensible = true;
 
   top.isError = false;
 
-  top.definedRel = definedRel;
+  top.definedRel = ^definedRel;
 
   top.isDefaultRule = false;
 
   --is it a projection/default rule?  sort of
-  forwards to extRuleEnvItem(name, definedRel, true);
+  forwards to extRuleEnvItem(@name, @definedRel, true);
 }

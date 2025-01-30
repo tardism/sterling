@@ -96,11 +96,11 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
   body.finalSubst = body.upSubst;
 
   production fullName::QName = addQNameBase(top.moduleName, name);
-  top.funDecls = [functionEnvItem(fullName, params.types, retTy)];
+  top.funDecls = [functionEnvItem(^fullName, params.types, ^retTy)];
 
   --Check there is only one declaration of this function
   local possibleFunctions::[FunctionEnvItem] =
-      lookupEnv(fullName, top.funEnv);
+      lookupEnv(^fullName, top.funEnv);
   top.errors <-
       case possibleFunctions of
       | [] -> error("Impossible:  Function " ++ fullName.pp ++
@@ -112,7 +112,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
       end;
   --Check the return type
   top.errors <-
-      if performSubstitutionType(body.type, body.upSubst) == retTy
+      if performSubstitutionType(body.type, body.upSubst) == ^retTy
       then []
       else [errorMessage("Expected function body to have type " ++
                retTy.pp ++ " but found " ++ body.type.pp,
@@ -126,7 +126,7 @@ top::FunDecl ::= name::String params::Params retTy::Type body::Expr
                                 "argument of type [string]",
                                 location=top.location)]
            end ++
-           if retTy == intType(location=top.location)
+           if ^retTy == intType(location=top.location)
            then []
            else [errorMessage("Main function must return int",
                               location=top.location)]
@@ -187,10 +187,10 @@ top::Params ::= name::String ty::Type
 {
   top.pp = "<" ++ name ++ " : " ++ ty.pp ++ ">";
 
-  top.toList = [(name, ty)];
+  top.toList = [(name, ^ty)];
   top.len = 1;
 
-  top.upVarTypes = [(name, ty)];
-  top.types = consTypeList(ty, nilTypeList(location=top.location),
+  top.upVarTypes = [(name, ^ty)];
+  top.types = consTypeList(^ty, nilTypeList(location=top.location),
                            location=top.location);
 }

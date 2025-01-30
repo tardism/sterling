@@ -125,7 +125,7 @@ IOVal<Integer> ::=
   local pre::IOToken =
       printT("\n---------------------------------------\n\n", ioin);
   local runAct::IOVal<Integer> =
-      act.runFun(mods, genLoc, grmmrsLoc, a, pre);
+      act.runFun(^mods, genLoc, grmmrsLoc, a, pre);
 
   return
       case actions of
@@ -133,8 +133,8 @@ IOVal<Integer> ::=
       | _::tl when act.shouldDoFun(a) ->
         if runAct.iovalue != 0 --error in this action
         then runAct
-        else runActions(tl, mods, genLoc, grmmrsLoc, a, runAct.io)
-      | _::tl -> runActions(tl, mods, genLoc, grmmrsLoc, a, ioin)
+        else runActions(tl, ^mods, genLoc, grmmrsLoc, a, runAct.io)
+      | _::tl -> runActions(tl, ^mods, genLoc, grmmrsLoc, a, ioin)
       end;
 }
 
@@ -233,7 +233,7 @@ top::CmdArgs ::= loc::String rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 
@@ -252,7 +252,7 @@ top::CmdArgs ::= filename::String rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 
@@ -271,7 +271,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.concTranslations = rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 

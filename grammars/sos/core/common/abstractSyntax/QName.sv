@@ -55,7 +55,7 @@ top::QName ::= name::String
   top.isQualified = false;
 
   production attribute possibleTys::[TypeEnvItem];
-  possibleTys = lookupEnv(top, top.tyEnv);
+  possibleTys = lookupEnv(^top, top.tyEnv);
   top.tyErrors =
       case possibleTys of
       | [] -> [errorMessage("Unknown type " ++ top.pp,
@@ -74,7 +74,7 @@ top::QName ::= name::String
       else errorType(location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
-  possibleCons = lookupEnv(top, top.constructorEnv);
+  possibleCons = lookupEnv(^top, top.constructorEnv);
   top.constrErrors =
       case possibleCons of
       | [] -> [errorMessage("Unknown constructor " ++ top.pp,
@@ -112,7 +112,7 @@ top::QName ::= name::String rest::QName
   top.isQualified = true;
 
   production attribute possibleTys::[TypeEnvItem];
-  possibleTys = lookupEnv(top, top.tyEnv);
+  possibleTys = lookupEnv(^top, top.tyEnv);
   top.tyErrors =
       case possibleTys of
       | [] -> [errorMessage("Unknown type " ++ top.pp,
@@ -131,7 +131,7 @@ top::QName ::= name::String rest::QName
       else errorType(location=top.location);
 
   production attribute possibleCons::[ConstructorEnvItem];
-  possibleCons = lookupEnv(top, top.constructorEnv);
+  possibleCons = lookupEnv(^top, top.constructorEnv);
   top.constrErrors =
       case possibleCons of
       | [] -> [errorMessage("Unknown constructor " ++ top.pp,
@@ -189,6 +189,6 @@ Boolean ::= moduleName::QName identifier::QName
   return if !identifier.isQualified
          then error("Identifier must be qualified (" ++
                     identifier.pp ++ ")")
-         else addQNameBase(moduleName, identifier.base) == identifier;
+         else addQNameBase(^moduleName, identifier.base) == ^identifier;
 }
 

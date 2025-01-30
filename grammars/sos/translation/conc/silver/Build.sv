@@ -201,7 +201,7 @@ top::CmdArgs ::= rest::CmdArgs
   top.concTranslations = "Silver"::rest.concTranslations;
   top.semTranslations = rest.semTranslations;
 
-  forwards to rest;
+  forwards to @rest;
 }
 
 
