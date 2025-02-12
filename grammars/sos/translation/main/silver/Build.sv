@@ -112,14 +112,14 @@ IOVal<Integer> ::= genLoc::String grmmrsLoc::String a::Decorated CmdArgs
     "   local deriveConfig__::DeriveConfig = startD.iovalue;\n" ++
     "   local parseFun__::(IOVal<Either<String Term>> ::= " ++
                              "String String IOToken) = " ++
-           "parse(parserConfig__, _, _, _);\n" ++
+           "parse(^parserConfig__, _, _, _);\n" ++
     "   local deriveFun__::(IOVal<Maybe<[(String, Term)]>> ::= " ++
                        "Judgment [(String, Term)] IOToken) = " ++
            "derive(deriveConfig__, _, _, _);\n" ++
     "   local run::IOVal<Integer> = " ++
           "silverMain:" ++ module ++ ":" ++ funName("main") ++
              "(args, parseFun__, deriveFun__, startD.io);\n" ++
-    "   local endP::IOToken = end_parse(parserConfig__, run.io);\n" ++
+    "   local endP::IOToken = end_parse(^parserConfig__, run.io);\n" ++
     "   local endD::IOToken = end_derive(deriveConfig__, endP);\n" ++
     "   return ioval(endD, run.iovalue);\n" ++
     "}";
