@@ -72,7 +72,7 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
   local initFunction::String =
       "function init_derive\nIOVal<DeriveConfig> ::= " ++
                        "ioin::IOToken\n{\n" ++
-      "   return spawnProcess(\"swipl\", [\"" ++ prologFile ++
+      "   return spawnProcess(\"strace\", [\"-o\", \"/tmp/whatever.strace\", \"-s\", \"4096\", \"swipl\",\"" ++ prologFile ++
                                            "\"], ioin);\n}";
 
   --derive function

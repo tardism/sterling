@@ -44,7 +44,7 @@ top::Decls ::= err::String decls::Decls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }
 
 
@@ -83,7 +83,7 @@ top::Decls ::= wrn::String decls::Decls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }
 
 
@@ -124,7 +124,7 @@ top::ConcreteDecls ::= err::String decls::ConcreteDecls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }
 
 
@@ -159,7 +159,7 @@ top::ConcreteDecls ::= wrn::String decls::ConcreteDecls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }
 
 
@@ -203,7 +203,7 @@ top::MainDecls ::= err::String decls::MainDecls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }
 
 
@@ -241,5 +241,5 @@ top::MainDecls ::= wrn::String decls::MainDecls
   --Anything else goes straight into the errors
   top.errors <- parts.2;
 
-  forwards to decls;
+  forwards to ^decls;
 }

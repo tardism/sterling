@@ -275,7 +275,7 @@ top::PrologBinOp ::= --   =:=
 abstract production neqPrologBinOp
 top::PrologBinOp ::= --   =\=
 {
-  top.pp = " =\\= ";
+  top.pp = " \\= ";
 }
 
 
