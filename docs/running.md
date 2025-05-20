@@ -17,7 +17,7 @@ By default, Sterling looks for modules in the current directory.  For
 example, if the current directory is `dir` and we have a directory
 `dir/mo/du/le/`, running
 ```
-storling mo:du:le
+sterling mo:du:le
 ```
 will find and check the contents of the `dir/mo/du/le/` directory.
 However, we often want to run Sterling from a different directory.  If
