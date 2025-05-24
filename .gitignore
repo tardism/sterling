@@ -43,3 +43,6 @@ build.xml
 
 # Generated directory
 generated/
+
+*.py
+*.txt
