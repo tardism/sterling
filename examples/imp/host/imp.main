@@ -1,0 +1,41 @@
+Module imp:host
+
+Function main : <Args : [string]> -> int {
+   run(Args)
+}
+
+
+Function run : <Files : [string]> -> int {
+   If null(Files)
+   Then 0
+   Else Let FResult := runFile(head(Files))
+        In
+          If FResult = 0
+          Then run(tail(Files))
+          Else FResult
+}
+
+Function runFile : <File : string> -> int {
+   Let Contents := Read File
+   In
+   Let PSuccess, Cmd, Errors := Parse b_conc from Contents
+   In
+     If PSuccess
+     Then
+       Let Success, Res := Derive {eval_b [] Cmd Bval} for Cmd assigning [Bval]
+       In
+         If Success
+         Then
+           Print "Execution successful\n" Before
+           0
+         Else
+           Print "Execution failed\n" Before
+           1
+     Else
+       Print "Error parsing file " Before
+       Print File Before
+       Print "\n" Before
+       Print Errors Before
+       Print "\n" Before
+       1
+}

@@ -1,3 +1,4 @@
 #!/bin/bash
 
-sterling $@ -I .. imp:composed
+# sterling $@ -I .. imp:composed
+sterling --silver-concrete --prolog -I .. $@ imp:host
