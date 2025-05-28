@@ -47,5 +47,5 @@ generated/
 *.py
 *.txt
 
-# except tests/tests-std-pl.txt
-!tests/tests-std-pl.txt
+# except tests
+!tests/**

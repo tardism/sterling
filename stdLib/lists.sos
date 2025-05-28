@@ -194,8 +194,7 @@ zip A::ARest B::BRest (A, B)::Rest
 ========== [Drop-0]
 drop 0 L L
 
-
-1 + N1 = N
+N - 1 = N1
 drop N1 L R
 ============= [Drop-Step]
 drop N X::L R
@@ -207,7 +206,7 @@ drop N X::L R
 take 0 L []
 
 
-1 + N1 = N
+N - 1 = N1 
 take N1 L F
 ================ [Take-Step]
 take N X::L X::F
@@ -221,7 +220,7 @@ range Low High []
 
 
 Low <= High
-1 + Low = PlusOne
+Low + 1 = PlusOne 
 range PlusOne High Rest
 ======================== [Range-Step]
 range Low High Low::Rest
