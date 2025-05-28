@@ -1,0 +1,36 @@
+?- sterling_MODULE_stdLib_MODULE_count(a, [a,b,a,c,a], Count).
+Count = 3 .
+
+?- sterling_MODULE_stdLib_MODULE_domain([(a,1),(b,2),(c,3)], Domain).
+Domain = [a, b, c].
+
+% failed
+sterling_MODULE_stdLib_MODULE_drop(2, [a,b,c,d,e], Result).
+
+?- sterling_MODULE_stdLib_MODULE_lookup([(a,1),(b,2),(c,3)], b, Value).
+Value = 2 .
+?- sterling_MODULE_stdLib_MODULE_lookup([(a,1),(b,2),(c,3)], d, Value).
+false.
+
+?- sterling_MODULE_stdLib_MODULE_no_lookup([(a,1),(b,2)], c).
+true.
+?- sterling_MODULE_stdLib_MODULE_no_lookup([(a,1),(b,2)], b).
+false.
+
+?- sterling_MODULE_stdLib_MODULE_not_mem(d, [a,b,c]).
+true .
+
+% skip perm and select for now, not working in the current version
+
+?- sterling_MODULE_stdLib_MODULE_subset([a,c], [a,b,c,d]).
+true .
+?- sterling_MODULE_stdLib_MODULE_subset([a,e], [a,b,c,d]).
+false.
+
+% sterling_MODULE_stdLib_MODULE_take is also wrong. 
+
+?- sterling_MODULE_stdLib_MODULE_values([(a,1),(b,2),(c,3)], Values).
+Values = [1, 2, 3].
+
+?- sterling_MODULE_stdLib_MODULE_zip([a,b,c], [1,2,3], Zipped).
+Zipped = [(a, 1), (b, 2), (c, 3)].

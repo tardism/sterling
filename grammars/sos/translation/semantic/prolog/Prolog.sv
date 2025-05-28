@@ -214,8 +214,8 @@ top::PrologFormula ::= t1::PrologTerm op::PrologBinOp t2::PrologTerm
 abstract production isPrologFormula
 top::PrologFormula ::= t1::PrologTerm op::PrologIsBinOp t2::PrologTerm result::PrologTerm
 {
-  top.pp = t1.pp ++ op.pp ++ t2.pp ++ " is " ++ result.pp;
-
+  -- The result is the value of the operation.
+  top.pp = result.pp ++ " is " ++ t1.pp ++ op.pp ++ t2.pp;
   t1.replaceVar = top.replaceVar;
   t1.replaceVal = top.replaceVal;
   t2.replaceVar = top.replaceVar;
