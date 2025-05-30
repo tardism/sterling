@@ -18,11 +18,11 @@ Function run : <Files : [string]> -> int {
 Function runFile : <File : string> -> int {
    Let Contents := Read File
    In
-   Let PSuccess, Cmd, Errors := Parse b_conc from Contents
+   Let PSuccess, Cmd, Errors := Parse a_conc from Contents
    In
      If PSuccess
      Then
-       Let Success, Res := Derive {eval_b [] Cmd Bval} for Cmd assigning [Bval]
+       Let Success, Res := Derive {eval_a [] Cmd Res} for Cmd assigning [Res]
        In
          If Success
          Then
