@@ -1,0 +1,28 @@
+Module imp_excusable:host
+
+/*Arithmetic Expressions*/
+a ::= num(int)
+    | plus(a, a)
+    | name(string)
+Projection a :
+
+
+/*Boolean Expressions*/
+b ::= greater(a, a)
+    | eq(a, a)
+    | and(b, b)
+    | or(b, b)
+    | true
+    | false
+Projection b :
+
+
+/*Statement Commands*/
+c ::= noop
+    | seq(c, c)
+    | assign(string, a)
+    | ifThenElse(b, c, c)
+    | while(b, c)
+    | printVal(a)
+Projection c :
+

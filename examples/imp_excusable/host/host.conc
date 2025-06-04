@@ -1,0 +1,53 @@
+Module imp_excusable:host
+
+ignore /[\n\r\t\ ]+/
+
+
+int_t    /[0-9]+/
+eq_t      /=/
+deq_t     /==/
+plus_t    /\+/
+or_t      /\|\|/
+and_t     /&&/
+gt_t      />/
+
+true_t    /true/
+false_t   /false/
+
+noop_t    /noop/
+while_t   /while/
+do_t      /do/
+if_t      /if/
+then_t    /then/
+else_t    /else/
+end_t     /end/
+seq_t     /;/
+print_t   /print/
+
+name_t   /[A-Z][a-zA-Z0-9_]*/
+
+a2_conc<a> ::= I::int_t ~~> num($to_int(I))
+             | Name::name_t ~~> name(Name)
+a_conc<a> ::= L::a_conc plus_t R::a2_conc ~~> plus(L, R)
+            | T::a2_conc ~~> T 
+
+
+b_conc<b> ::= L::b_conc or_t R::b2_conc ~~> or(L, R)
+            | T::b2_conc ~~> T
+b2_conc<b> ::= L::b2_conc and_t R::b3_conc ~~> and(L, R)
+             | T::b3_conc ~~> T
+b3_conc<b> ::= L::a_conc gt_t R::a_conc ~~> greater(L, R)
+             | L::a_conc deq_t R::a_conc ~~> eq(L, R)
+             | true_t ~~> true
+             | false_t ~~> false
+
+c_atom<c> ::= noop_t ~~> noop
+            | Name::name_t eq_t A::a_conc ~~> assign(Name, A) 
+            | if_t Cond::b_conc then_t Th_block::c_conc else_t El_block::c_conc end_t ~~> 
+                  ifThenElse(Cond, Th_block, El_block) 
+            | while_t Cond::b_conc do_t Body_block::c_conc end_t ~~> 
+                  while(Cond, Body_block) 
+            | print_t A::a_conc ~~> printVal(A)
+
+c_conc<c> ::= L::c_conc seq_t R::c_atom ~~> seq(L, R)
+            | Atom::c_atom ~~> Atom

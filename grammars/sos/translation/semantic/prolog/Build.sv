@@ -94,6 +94,12 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
              --anymore is anything left after that
              "let anymore::IOVal<String> = readAllFromProcess(d, actual.io) in " ++
              "ioval(anymore.io, actual.iovalue ++ anymore.iovalue) end end end;\n" ++
+                   -- BEGIN ADDED DEBUG CODE 
+    --   "   local io_for_debug_print::IOToken = output.io;\n" ++ 
+    --   "   local debug_message::String = \"\\n DEBUG: Raw Prolog Output START \\n\" ++ output.iovalue ++ \"\\n DEBUG: Raw Prolog Output END \\n\";\n" ++
+    --   "   local io_after_debug_print::IOToken = printT(debug_message, io_for_debug_print);\n" ++
+      -- END ADDED DEBUG CODE 
+
       "   local parsed::ParseResult<PrologOutput> = " ++
              "parsePrologOutput(output.iovalue," ++
                               "\"<<prolog output>>\");\n" ++

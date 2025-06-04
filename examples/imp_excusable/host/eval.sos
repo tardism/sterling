@@ -1,0 +1,196 @@
+Module imp_excusable:host
+
+
+/*Because we don't have Booleans built in, roll our own Boolean values*/
+value ::= intVal(int)
+        | trueVal
+        | falseVal
+Projection value :
+/*Output from the program printing*/
+output ::= emptyOutput
+         | addOutput(output, value) /*snoc for appending always*/
+
+Projection output :
+
+Judgment appendOutput : output output* output
+
+---------------------------- [AO-Empty]
+appendOutput O emptyOutput O
+
+
+appendOutput O1 O2 O3
+------------------------------------------------- [AO-Add]
+appendOutput O1 addOutput(O2, V) addOutput(O3, V)
+
+Judgment eval_a : [(string, value)] a* value output
+Judgment eval_b : [(string, value)] b* value output
+Judgment eval_c : [(string, value)] c* [(string, value)] output
+
+
+
+
+/*Arithmetic Evaluation*/
+
+----------------- [E-Num]
+eval_a E num(I) intVal(I) emptyOutput
+
+
+eval_a E A1 intVal(I1) O1
+eval_a E A2 intVal(I2) O2
+I1 + I2 = I
+appendOutput O1 O2 O
+----------------------- [E-Plus]
+eval_a E plus(A1, A2) intVal(I) O
+
+
+lookup E X I
+------------------ [E-Name]
+eval_a E name(X) I emptyOutput
+
+
+
+
+/*Boolean Evaluation*/
+
+------------------- [E-True]
+eval_b E true trueVal emptyOutput
+
+
+--------------------- [E-False]
+eval_b E false falseVal emptyOutput
+
+
+eval_a E A1 intVal(I1) O1
+eval_a E A2 intVal(I2) O2
+I1 > I2
+appendOutput O1 O2 O
+------------------------------ [E-GreaterTrue]
+eval_b E greater(A1, A2) trueVal O
+
+
+eval_a E A1 intVal(I1) O1
+eval_a E A2 intVal(I2) O2
+I1 <= I2
+appendOutput O1 O2 O
+------------------------------ [E-GreaterFalse]
+eval_b E greater(A1, A2) falseVal O
+
+
+eval_a E A1 V1 O1
+eval_a E A2 V2 O2
+val_eq V1 V2
+appendOutput O1 O2 O
+------------------------- [E-EqTrue]
+eval_b E eq(A1, A2) trueVal O
+
+
+eval_a E A1 V1 O1
+eval_a E A2 V2 O2
+val_eq V1 V2
+appendOutput O1 O2 O
+-------------------------- [E-EqFalse]
+eval_b E eq(A1, A2) falseVal O
+
+
+eval_b E B1 falseVal O
+--------------------------- [E-AndFalse1]
+eval_b E and(B1, B2) falseVal O
+
+
+eval_b E B1 trueVal O1
+eval_b E B2 falseVal O2
+appendOutput O1 O2 O
+--------------------------- [E-AndFalse2]
+eval_b E and(B1, B2) falseVal O
+
+
+eval_b E B1 trueVal O1
+eval_b E B2 trueVal O2
+appendOutput O1 O2 O
+-------------------------- [E-AndTrue]
+eval_b E and(B1, B2) trueVal O
+
+
+eval_b E B1 trueVal O
+------------------------- [E-OrTrue1]
+eval_b E or(B1, B2) trueVal O
+
+
+eval_b E B1 falseVal O1
+eval_b E B2 trueVal O2
+appendOutput O1 O2 O
+------------------------- [E-OrTrue2]
+eval_b E or(B1, B2) trueVal O
+
+
+eval_b E B1 falseVal O1
+eval_b E B2 falseVal O2
+appendOutput O1 O2 O
+-------------------------- [E-OrFalse]
+eval_b E or(B1, B2) falseVal O
+
+
+
+
+/*Command Evaluation*/
+
+--------------- [E-Noop]
+eval_c E noop E emptyOutput
+
+eval_a E A V O1
+--------------------------[E-Print]
+eval_c E printVal(A) E addOutput(O1, V)
+
+
+eval_c E1 C1 E2 O1
+eval_c E2 C2 E3 O2
+appendOutput O1 O2 O
+------------------------ [E-Seq]
+eval_c E1 seq(C1, C2) E3 O
+
+
+eval_a E A I O
+------------------------------- [E-Assign]
+eval_c E assign(X, A) (X, I)::E O
+
+
+eval_b E B trueVal O1
+eval_c E C1 ERes O2
+appendOutput O1 O2 O
+----------------------------------- [E-IfThenElseTrue]
+eval_c E ifThenElse(B, C1, C2) ERes O
+
+
+eval_b E B falseVal O1
+eval_c E C2 ERes O2
+appendOutput O1 O2 O
+----------------------------------- [E-IfThenElseFalse]
+eval_c E ifThenElse(B, C1, C2) ERes O
+
+
+eval_b E B falseVal O
+---------------------- [E-WhileFalse]
+eval_c E while(B, C) E O
+
+
+eval_b E1 B trueVal O1
+eval_c E1 C E2 O2
+eval_c E2 while(B, C) E3 O3
+appendOutput O1 O2 O4
+appendOutput O4 O3 O
+------------------------ [E-WhileTrue]
+eval_c E1 while(B, C) E3 O
+
+/*Check equality in a way appropriate to each value type*/
+Judgment val_eq : value* value
+
+-------------------------- [VE-Int]
+val_eq intVal(I) intVal(I)
+
+
+---------------------- [VE-True]
+val_eq trueVal trueVal
+
+
+------------------------ [VE-False]
+val_eq falseVal falseVal

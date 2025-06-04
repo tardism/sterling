@@ -1,4 +1,4 @@
-Module imp:host
+Module imp_excusable:host
 
 Function main : <Args : [string]> -> int {
    run(Args)
@@ -22,7 +22,7 @@ Function runFile : <File : string> -> int {
    In
      If PSuccess
      Then
-       Let Success, Res := Derive {eval_c [] Cmd Res} for Cmd assigning [Res]
+       Let Success, Res := Derive {eval_c [] Cmd ResultingEnv Res} for Cmd assigning [Res]
        In
          If Success
          Then

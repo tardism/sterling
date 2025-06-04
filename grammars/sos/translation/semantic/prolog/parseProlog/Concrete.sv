@@ -50,6 +50,8 @@ concrete productions top::PrologTerm
   { top.tm =
         stringConst(substring(1, length(str.lexeme) - 1, str.lexeme),
                     location=bogusLoc()); }
+| name::Constr_t '[' ']'
+  { top.tm = nilTerm(location=bogusLoc()); }
 
 concrete productions top::PrologTermList
 | t::PrologTerm
@@ -82,6 +84,8 @@ terminal Eq_t       '=';
 terminal Comma_t    ',';
 terminal LParen_t   '(';
 terminal RParen_t   ')';
+terminal LBracket_t '[';
+terminal RBracket_t ']';
 
 terminal VarName_t   /[A-Z][a-zA-Z0-9_]*/;
 terminal Constr_t    /[a-z][a-zA-Z0-9_]*/;
