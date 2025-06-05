@@ -94,16 +94,21 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
              --anymore is anything left after that
              "let anymore::IOVal<String> = readAllFromProcess(d, actual.io) in " ++
              "ioval(anymore.io, actual.iovalue ++ anymore.iovalue) end end end;\n" ++
-                   -- BEGIN ADDED DEBUG CODE 
-    --   "   local io_for_debug_print::IOToken = output.io;\n" ++ 
-    --   "   local debug_message::String = \"\\n DEBUG: Raw Prolog Output START \\n\" ++ output.iovalue ++ \"\\n DEBUG: Raw Prolog Output END \\n\";\n" ++
-    --   "   local io_after_debug_print::IOToken = printT(debug_message, io_for_debug_print);\n" ++
-      -- END ADDED DEBUG CODE 
+            -- BEGIN ADDED DEBUG CODE 
+            "   local debug_message::String = \"\\n DEBUG: Raw Prolog Output START \\n\" ++ output.iovalue ++ \"\\n DEBUG: Raw Prolog Output END \\n\";\n" ++
+            "   local io_after_debug_print::IOToken = printT(debug_message, output.io);\n" ++
+            -- END ADDED DEBUG CODE 
 
       "   local parsed::ParseResult<PrologOutput> = " ++
              "parsePrologOutput(output.iovalue," ++
                               "\"<<prolog output>>\");\n" ++
       "   return ioval(output.io, parsed.parseTree.result);\n}";
+    -- uncomment this to print the parsed output, but you will lose the parser error messages
+    -- if parse fails, it needs to be nothing() inorder to let silver run io ops before interrupted by error exction
+    -- "   return " ++
+    --        "if parsed.parseSuccess " ++
+    --        "then ioval(io_after_debug_print, parsed.parseTree.result) " ++
+    --        "else ioval(io_after_debug_print, nothing());\n} ";
 
   --end function for Prolog interaction, killing background process
   local endFunction::String =

@@ -1,1 +1,6 @@
-A = 32348; B = 12345; print A; print B
+A = 12; 
+B = 34; 
+C = A + B; 
+Hello = 56; 
+print C;
+print Hello

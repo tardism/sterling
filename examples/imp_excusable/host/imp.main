@@ -27,6 +27,8 @@ Function runFile : <File : string> -> int {
          If Success
          Then
            Print "Execution successful\n" Before
+           Print Res Before
+           Print "\n" Before
            0
          Else
            Print "Execution failed\n" Before

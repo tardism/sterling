@@ -47,5 +47,8 @@ generated/
 *.py
 *.txt
 
+# html files
+*.html
+
 # except tests
 !tests/**
