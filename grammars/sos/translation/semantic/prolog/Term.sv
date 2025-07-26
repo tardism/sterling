@@ -61,7 +61,7 @@ top::Term ::= contents::TermList
 {
   top.prolog = tuplePrologTerm(contents.prolog);
 
-  top.pcVar = error("Cannott access pcVar on tupleTerm");
+  top.pcVar = error("Cannot access pcVar on tupleTerm");
 }
 
 

@@ -56,7 +56,7 @@ I1 <= I2
 ------------------------------ [E-GreaterFalse]
 eval_b E greater(A1, A2) btrue
 
-
+/*we should not use I, I in precondition*/
 eval_a E A1 I
 eval_a E A2 I
 ------------------------- [E-EqTrue]

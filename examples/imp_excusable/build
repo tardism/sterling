@@ -1,4 +1,4 @@
 #!/bin/bash
 
 # sterling $@ -I .. imp:composed
-sterling --silver-concrete --prolog -I .. $@ imp_excusable:host
+sterling --ocaml -I .. $@ imp_excusable:host

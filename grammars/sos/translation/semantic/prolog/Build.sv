@@ -104,7 +104,7 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
                               "\"<<prolog output>>\");\n" ++
       "   return ioval(output.io, parsed.parseTree.result);\n}";
     -- uncomment this to print the parsed output, but you will lose the parser error messages
-    -- if parse fails, it needs to be nothing() inorder to let silver run io ops before interrupted by error exction
+    -- if parse fails, it needs to be nothing() in order to let silver run io ops before interrupted by error exction
     -- "   return " ++
     --        "if parsed.parseSuccess " ++
     --        "then ioval(io_after_debug_print, parsed.parseTree.result) " ++

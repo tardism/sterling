@@ -317,7 +317,7 @@ top::Type ::=
 
 
 nonterminal TypeList with
-   pp_comma, pp_space,
+   pp_comma, pp_space, pp_asterisk,
    tyEnv, errors, isError,
    subst, substituted<TypeList>,
    unifyWith<TypeList>, unifyLoc, downSubst, upSubst,
@@ -335,6 +335,8 @@ top::TypeList ::=
 {
   top.pp_comma = "";
   top.pp_space = "";
+  top.pp_asterisk = "";
+
 
   top.toList = [];
   top.len = 0;
@@ -373,6 +375,8 @@ top::TypeList ::= t::Type rest::TypeList
                  then t.pp else t.pp ++ ", " ++ rest.pp_comma;
   top.pp_space = if rest.pp_space == ""
                  then t.pp else t.pp ++ " " ++ rest.pp_space;
+  top.pp_asterisk = if rest.pp_asterisk == ""
+                    then t.pp else t.pp ++ " * " ++ rest.pp_asterisk;
 
   t.tyEnv = top.tyEnv;
   rest.tyEnv = top.tyEnv;

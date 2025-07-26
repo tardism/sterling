@@ -11,6 +11,7 @@ imports sos:translation:semantic:prolog;
 imports sos:translation:semantic:latex;
 imports sos:translation:semantic:lambdaProlog;
 imports sos:translation:semantic:extensibella:abstractSyntax;
+imports sos:translation:semantic:ocaml;
 
 imports sos:translation:conc:silver;
 

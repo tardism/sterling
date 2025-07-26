@@ -44,9 +44,6 @@ build.xml
 # Generated directory
 generated/
 
-*.py
-*.txt
-
 # html files
 *.html
 

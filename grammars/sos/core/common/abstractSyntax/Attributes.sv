@@ -6,6 +6,7 @@ synthesized attribute pp::String;
 --have both rather than just using pp because some lists have both
 synthesized attribute pp_comma::String;
 synthesized attribute pp_space::String;
+synthesized attribute pp_asterisk::String;
 
 
 --Errors, warnings, whatever
