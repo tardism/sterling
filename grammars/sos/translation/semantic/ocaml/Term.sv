@@ -6,7 +6,7 @@ attribute ocamlExprs occurs on TermList;
 aspect production const
 top::Term ::= name::QName
 {
-  top.ocamlExpr = ocamlConstructor(name.ocamlString, []);
+  top.ocamlExpr = ocamlConstructor(capitalizeFirst(name.ocamlString), []);
 }
 
 aspect production var
@@ -30,7 +30,7 @@ top::Term ::= s::String
 aspect production appTerm
 top::Term ::= constructor::QName args::TermList
 {
-  top.ocamlExpr = ocamlConstructor(constructor.ocamlString, args.ocamlExprs);
+  top.ocamlExpr = ocamlConstructor(capitalizeFirst(constructor.ocamlString), args.ocamlExprs);
 }
 
 aspect production tupleTerm
