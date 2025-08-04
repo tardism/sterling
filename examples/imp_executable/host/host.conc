@@ -1,4 +1,4 @@
-Module imp_excusable:host
+Module imp_executable:host
 
 ignore /[\n\r\t\ ]+/
 

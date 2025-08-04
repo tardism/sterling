@@ -1,4 +1,4 @@
-Module imp_excusable:host
+Module imp_executable:host
 
 Function main : <Args : [string]> -> int {
    run(Args)
