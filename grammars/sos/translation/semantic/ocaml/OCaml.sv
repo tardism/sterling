@@ -226,6 +226,15 @@ top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
 
 nonterminal OCamlProgram with pp;
 
+function isTypeDecl
+Boolean ::= decl::OCamlDecl
+{
+  return case decl of
+         | ocamlTypeDeclaration(_) -> true
+         | _ -> false
+         end;
+}
+
 abstract production ocamlProgram
 top::OCamlProgram ::= decls::[OCamlDecl]
 {

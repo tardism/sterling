@@ -15,7 +15,11 @@ top::ModuleList ::= files::Files
 aspect production consModuleList
 top::ModuleList ::= m::Module rest::ModuleList
 {
-  top.ocamlDecls = m.ocamlDecls ++ rest.ocamlDecls;
+  -- Put type declarations first, then non-type declarations 
+  local allDecls::[OCamlDecl] = m.ocamlDecls ++ rest.ocamlDecls;
+  local typeDecls::[OCamlDecl] = filter(isTypeDecl, allDecls);
+  local nonTypeDecls::[OCamlDecl] = filter(\ d::OCamlDecl -> !isTypeDecl(d), allDecls);
+  top.ocamlDecls = typeDecls ++ nonTypeDecls;
 }
 
 aspect production module
@@ -33,7 +37,10 @@ top::Files ::=
 aspect production consAbstractFiles
 top::Files ::= filename::String f::File rest::Files
 {
-  top.ocamlDecls = f.ocamlDecls ++ rest.ocamlDecls;
+  local allDecls::[OCamlDecl] = f.ocamlDecls ++ rest.ocamlDecls;
+  local typeDecls::[OCamlDecl] = filter(isTypeDecl, allDecls);
+  local nonTypeDecls::[OCamlDecl] = filter(\ d::OCamlDecl -> !isTypeDecl(d), allDecls);
+  top.ocamlDecls = typeDecls ++ nonTypeDecls;
 }
 
 aspect production consConcreteFiles
