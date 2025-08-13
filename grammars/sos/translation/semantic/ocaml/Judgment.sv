@@ -1,15 +1,47 @@
 grammar sos:translation:semantic:ocaml;
 
-attribute ocamlExpr occurs on Judgment;
+attribute ocamlExpr, ocamlJudgmentType, ocamlMatchTerm, ocamlLetReserve occurs on Judgment;
 attribute ocamlBinOp occurs on BinOp;
 attribute ocamlTopBinOp occurs on TopBinOp;
 attribute ocamlConjunction occurs on JudgmentList;
 
+-- so, for example eval_a E A1 V1 O1, 
+-- we loop through the args to get the primary component
+-- and get the index of A1. 
+function getIndexOfPrimaryArg
+Integer ::= rel::QName judgmentEnv::Env<JudgmentEnvItem>
+{
+  -- Look up the judgment declaration to get its type signature
+  local judgmentDecl::[JudgmentEnvItem] = lookupEnv(^rel, judgmentEnv);
+  return case judgmentDecl of
+  | [jenv] -> 
+      -- Get the pcIndex from the judgment's type signature
+      case jenv of
+      | extJudgmentEnvItem(_, _, pcIndex) -> pcIndex
+      | fixedJudgmentEnvItem(_, _) -> 3  -- Fixed judgments don't have PC, default to 1
+      | _ -> 3 -- Default fallback
+      end
+  | _ -> 3  -- Default to index 1 if judgment not found
+  end;
+}
+
 aspect production relation
 top::Judgment ::= rel::QName args::TermList
 {
+  local pcIndex::Integer = getIndexOfPrimaryArg(^rel, top.judgmentEnv);
+  local letTuple::String =  "(" ++ implode(", ", map((.pp), drop(pcIndex+1, args.ocamlExprs))) ++ ")";
+  top.ocamlJudgmentType = rel.ocamlString;
+  -- get first pcIndex+1 args 
+  top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.ocamlExprs)));
+  top.ocamlMatchTerm = head(drop(pcIndex, args.ocamlExprs));
   top.ocamlExpr = 
-    ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
+    -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
+    if top.isConclusion then
+    ocamlVar(letTuple)
+    else
+    ocamlLet(letTuple, 
+      ocamlApplication(ocamlVar(rel.ocamlString), 
+      take(pcIndex+1, args.ocamlExprs)), ocamlVar(""));
 }
 
 aspect production negationRelation
@@ -147,5 +179,5 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
 {
   top.ocamlConjunction = 
     \ conclusion::OCamlExpr ->
-      ocamlInfixOp(j.ocamlExpr, " -> ", rest.ocamlConjunction(conclusion));
+      ocamlInfixOp(j.ocamlExpr, "", rest.ocamlConjunction(conclusion));
 }

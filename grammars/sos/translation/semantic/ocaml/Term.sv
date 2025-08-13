@@ -51,7 +51,7 @@ top::Term ::= hd::Term tl::Term
   top.ocamlExpr = 
     case tl.ocamlExpr of
     | ocamlList(exprs) -> ocamlList(hd.ocamlExpr :: exprs)
-    | _ -> ocamlApplication(ocamlVar("::"), [hd.ocamlExpr, tl.ocamlExpr])
+    | _ -> ocamlInfixOp(hd.ocamlExpr, " :: ", tl.ocamlExpr)
     end;
 }
 

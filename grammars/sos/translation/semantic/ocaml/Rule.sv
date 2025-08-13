@@ -8,9 +8,9 @@ top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
   local functionName::String = name;
   local functionBody::OCamlExpr = 
     premises.ocamlConjunction(conclusion.ocamlExpr);
-  
+
   top.ocamlDecls = 
-    [ocamlLetDeclaration(functionName, ["tessssssssst"], ^functionBody)];
+    [ocamlMatchBranch(conclusion.ocamlJudgmentType, conclusion.ocamlLetReserve, conclusion.ocamlMatchTerm, ^functionBody)];
 }
 
 aspect production defaultRule

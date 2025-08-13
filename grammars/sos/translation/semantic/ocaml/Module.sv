@@ -40,7 +40,15 @@ top::Files ::= filename::String f::File rest::Files
   local allDecls::[OCamlDecl] = f.ocamlDecls ++ rest.ocamlDecls;
   local typeDecls::[OCamlDecl] = filter(isTypeDecl, allDecls);
   local nonTypeDecls::[OCamlDecl] = filter(\ d::OCamlDecl -> !isTypeDecl(d), allDecls);
-  top.ocamlDecls = typeDecls ++ nonTypeDecls;
+  
+  local groupedByRuleType::[[OCamlDecl]] = 
+    groupBy(\p1::OCamlDecl p2::OCamlDecl 
+            -> p1.ocamlRuleType == p2.ocamlRuleType, nonTypeDecls);
+  
+  local temp::[OCamlDecl] = map( 
+    \decls::[OCamlDecl] -> ocamlLetFull(decls), groupedByRuleType);  
+  
+  top.ocamlDecls = typeDecls ++ temp;
 }
 
 aspect production consConcreteFiles

@@ -8,6 +8,10 @@ synthesized attribute ocamlExpr::OCamlExpr;
 synthesized attribute ocamlType::OCamlType;
 synthesized attribute ocamlPattern::OCamlPattern;
 synthesized attribute ocamlString::String;
+synthesized attribute ocamlJudgmentType::String;
+synthesized attribute ocamlRuleType::String;
+synthesized attribute ocamlMatchTerm::OCamlExpr;
+synthesized attribute ocamlLetReserve::String;
 
 synthesized attribute ocamlExprs::[OCamlExpr];
 synthesized attribute ocamlTypes::[OCamlType];
