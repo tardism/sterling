@@ -12,7 +12,7 @@ top::Term ::= name::QName
 aspect production var
 top::Term ::= name::String
 {
-  top.ocamlExpr = ocamlVar(name);
+  top.ocamlExpr = ocamlVar(lowercaseFirst(name));
 }
 
 aspect production num

@@ -18,10 +18,10 @@ Integer ::= rel::QName judgmentEnv::Env<JudgmentEnvItem>
       -- Get the pcIndex from the judgment's type signature
       case jenv of
       | extJudgmentEnvItem(_, _, pcIndex) -> pcIndex
-      | fixedJudgmentEnvItem(_, _) -> 3  -- Fixed judgments don't have PC, default to 1
-      | _ -> 3 -- Default fallback
+      | fixedJudgmentEnvItem(_, _) -> 1  -- Fixed judgments don't have PC, default to 1
+      | _ -> 1 -- Default fallback
       end
-  | _ -> 3  -- Default to index 1 if judgment not found
+  | _ -> 1  -- Default to index 1 if judgment not found
   end;
 }
 
@@ -29,7 +29,12 @@ aspect production relation
 top::Judgment ::= rel::QName args::TermList
 {
   local pcIndex::Integer = getIndexOfPrimaryArg(^rel, top.judgmentEnv);
-  local letTuple::String =  "(" ++ implode(", ", map((.pp), drop(pcIndex+1, args.ocamlExprs))) ++ ")";
+  local letBindingExprs::[String] = map((.pp), drop(pcIndex+1, args.ocamlExprs));
+  local letBinding::String = 
+    if length(letBindingExprs) == 0 then "()"
+    else if length(letBindingExprs) == 1 then head(letBindingExprs)
+    else "(" ++ implode(", ", letBindingExprs) ++ ")";
+
   top.ocamlJudgmentType = rel.ocamlString;
   -- get first pcIndex+1 args 
   top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.ocamlExprs)));
@@ -37,9 +42,9 @@ top::Judgment ::= rel::QName args::TermList
   top.ocamlExpr = 
     -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
     if top.isConclusion then
-    ocamlVar(letTuple)
+    ocamlVar(letBinding)
     else
-    ocamlLet(letTuple, 
+    ocamlLet(letBinding, 
       ocamlApplication(ocamlVar(rel.ocamlString), 
       take(pcIndex+1, args.ocamlExprs)), ocamlVar(""));
 }
@@ -77,7 +82,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "+", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "+", t2), 
+        ocamlVar(""));  
 }
 
 aspect production minusOp
@@ -85,7 +92,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "-", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "-", t2), 
+        ocamlVar(""));  
 }
 
 aspect production multOp
@@ -93,7 +102,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "*", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "*", t2), 
+        ocamlVar(""));  
 }
 
 aspect production divOp
@@ -101,7 +112,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "/", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "/", t2), 
+        ocamlVar(""));  
 }
 
 aspect production modOp
@@ -109,7 +122,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "mod", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "mod", t2), 
+        ocamlVar(""));  
 }
 
 aspect production appendOp
@@ -117,7 +132,9 @@ top::BinOp ::=
 {
   top.ocamlBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr result::OCamlExpr ->
-      ocamlInfixOp(result, "=", ocamlInfixOp(t1, "@", t2));
+      ocamlLet(result.pp, 
+        ocamlInfixOp(t1, "@", t2), 
+        ocamlVar(""));  
 }
 
 aspect production eqOp

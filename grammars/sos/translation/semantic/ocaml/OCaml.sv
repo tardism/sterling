@@ -197,7 +197,7 @@ top::OCamlConstructor ::= name::String types::[OCamlType]
 }
 
 nonterminal OCamlDecl with pp;
-attribute ocamlRuleType, ocamlLetReserve occurs on OCamlDecl;
+attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm occurs on OCamlDecl;
 
 abstract production ocamlTypeDeclaration
 top::OCamlDecl ::= decl::OCamlTypeDecl
@@ -205,6 +205,7 @@ top::OCamlDecl ::= decl::OCamlTypeDecl
   top.pp = decl.pp;
   top.ocamlRuleType = "type";  -- Type declarations don't have rule types
   top.ocamlLetReserve = "";  -- No let reserve for type declarations
+  top.ocamlMatchTerm = ocamlVar("unknown");  -- No match term for type declarations
 }
 
 abstract production ocamlLetDeclaration
@@ -217,6 +218,7 @@ top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
   top.pp = "let " ++ name ++ paramStr ++ " =\n  " ++ body.pp;
   top.ocamlRuleType = "unknown";  -- Default rule type for let declarations
   top.ocamlLetReserve = name ++ paramStr;  -- Reserve the name and params
+  top.ocamlMatchTerm = ocamlVar(name);  -- Match term is the name
 }
 
 abstract production ocamlMatchBranch
@@ -225,28 +227,23 @@ top::OCamlDecl ::= ruleType::String ocamlLetReserve::String matchTerm::OCamlExpr
   top.pp = "| " ++ matchTerm.pp ++ " ->\n" ++ body.pp;
   top.ocamlLetReserve = ocamlLetReserve;
   top.ocamlRuleType = ruleType;
+  top.ocamlMatchTerm = ^matchTerm;
 }
 
 abstract production ocamlLetFull
 top::OCamlDecl ::= bodies::[OCamlDecl]
 {
-  top.pp = "let " ++ head(bodies).ocamlLetReserve ++ " = function \n" ++ implode("\n", map((.pp), bodies)) ++ "\n";
+  local groupByMatchTerm::[[OCamlDecl]] = 
+    groupBy(\p1::OCamlDecl p2::OCamlDecl 
+            -> p1.ocamlMatchTerm.pp == p2.ocamlMatchTerm.pp, bodies); 
+  top.pp = "let rec " ++ head(bodies).ocamlLetReserve ++ 
+    " = function \n" ++ implode("\n", map((.pp), bodies)) ++ "\n";
   top.ocamlRuleType = 
     if null(bodies) 
     then "unknown"
     else head(bodies).ocamlRuleType;  -- Use rule type from first body
 }
 
-abstract production ocamlRecursiveDeclaration
-top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
-{
-  local paramStr::String = 
-    if null(params)
-    then ""
-    else " " ++ implode(" ", params);
-  top.pp = "let rec " ++ name ++ paramStr ++ " =\n  " ++ body.pp;
-  top.ocamlRuleType = name;  -- Use the function name as the rule type
-}
 
 nonterminal OCamlProgram with pp;
 

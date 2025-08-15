@@ -26,7 +26,38 @@ Judgment eval_a : [(string, value)] a* value output
 Judgment eval_b : [(string, value)] b* value output
 Judgment eval_c : [(string, value)] c* [(string, value)] output
 
+/*Check equality in a way appropriate to each value type*/
 
+/* 
+We should ban this way of declaring Judgment, Judgment val_eq : value* value
+which only has one inputs. All judgement should have at least have 2 inputs.
+ */
+
+Judgment val_eq : value value* value
+
+I1 = I2
+-------------------------- [VE-Int-True]
+val_eq intVal(I1) intVal(I2) trueVal
+
+I1 != I2
+-------------------------- [VE-Int-False]
+val_eq intVal(I1) intVal(I2) trueVal
+
+
+---------------------- [VE-True1]
+val_eq trueVal trueVal trueVal
+
+
+------------------------ [VE-True2]
+val_eq falseVal falseVal trueVal
+
+
+---------------------- [VE-False1]
+val_eq trueVal falseVal falseVal
+
+
+------------------------ [VE-False2]
+val_eq falseVal trueVal falseVal
 
 
 /*Arithmetic Evaluation*/
@@ -78,7 +109,7 @@ eval_b E greater(A1, A2) falseVal O
 
 eval_a E A1 V1 O1
 eval_a E A2 V2 O2
-val_eq V1 V2
+val_eq V1 V2 trueVal
 appendOutput O1 O2 O
 ------------------------- [E-EqTrue]
 eval_b E eq(A1, A2) trueVal O
@@ -86,7 +117,7 @@ eval_b E eq(A1, A2) trueVal O
 
 eval_a E A1 V1 O1
 eval_a E A2 V2 O2
-val_eq V1 V2
+val_eq V1 V2 falseVal
 appendOutput O1 O2 O
 -------------------------- [E-EqFalse]
 eval_b E eq(A1, A2) falseVal O
@@ -181,16 +212,4 @@ appendOutput O4 O3 O
 ------------------------ [E-WhileTrue]
 eval_c E1 while(B, C) E3 O
 
-/*Check equality in a way appropriate to each value type*/
-Judgment val_eq : value* value
 
--------------------------- [VE-Int]
-val_eq intVal(I) intVal(I)
-
-
----------------------- [VE-True]
-val_eq trueVal trueVal
-
-
------------------------- [VE-False]
-val_eq falseVal falseVal
