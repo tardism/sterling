@@ -145,6 +145,14 @@ top::TopBinOp ::=
       ocamlInfixOp(t1, "=", t2);
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.ocamlTopBinOp = 
+    \ t1::OCamlExpr t2::OCamlExpr ->
+      ocamlInfixOp(t1, "==", t2);
+}
+
 aspect production neqOp
 top::TopBinOp ::=
 {

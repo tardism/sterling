@@ -35,7 +35,7 @@ which only has one inputs. All judgement should have at least have 2 inputs.
 
 Judgment val_eq : value value* value
 
-I1 = I2
+I1 == I2
 -------------------------- [VE-Int-True]
 val_eq intVal(I1) intVal(I2) trueVal
 

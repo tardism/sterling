@@ -19,6 +19,7 @@ terminal FixedLine_t      /===+/;
 
 
 terminal Eq_t         '=';
+terminal OcamlEq_t    '==';
 terminal Neq_t        '!=';
 terminal Colon_t      ':';
 terminal Period_t     '.';

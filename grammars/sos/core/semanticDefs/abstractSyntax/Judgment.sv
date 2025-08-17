@@ -501,6 +501,18 @@ top::TopBinOp ::=
   top.upSubst = unifyTys.upSubst;
 }
 
+abstract production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.pp = " == ";
+
+  local unifyTys::TypeUnify =
+        typeUnify(top.leftTy, top.rightTy, location=top.location);
+  unifyTys.downSubst = top.downSubst;
+  top.upSubst = unifyTys.upSubst;
+}
+
+
 
 abstract production neqOp
 top::TopBinOp ::=

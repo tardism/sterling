@@ -510,6 +510,8 @@ closed nonterminal TopBinOp_c layout {Spacing_t, Comment_t}
 concrete productions top::TopBinOp_c
 | '='
   { top.ast = eqOp(location=top.location); }
+| '==' 
+  { top.ast = ocamlEqOp(location=top.location); }
 | '!='
   { top.ast = neqOp(location=top.location); }
 | '<'
