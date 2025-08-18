@@ -6,6 +6,7 @@ aspect production extRule
 top::Rule ::= premises::JudgmentList name::String conclusion::Judgment
 {
   local functionName::String = name;
+  -- premises.ocamlLetReserve = conclusion.ocamlLetReserve;
   local functionBody::OCamlExpr = 
     premises.ocamlConjunction(conclusion.ocamlExpr);
 

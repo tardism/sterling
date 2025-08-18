@@ -25,6 +25,25 @@ Integer ::= rel::QName judgmentEnv::Env<JudgmentEnvItem>
   end;
 }
 
+function ocamlTermVarGen
+String ::= term::Term
+{
+  return if term.isVariable then
+    lowercaseFirst(term.pp)
+  else
+    "var" ++ toString(genInt());
+}
+
+function ocamlTermVarGen2
+String ::= term::Term
+{
+  return if term.isVariable then
+    " _ "
+  else
+    term.ocamlExpr.pp;
+}
+
+
 aspect production relation
 top::Judgment ::= rel::QName args::TermList
 {
@@ -35,13 +54,23 @@ top::Judgment ::= rel::QName args::TermList
     else if length(letBindingExprs) == 1 then head(letBindingExprs)
     else "(" ++ implode(", ", letBindingExprs) ++ ")";
 
+  local inputsTermList::[String] = 
+    map(ocamlTermVarGen, take(pcIndex+1, args.toList));
   top.ocamlJudgmentType = rel.ocamlString;
   -- get first pcIndex+1 args 
-  top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.ocamlExprs)));
-  top.ocamlMatchTerm = head(drop(pcIndex, args.ocamlExprs));
+  --   top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.toList)));
+
+  top.ocamlLetReserve = rel.ocamlString ++ " " 
+    ++ implode(" ", inputsTermList) 
+    ++ " = \n match " 
+    ++ implode(" , ", inputsTermList) 
+    ++ " with \n";
+  top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.toList)))) ++ " )");
   top.ocamlExpr = 
     -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
     if top.isConclusion then
+    -- ocamlVar(implode(", ",
+    --   map(ocamlTermVarGen, args.toList)))
     ocamlVar(letBinding)
     else
     ocamlLet(letBinding, 
@@ -150,7 +179,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, "==", t2);
+      ocamlIf(ocamlInfixOp(t1, "==", t2));
 }
 
 aspect production neqOp
@@ -158,7 +187,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, "<>", t2);
+      ocamlIf(ocamlInfixOp(t1, "<>", t2));
 }
 
 aspect production lessOp
@@ -166,7 +195,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, "<", t2);
+      ocamlIf(ocamlInfixOp(t1, "<", t2));
 }
 
 aspect production greaterOp
@@ -174,7 +203,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, ">", t2);
+     ocamlIf( ocamlInfixOp(t1, ">", t2));
 }
 
 aspect production leqOp
@@ -182,7 +211,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, "<=", t2);
+      ocamlIf(ocamlInfixOp(t1, "<=", t2));
 }
 
 aspect production geqOp
@@ -190,7 +219,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlInfixOp(t1, ">=", t2);
+      ocamlIf(ocamlInfixOp(t1, ">=", t2));
 }
 
 aspect production nilJudgmentList

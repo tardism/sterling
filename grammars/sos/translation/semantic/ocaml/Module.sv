@@ -44,7 +44,8 @@ top::Files ::= filename::String f::File rest::Files
   local groupedByRuleType::[[OCamlDecl]] = 
     groupBy(\p1::OCamlDecl p2::OCamlDecl 
             -> p1.ocamlRuleType == p2.ocamlRuleType, nonTypeDecls);
-  
+  -- local groupedByRuleType2::[[OCamlDecl]] = 
+    
   local temp::[OCamlDecl] = map( 
     \decls::[OCamlDecl] -> ocamlLetFull(decls), groupedByRuleType);  
   

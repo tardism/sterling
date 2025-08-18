@@ -139,7 +139,7 @@ top::OCamlExpr ::= func::OCamlExpr args::[OCamlExpr]
 abstract production ocamlInfixOp
 top::OCamlExpr ::= left::OCamlExpr op::String right::OCamlExpr
 {
-  top.pp = "(" ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ ")";
+  top.pp = " " ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ " ";
 }
 
 
@@ -157,9 +157,9 @@ top::OCamlExpr ::= expr::OCamlExpr cases::[OCamlCase]
 }
 
 abstract production ocamlIf
-top::OCamlExpr ::= cond::OCamlExpr thenExpr::OCamlExpr elseExpr::OCamlExpr
+top::OCamlExpr ::= cond::OCamlExpr 
 {
-  top.pp = "if " ++ cond.pp ++ " then " ++ thenExpr.pp ++ " else " ++ elseExpr.pp;
+  top.pp = "if " ++ cond.pp ++ " then \n   ";
 }
 
 nonterminal OCamlCase with pp;
@@ -230,14 +230,39 @@ top::OCamlDecl ::= ruleType::String ocamlLetReserve::String matchTerm::OCamlExpr
   top.ocamlMatchTerm = ^matchTerm;
 }
 
+function arrowEndString
+  String ::= d::OCamlDecl
+  {
+    local s::String = d.pp;
+    local arrowPos::Integer = indexOf("->", s);
+    local arrowIndex::Integer = if arrowPos >= 0
+           then arrowPos + 1  -- position of '>'
+           else 0;              -- not found
+    return if arrowIndex > 0
+      then substring(arrowIndex+1, length(s), s)
+
+      else s;  -- return the original string if no arrow found
+  }
+
+function help1 
+String ::= decls::[OCamlDecl]
+{
+  return if length(decls) == 1
+  then head(decls).pp
+  else head(decls).pp ++ " else \n    " ++ implode(" else ", map(arrowEndString, tail(decls))) 
+    ++ "else raise (Failure \"should not reach here\")";
+}
+
+
 abstract production ocamlLetFull
 top::OCamlDecl ::= bodies::[OCamlDecl]
 {
   local groupByMatchTerm::[[OCamlDecl]] = 
     groupBy(\p1::OCamlDecl p2::OCamlDecl 
             -> p1.ocamlMatchTerm.pp == p2.ocamlMatchTerm.pp, bodies); 
+    
   top.pp = "let rec " ++ head(bodies).ocamlLetReserve ++ 
-    " = function \n" ++ implode("\n", map((.pp), bodies)) ++ "\n";
+    implode("\n", map(help1, groupByMatchTerm)) ++ "\n| _ -> raise (Failure \"Match the unexpected case, consider type error?\")";
   top.ocamlRuleType = 
     if null(bodies) 
     then "unknown"
