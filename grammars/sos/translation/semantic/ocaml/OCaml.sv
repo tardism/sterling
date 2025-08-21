@@ -110,6 +110,12 @@ top::OCamlExpr ::= value::Boolean
   top.pp = if value then "true" else "false";
 }
 
+abstract production ocamlSequence
+top::OCamlExpr ::= first::OCamlExpr second::OCamlExpr
+{
+  top.pp = first.pp ++ ";\n" ++ second.pp;
+}
+
 abstract production ocamlConstructor
 top::OCamlExpr ::= name::String args::[OCamlExpr]
 {
@@ -141,7 +147,11 @@ top::OCamlExpr ::= left::OCamlExpr op::String right::OCamlExpr
 {
   top.pp = " " ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ " ";
 }
-
+abstract production ocamlMatchEnd
+top::OCamlExpr ::= left::OCamlExpr op::String right::OCamlExpr
+{
+  top.pp = " " ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ " ";
+}
 
 abstract production ocamlLet
 top::OCamlExpr ::= name::String value::OCamlExpr body::OCamlExpr
@@ -150,16 +160,16 @@ top::OCamlExpr ::= name::String value::OCamlExpr body::OCamlExpr
 }
 
 abstract production ocamlMatch
-top::OCamlExpr ::= expr::OCamlExpr cases::[OCamlCase]
+top::OCamlExpr ::= expr::OCamlExpr cases::OCamlExpr
 {
   top.pp = "match " ++ expr.pp ++ " with\n" ++
-           implode("\n", map((.pp), cases));
+           "->" ++ cases.pp;
 }
 
 abstract production ocamlIf
 top::OCamlExpr ::= cond::OCamlExpr 
 {
-  top.pp = "if " ++ cond.pp ++ " then \n   ";
+  top.pp = "(if " ++ cond.pp ++ " then \n   ";
 }
 
 nonterminal OCamlCase with pp;
@@ -197,7 +207,7 @@ top::OCamlConstructor ::= name::String types::[OCamlType]
 }
 
 nonterminal OCamlDecl with pp;
-attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm occurs on OCamlDecl;
+attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm, isMatch occurs on OCamlDecl;
 
 abstract production ocamlTypeDeclaration
 top::OCamlDecl ::= decl::OCamlTypeDecl
@@ -222,12 +232,13 @@ top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
 }
 
 abstract production ocamlMatchBranch
-top::OCamlDecl ::= ruleType::String ocamlLetReserve::String matchTerm::OCamlExpr body::OCamlExpr
+top::OCamlDecl ::= isMatch::Boolean ruleType::String ocamlLetReserve::String matchTerm::OCamlExpr body::OCamlExpr
 {
   top.pp = "| " ++ matchTerm.pp ++ " ->\n" ++ body.pp;
   top.ocamlLetReserve = ocamlLetReserve;
   top.ocamlRuleType = ruleType;
   top.ocamlMatchTerm = ^matchTerm;
+  top.isMatch = isMatch;
 }
 
 function arrowEndString
@@ -244,13 +255,23 @@ function arrowEndString
       else s;  -- return the original string if no arrow found
   }
 
+function help2
+  String ::= d::OCamlDecl
+{
+  return if d.isMatch
+  -- then "_ -> hello " ++ d.pp
+  -- else " else what" ++ arrowEndString(^d);
+    then " " ++ d.pp
+  else " " ++ arrowEndString(^d);
+}
 function help1 
 String ::= decls::[OCamlDecl]
 {
   return if length(decls) == 1
   then head(decls).pp
-  else head(decls).pp ++ " else \n    " ++ implode(" else ", map(arrowEndString, tail(decls))) 
-    ++ "else raise (Failure \"should not reach here\")";
+  else head(decls).pp ++ implode("", map(help2, tail(decls)))
+    ++ "else raise (Failure \"should not reach here\")"
+    ++ implode("", repeat(")", length(decls))) ++ "\n";
 }
 
 

@@ -1,6 +1,7 @@
 grammar sos:translation:semantic:ocaml;
 
-attribute ocamlExpr, ocamlJudgmentType, ocamlMatchTerm, ocamlLetReserve occurs on Judgment;
+attribute ocamlExpr, ocamlJudgmentType, ocamlMatchTerm, ocamlLetReserve, isMatch,
+  matchRes occurs on Judgment;
 attribute ocamlBinOp occurs on BinOp;
 attribute ocamlTopBinOp occurs on TopBinOp;
 attribute ocamlConjunction occurs on JudgmentList;
@@ -43,6 +44,33 @@ String ::= term::Term
     term.ocamlExpr.pp;
 }
 
+function bindingLetOrMatch
+String ::= T::Term
+{
+  return if T.isVariable then
+    " _ "
+  else
+    T.ocamlExpr.pp;
+}
+
+function isVariableOrAppTerm
+Boolean ::= t::Term
+{
+  return if t.isVariable then
+    true
+  else
+    case t of
+    | appTerm(_, _) -> true
+    | _ -> false
+    end;
+}
+
+function isAllVariables
+Boolean ::= args::[Term]
+{
+  return foldr(\ t::Term acc::Boolean -> isVariableOrAppTerm(t) && acc,
+true, args);
+}
 
 aspect production relation
 top::Judgment ::= rel::QName args::TermList
@@ -54,12 +82,18 @@ top::Judgment ::= rel::QName args::TermList
     else if length(letBindingExprs) == 1 then head(letBindingExprs)
     else "(" ++ implode(", ", letBindingExprs) ++ ")";
 
+  -- local matchBindingExprs::String = " match " ++ implode(", ", 
+  --   map(bindingLetOrMatch, drop(pcIndex+1, args.toList))) ++ " with\n";
+  local matchBindingExprs::String = 
+    ocamlApplication(ocamlVar(rel.ocamlString), take(pcIndex+1, args.ocamlExprs)).pp;
+      
+  top.matchRes = ocamlVar(implode(", ", map(bindingLetOrMatch, drop(pcIndex+1, args.toList))));
   local inputsTermList::[String] = 
     map(ocamlTermVarGen, take(pcIndex+1, args.toList));
   top.ocamlJudgmentType = rel.ocamlString;
   -- get first pcIndex+1 args 
   --   top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.toList)));
-
+  -- this is the top of the let binding, only been used if the judgment is a conclusion
   top.ocamlLetReserve = rel.ocamlString ++ " " 
     ++ implode(" ", inputsTermList) 
     ++ " = \n match " 
@@ -71,11 +105,20 @@ top::Judgment ::= rel::QName args::TermList
     if top.isConclusion then
     -- ocamlVar(implode(", ",
     --   map(ocamlTermVarGen, args.toList)))
-    ocamlVar(letBinding)
-    else
+    ocamlVar(letBinding) 
+    else if isAllVariables(args.toList) then
     ocamlLet(letBinding, 
       ocamlApplication(ocamlVar(rel.ocamlString), 
-      take(pcIndex+1, args.ocamlExprs)), ocamlVar(""));
+      take(pcIndex+1, args.ocamlExprs)), ocamlVar(""))
+    else
+    ocamlVar(matchBindingExprs);
+
+  top.isMatch = if top.isConclusion then
+    false
+  else if isAllVariables(args.toList) then
+    false
+  else
+    true;
 }
 
 aspect production negationRelation
@@ -222,16 +265,3 @@ top::TopBinOp ::=
       ocamlIf(ocamlInfixOp(t1, ">=", t2));
 }
 
-aspect production nilJudgmentList
-top::JudgmentList ::=
-{
-  top.ocamlConjunction = \ conclusion::OCamlExpr -> conclusion;
-}
-
-aspect production consJudgmentList
-top::JudgmentList ::= j::Judgment rest::JudgmentList
-{
-  top.ocamlConjunction = 
-    \ conclusion::OCamlExpr ->
-      ocamlInfixOp(j.ocamlExpr, "", rest.ocamlConjunction(conclusion));
-}

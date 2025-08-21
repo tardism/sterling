@@ -21,4 +21,5 @@ synthesized attribute ocamlDecls::[OCamlDecl];
 synthesized attribute ocamlBinOp::(OCamlExpr ::= OCamlExpr OCamlExpr OCamlExpr);
 synthesized attribute ocamlTopBinOp::(OCamlExpr ::= OCamlExpr OCamlExpr);
 synthesized attribute ocamlConjunction::(OCamlExpr ::= OCamlExpr);
-
+synthesized attribute isMatch::Boolean;
+synthesized attribute matchRes::OCamlExpr;
