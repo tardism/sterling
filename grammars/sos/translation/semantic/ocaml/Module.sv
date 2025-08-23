@@ -9,17 +9,19 @@ attribute ocamlDecls occurs on Module, ModuleList, Files;
 aspect production stdLibModuleList
 top::ModuleList ::= files::Files
 {
-  top.ocamlDecls = files.ocamlDecls;
+  -- top.ocamlDecls = files.ocamlDecls;
+  top.ocamlDecls = [ocamlLibraryDecl()];
 }
 
 aspect production consModuleList
 top::ModuleList ::= m::Module rest::ModuleList
 {
-  -- Put type declarations first, then non-type declarations 
+  -- Put library declarations first, then type declarations, then others 
   local allDecls::[OCamlDecl] = m.ocamlDecls ++ rest.ocamlDecls;
+  local libDecls::[OCamlDecl] = filter(isLibraryDecl, allDecls);
   local typeDecls::[OCamlDecl] = filter(isTypeDecl, allDecls);
-  local nonTypeDecls::[OCamlDecl] = filter(\ d::OCamlDecl -> !isTypeDecl(d), allDecls);
-  top.ocamlDecls = typeDecls ++ nonTypeDecls;
+  local otherDecls::[OCamlDecl] = filter(\ d::OCamlDecl -> !isTypeDecl(d) && !isLibraryDecl(d), allDecls);
+  top.ocamlDecls = libDecls ++ typeDecls ++ otherDecls;
 }
 
 aspect production module

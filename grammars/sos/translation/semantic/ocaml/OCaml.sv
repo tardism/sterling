@@ -212,6 +212,16 @@ top::OCamlConstructor ::= name::String types::[OCamlType]
 nonterminal OCamlDecl with pp;
 attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm, isMatch occurs on OCamlDecl;
 
+abstract production ocamlLibraryDecl
+top::OCamlDecl ::= 
+{
+  top.pp = "let rec lookup e x = match e with \n | [] -> raise (Failure (\" not found \"))  \n | (y, v) :: rest -> if x = y then v else lookup rest x";
+  top.ocamlRuleType = "unknown";
+  top.ocamlLetReserve = "";
+  top.ocamlMatchTerm = ocamlVar("unknown");
+  top.isMatch = false;
+}
+
 abstract production ocamlTypeDeclaration
 top::OCamlDecl ::= decl::OCamlTypeDecl
 {
@@ -305,6 +315,15 @@ Boolean ::= decl::OCamlDecl
 {
   return case decl of
          | ocamlTypeDeclaration(_) -> true
+         | _ -> false
+         end;
+}
+
+function isLibraryDecl
+Boolean ::= decl::OCamlDecl
+{
+  return case decl of
+         | ocamlLibraryDecl() -> true
          | _ -> false
          end;
 }
