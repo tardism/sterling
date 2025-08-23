@@ -21,8 +21,6 @@ inherited attribute constructorEnv::Env<ConstructorEnvItem>;
 --Turn a list-like thing into a list
 synthesized attribute toList<a>::[a];
 --Turn a list-like thing into a list of decorated nodes
-synthesized attribute toDecoratedList<a>::[Decorated a with {}];
---Length of list-like things
 synthesized attribute len::Integer;
 
 

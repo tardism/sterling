@@ -173,11 +173,11 @@ eval_a E A V O1
 eval_c E printVal(A) E addOutput(O1, V)
 
 
-eval_c E1 C1 E2 O1
+eval_c E C1 E2 O1
 eval_c E2 C2 E3 O2
 appendOutput O1 O2 O
 ------------------------ [E-Seq]
-eval_c E1 seq(C1, C2) E3 O
+eval_c E seq(C1, C2) E3 O
 
 
 eval_a E A I O
@@ -204,12 +204,12 @@ eval_b E B falseVal O
 eval_c E while(B, C) E O
 
 
-eval_b E1 B trueVal O1
-eval_c E1 C E2 O2
+eval_b E B trueVal O1
+eval_c E C E2 O2
 eval_c E2 while(B, C) E3 O3
 appendOutput O1 O2 O4
 appendOutput O4 O3 O
 ------------------------ [E-WhileTrue]
-eval_c E1 while(B, C) E3 O
+eval_c E while(B, C) E3 O
 
 

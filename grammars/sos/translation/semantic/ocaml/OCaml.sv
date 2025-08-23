@@ -113,7 +113,10 @@ top::OCamlExpr ::= value::Boolean
 abstract production ocamlSequence
 top::OCamlExpr ::= first::OCamlExpr second::OCamlExpr
 {
-  top.pp = first.pp ++ ";\n" ++ second.pp;
+  top.pp = case second of
+           | ocamlIf(_) -> first.pp ++ "\n else " ++ second.pp ++ " "
+           | _ -> first.pp ++ "\n" ++ second.pp ++ " "
+           end;
 }
 
 abstract production ocamlConstructor
@@ -121,7 +124,7 @@ top::OCamlExpr ::= name::String args::[OCamlExpr]
 {
   top.pp = if null(args)
            then name
-           else name ++ " (" ++ implode(", ", map((.pp), args)) ++ ")";
+           else "(" ++ name ++ " (" ++ implode(", ", map((.pp), args)) ++ ")" ++ ")";
 }
 
 abstract production ocamlTuple
@@ -160,10 +163,10 @@ top::OCamlExpr ::= name::String value::OCamlExpr body::OCamlExpr
 }
 
 abstract production ocamlMatch
-top::OCamlExpr ::= expr::OCamlExpr cases::OCamlExpr
+top::OCamlExpr ::= expr::OCamlExpr cases::OCamlExpr afterExpr::OCamlExpr
 {
-  top.pp = "match " ++ expr.pp ++ " with\n" ++
-           "->" ++ cases.pp;
+  top.pp = "(match " ++ expr.pp ++ " with\n" ++
+          cases.pp ++ " -> " ++ afterExpr.pp ++ "\n";
 }
 
 abstract production ocamlIf
@@ -261,17 +264,21 @@ function help2
   return if d.isMatch
   -- then "_ -> hello " ++ d.pp
   -- else " else what" ++ arrowEndString(^d);
-    then " " ++ d.pp
-  else " " ++ arrowEndString(^d);
+    then " | _ -> \n" ++ arrowEndString(^d)
+  else " else " ++ arrowEndString(^d);
 }
 function help1 
 String ::= decls::[OCamlDecl]
 {
   return if length(decls) == 1
   then head(decls).pp
-  else head(decls).pp ++ implode("", map(help2, tail(decls)))
-    ++ "else raise (Failure \"should not reach here\")"
-    ++ implode("", repeat(")", length(decls))) ++ "\n";
+  else if head(tail(decls)).isMatch
+    then head(decls).pp ++ implode("", map(help2, tail(decls)))
+      ++ " | _ -> raise (Failure \"should not reach here\")"
+      ++ implode("", repeat(")", length(decls))) ++ "\n"
+    else head(decls).pp ++ implode("", map(help2, tail(decls)))
+      ++ " else raise (Failure \"should not reach here\")"
+      ++ implode("", repeat(")", length(decls))) ++ "\n";
 }
 
 

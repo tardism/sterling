@@ -2,14 +2,16 @@ grammar sos:translation:semantic:ocaml;
 
 attribute ocamlDecls occurs on Rule;
 
+type DecoratedJudgment = Decorated Judgment with {};
+
 function returnIsMatchIndex
-Integer ::= judgments::[Judgment]
+Integer ::= judgments::[DecoratedJudgment]
 {
   return returnIsMatchIndexHelper(judgments, 0);
 }
 
 function returnIsMatchIndexHelper
-Integer ::= judgments::[Judgment] currentIndex::Integer
+Integer ::= judgments::[DecoratedJudgment] currentIndex::Integer
 {
   return case judgments of
   | [] -> -1  -- Not found, return -1
@@ -21,16 +23,16 @@ Integer ::= judgments::[Judgment] currentIndex::Integer
 }
 
 function returnLastIsMatchIndex
-Integer ::= judgments::[Judgment]
+Integer ::= judgments::[DecoratedJudgment]
 {
   local len::Integer = length(judgments);
-  local reversedJudgments::[Judgment] = reverse(judgments);
+  local reversedJudgments::[DecoratedJudgment] = reverse(judgments);
   local firstInReversed::Integer = returnIsMatchIndex(reversedJudgments);
   return if firstInReversed == -1 then -1 else len - 1 - firstInReversed;
 }
 
 function processJudgmentList
-OCamlExpr ::= judgments::[Judgment] conclusion:: OCamlExpr
+OCamlExpr ::= judgments::[DecoratedJudgment] conclusion::OCamlExpr
 {
   local firstMatchIndex::Integer = returnIsMatchIndex(judgments);
   return case judgments of
@@ -38,40 +40,36 @@ OCamlExpr ::= judgments::[Judgment] conclusion:: OCamlExpr
   | _ -> 
       if firstMatchIndex == -1 
       then -- No match patterns, process normally
-        foldl(\ acc::OCamlExpr j::Judgment -> 
+        foldl(\ acc::OCamlExpr j::DecoratedJudgment -> 
                 ocamlSequence(j.ocamlExpr, acc), 
               ^conclusion, reverse(judgments))
       else -- Has match patterns
         processWithMatches(judgments, firstMatchIndex, ^conclusion)
   end;
-  -- return ^conclusion;
 }
 
 function processWithMatches
-OCamlExpr ::= judgments::[Judgment] firstMatchIndex::Integer conclusion:: OCamlExpr
+OCamlExpr ::= judgments::[DecoratedJudgment] firstMatchIndex::Integer conclusion::OCamlExpr
 {
   local lastMatchIndex::Integer = returnLastIsMatchIndex(judgments);
-  local beforeMatch::[Judgment] = take(firstMatchIndex, judgments);
-  local matchJudgments::[Judgment] = 
+  local beforeMatch::[DecoratedJudgment] = take(firstMatchIndex, judgments);
+  local matchJudgments::[DecoratedJudgment] = 
     take(lastMatchIndex - firstMatchIndex + 1, drop(firstMatchIndex, judgments));
-  local afterMatch::[Judgment] = drop(lastMatchIndex + 1, judgments);
-  local beforeExpr::OCamlExpr = 
-    foldr(\ j::Judgment acc::OCamlExpr -> 
-            ocamlSequence(j.ocamlExpr, acc), 
-          ^conclusion, beforeMatch);
+  local afterMatch::[DecoratedJudgment] = drop(lastMatchIndex + 1, judgments);
   local matchExprs::[OCamlExpr] = map((.ocamlExpr), matchJudgments);
   local matchResults::[OCamlExpr] = map((.matchRes), matchJudgments);
   local afterExpr::OCamlExpr = processJudgmentList(afterMatch, ^conclusion);
-  return ocamlSequence(
-    ^beforeExpr,
-    ocamlSequence(
-      ocamlMatch(
-        ocamlTuple(matchExprs),
-        ocamlTuple(matchResults)
-      ),
+  local matchExpr::OCamlExpr = 
+    ocamlMatch(
+      ocamlTuple(matchExprs),
+      ocamlTuple(matchResults),
       ^afterExpr
-    )
-  );
+    );
+  local beforeExpr::OCamlExpr = 
+    foldr(\ j::DecoratedJudgment acc::OCamlExpr -> 
+            ocamlSequence(j.ocamlExpr, acc), 
+          ^matchExpr, beforeMatch);
+  return ^beforeExpr;
 }
 
 aspect production extRule
@@ -79,13 +77,13 @@ top::Rule ::= premises::JudgmentList name::String conclusion:: Judgment
 {
   local functionName::String = name;
   -- premises.ocamlLetReserve = conclusion.ocamlLetReserve;
+  local decoratedJudgments::[DecoratedJudgment] = premises.decoratedJudgmentList;
   local functionBody::OCamlExpr = 
-          processJudgmentList(premises.toList, conclusion.ocamlExpr);
-  local t1::Integer = returnIsMatchIndex(premises.toList);
-  local t2::Integer = returnLastIsMatchIndex(premises.toList);
-  local t3 :: Integer = t1 + t2;
+          processJudgmentList(decoratedJudgments, conclusion.ocamlExpr);
+  local isMatch::Boolean = 
+    if returnIsMatchIndex(decoratedJudgments) == -1 then false else true;
   top.ocamlDecls = 
-    [ocamlMatchBranch(conclusion.isMatch, conclusion.ocamlJudgmentType, conclusion.ocamlLetReserve, conclusion.ocamlMatchTerm, ^functionBody)];
+    [ocamlMatchBranch(isMatch, conclusion.ocamlJudgmentType, conclusion.ocamlLetReserve, conclusion.ocamlMatchTerm, ^functionBody)];
 }
 
 aspect production defaultRule

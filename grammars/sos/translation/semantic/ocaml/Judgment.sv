@@ -48,7 +48,8 @@ function bindingLetOrMatch
 String ::= T::Term
 {
   return if T.isVariable then
-    " _ "
+    -- " _ "
+    T.ocamlExpr.pp
   else
     T.ocamlExpr.pp;
 }
@@ -87,7 +88,7 @@ top::Judgment ::= rel::QName args::TermList
   local matchBindingExprs::String = 
     ocamlApplication(ocamlVar(rel.ocamlString), take(pcIndex+1, args.ocamlExprs)).pp;
       
-  top.matchRes = ocamlVar(implode(", ", map(bindingLetOrMatch, drop(pcIndex+1, args.toList))));
+  top.matchRes = ocamlVar("(" ++ implode(", ", map(bindingLetOrMatch, drop(pcIndex+1, args.toList))) ++ ")");
   local inputsTermList::[String] = 
     map(ocamlTermVarGen, take(pcIndex+1, args.toList));
   top.ocamlJudgmentType = rel.ocamlString;
@@ -127,6 +128,7 @@ top::Judgment ::= rel::QName args::TermList
   top.ocamlExpr = 
     ocamlApplication(ocamlVar("not"), 
       [ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs)]);
+  top.isMatch = false;
 }
 
 aspect production projJudgment
@@ -135,18 +137,21 @@ top::Judgment ::= args::TermList ty::QName t::Term projection::Term
   top.ocamlExpr = 
     ocamlApplication(ocamlVar("project_" ++ ty.ocamlString), 
       args.ocamlExprs ++ [t.ocamlExpr, projection.ocamlExpr]);
+  top.isMatch = false;
 }
 
 aspect production binOpJudgment
 top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
 {
   top.ocamlExpr = op.ocamlBinOp(t1.ocamlExpr, t2.ocamlExpr, result.ocamlExpr);
+  top.isMatch = false;
 }
 
 aspect production topBinOpJudgment
 top::Judgment ::= t1::Term op::TopBinOp t2::Term
 {
   top.ocamlExpr = op.ocamlTopBinOp(t1.ocamlExpr, t2.ocamlExpr);
+  top.isMatch = false;
 }
 
 aspect production plusOp

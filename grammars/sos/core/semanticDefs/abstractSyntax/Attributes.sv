@@ -15,6 +15,7 @@ synthesized attribute judgmentDecls::[JudgmentEnvItem];
 synthesized attribute projectionDecls::[ProjectionEnvItem];
 synthesized attribute ruleDecls::[RuleEnvItem];
 synthesized attribute buildsOnDecls::[QName];
+synthesized attribute decoratedJudgmentList::[Decorated Judgment with {}];
 
 
 --constructor whose argument types we are unifying
