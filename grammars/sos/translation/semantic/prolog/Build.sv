@@ -64,45 +64,45 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
 {
   --
   local parserFunction::String =
-      "parser parsePrologOutput::PrologOutput{\n" ++
-      "   sos:translation:semantic:prolog:parseProlog;\n" ++
-      "}";
+      s"""parser parsePrologOutput::PrologOutput{
+   sos:translation:semantic:prolog:parseProlog;
+}""";
 
   --init function for Prolog interaction, starting Prolog process
   local initFunction::String =
-      "function init_derive\nIOVal<DeriveConfig> ::= " ++
-                       "ioin::IOToken\n{\n" ++
-      "   return spawnProcess(\"strace\", [\"-o\", \"/tmp/whatever.strace\", \"-s\", \"4096\", \"swipl\",\"" ++ prologFile ++
-                                           "\"], ioin);\n}";
+      s"""function init_derive
+IOVal<DeriveConfig> ::= ioin::IOToken
+{
+   return spawnProcess("strace", ["-o", "/tmp/whatever.strace", "-s", "4096", "swipl","${prologFile}"], ioin);
+}""";
 
   --derive function
   local deriveFunction::String =
-      "function derive\nIOVal<Maybe<[(String, Term)]>> ::= " ++
-           "d::DeriveConfig j::Judgment inArgs::[(String, Term)] " ++
-           "ioin::IOToken\n{\n" ++
-      "   local args::String = " ++
-             "foldr(\\ p::(String, Term) rest::String -> " ++
-                "p.1 ++ \"=\" ++ p.2.prolog.pp ++ \", \" ++ rest, " ++
-                   "j.prolog.pp, inArgs);\n" ++
-      "   local s::IOToken = sendToProcess(d, " ++
-                               "args ++ \". .\\n\", ioin);\n" ++
-                     --end with ". ." so we get the next prompt always
-      "   local output::IOVal<String> = " ++
-             "let throwAway1::IOVal<String> = readLineFromProcess(d, s) in " ++
-             --actual is first line of output
-             "let actual::IOVal<String> = readLineFromProcess(d, throwAway1.io) in " ++
-             --anymore is anything left after that
-             "let anymore::IOVal<String> = readAllFromProcess(d, actual.io) in " ++
-             "ioval(anymore.io, actual.iovalue ++ anymore.iovalue) end end end;\n" ++
-            -- BEGIN ADDED DEBUG CODE 
-            "   local debug_message::String = \"\\n DEBUG: Raw Prolog Output START \\n\" ++ output.iovalue ++ \"\\n DEBUG: Raw Prolog Output END \\n\";\n" ++
-            "   local io_after_debug_print::IOToken = printT(debug_message, output.io);\n" ++
-            -- END ADDED DEBUG CODE 
+      s"""function derive
+IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
+{
+   local args::String = 
+           foldr(\ p::(String, Term) rest::String -> 
+              p.1 ++ "=" ++ p.2.prolog.pp ++ ", " ++ rest, 
+                 j.prolog.pp, inArgs);
+   local s::IOToken = sendToProcess(d, args ++ ". .\n", ioin);
+                   --end with ". ." so we get the next prompt always
+   local output::IOVal<String> = 
+           let throwAway1::IOVal<String> = readLineFromProcess(d, s) in 
+           --actual is first line of output
+           let actual::IOVal<String> = readLineFromProcess(d, throwAway1.io) in 
+           --anymore is anything left after that
+           let anymore::IOVal<String> = readAllFromProcess(d, actual.io) in 
+           ioval(anymore.io, actual.iovalue ++ anymore.iovalue) end end end;
+          -- BEGIN ADDED DEBUG CODE 
+          local debug_message::String = "\n DEBUG: Raw Prolog Output START \n" ++ output.iovalue ++ "\n DEBUG: Raw Prolog Output END \n";
+          local io_after_debug_print::IOToken = printT(debug_message, output.io);
+          -- END ADDED DEBUG CODE 
 
-      "   local parsed::ParseResult<PrologOutput> = " ++
-             "parsePrologOutput(output.iovalue," ++
-                              "\"<<prolog output>>\");\n" ++
-      "   return ioval(output.io, parsed.parseTree.result);\n}";
+   local parsed::ParseResult<PrologOutput> = 
+           parsePrologOutput(output.iovalue, "<<prolog output>>");
+   return ioval(output.io, parsed.parseTree.result);
+}""";
     -- uncomment this to print the parsed output, but you will lose the parser error messages
     -- if parse fails, it needs to be nothing() in order to let silver run io ops before interrupted by error exction
     -- "   return " ++
@@ -112,27 +112,33 @@ IOVal<Integer> ::= genLoc::String module::String prologFile::String
 
   --end function for Prolog interaction, killing background process
   local endFunction::String =
-      "function end_derive\nIOToken ::= d::DeriveConfig " ++
-                                       "ioin::IOToken\n{\n" ++
-      "   return waitForProcess(d, sendToProcess(d, \"halt.\\n\", " ++
-                                                 "ioin));\n}";
+      s"""function end_derive
+IOToken ::= d::DeriveConfig ioin::IOToken
+{
+   return waitForProcess(d, sendToProcess(d, "halt.\n", ioin));
+}""";
 
   local grammarInfo::(String, String) =
       buildFinalGrammar(module, genLoc);
 
   --contents of the Derive.sv file
   local completeContents::String =
-      "grammar " ++ grammarInfo.2 ++ ";\n" ++
-      "import silver:util:subprocess;\n" ++
-      "import sos:core:common:abstractSyntax;\n" ++
-      "import sos:core:semanticDefs:abstractSyntax;\n" ++
-      "import sos:translation:semantic:prolog;\n" ++
-      "import sos:translation:semantic:prolog:parseProlog;\n" ++
-      "type DeriveConfig = ProcessHandle;\n\n" ++
-      parserFunction ++ "\n\n" ++
-      initFunction ++ "\n\n" ++
-      deriveFunction ++ "\n\n" ++
-      endFunction ++ "\n";
+      s"""grammar ${grammarInfo.2};
+import silver:util:subprocess;
+import sos:core:common:abstractSyntax;
+import sos:core:semanticDefs:abstractSyntax;
+import sos:translation:semantic:prolog;
+import sos:translation:semantic:prolog:parseProlog;
+type DeriveConfig = ProcessHandle;
+
+${parserFunction}
+
+${initFunction}
+
+${deriveFunction}
+
+${endFunction}
+""";
 
   --write it out
   local filename::String = grammarInfo.1 ++ "/Derive.sv";

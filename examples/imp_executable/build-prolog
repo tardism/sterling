@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# sterling $@ -I .. imp:composed
+(cd ../.. && ./build)
+echo "---------------------------------"
+echo "Build completed."
+echo "---------------------------------"
+sterling --silver-concrete --prolog -I .. $@ imp_executable:host

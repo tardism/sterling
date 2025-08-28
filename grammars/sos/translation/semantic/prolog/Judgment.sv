@@ -138,6 +138,12 @@ top::TopBinOp ::=
   top.prolog = eqPrologBinOp();
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.prolog = eqPrologBinOp();
+}
+
 
 aspect production neqOp
 top::TopBinOp ::=
