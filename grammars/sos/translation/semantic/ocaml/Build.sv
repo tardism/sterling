@@ -20,7 +20,61 @@ IOVal<Integer> ::= _ _ _ _ _
                                   a.outputOCaml,
                   actionDesc = "OCaml Translation")];
 }
+function genSilverFunctions
+IOVal<Integer> ::= genLoc::String module::String ocamlFile::String
+                   ioin::IOToken
+{
+  local grammarInfo::(String, String) =
+    buildFinalGrammar(module, genLoc);
 
+    local initFunction::String =
+      s"""function init_derive
+IOVal<DeriveConfig> ::= ioin::IOToken
+{
+   return ioval(ioin, ());
+}""";
+
+local deriveFunction::String =
+      s"""function derive
+IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
+{ 
+  -- OCaml doesn't need runtime derivation, return nothing
+  return ioval(ioin, nothing());
+}""";
+
+local endFunction::String =
+      s"""function end_derive
+IOToken ::= d::DeriveConfig ioin::IOToken
+{
+   return ioin;
+}""";
+
+  local completeContents::String =
+      s"""grammar ${grammarInfo.2};
+import silver:util:subprocess;
+import sos:core:common:abstractSyntax;
+import sos:core:semanticDefs:abstractSyntax;
+import sos:translation:semantic:ocaml;
+type DeriveConfig = ();
+
+${initFunction}
+
+${deriveFunction}
+
+${endFunction}
+""";
+  --write it out
+  local filename::String = grammarInfo.1 ++ "/Derive.sv";
+  local mkDirectory::IOVal<Integer> =
+      systemT("mkdir -p " ++ grammarInfo.1, ioin);
+  local written::IOToken =
+      writeFileT(filename, completeContents, mkDirectory.io);
+
+  return
+      if mkDirectory.iovalue == 0
+      then ioval(written, 0)
+      else mkDirectory;
+}
 function runOCaml
 IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
                    a::Decorated CmdArgs i::IOToken
@@ -38,11 +92,14 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
       systemT("mkdir -p " ++ dir, message);
   local output::IOToken =
       writeFileT(fileLoc, ocamlString, mkDirectory.io);
-
+  --write Silver pieces for running
+  local genDerive::IOVal<Integer> =
+      genSilverFunctions(genLoc, a.generateModuleName, fileLoc,
+                         output);
   return
       if mkDirectory.iovalue != 0
       then mkDirectory
-      else ioval(output, 0);
+      else genDerive;
 }
 
 function buildOCamlProgram

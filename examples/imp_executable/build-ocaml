@@ -5,4 +5,4 @@
 echo "---------------------------------"
 echo "Build completed."
 echo "---------------------------------"
-sterling --ocaml -I .. $@ imp_executable:host
+sterling --ocaml --silver-concrete -I .. $@ imp_executable:host
