@@ -120,6 +120,12 @@ top::TopBinOp ::=
   top.silver_pp = "eqOp(location=bogusLoc())";
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.silver_pp = "ocamlEqOp(location=bogusLoc())";
+}
+
 
 aspect production neqOp
 top::TopBinOp ::=

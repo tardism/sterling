@@ -229,6 +229,7 @@ top::OCamlDecl ::= decl::OCamlTypeDecl
   top.ocamlRuleType = "type";  -- Type declarations don't have rule types
   top.ocamlLetReserve = "";  -- No let reserve for type declarations
   top.ocamlMatchTerm = ocamlVar("unknown");  -- No match term for type declarations
+  top.isMatch = false;  -- Type declarations are not matches
 }
 
 abstract production ocamlLetDeclaration
@@ -242,6 +243,7 @@ top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
   top.ocamlRuleType = "unknown";  -- Default rule type for let declarations
   top.ocamlLetReserve = name ++ paramStr;  -- Reserve the name and params
   top.ocamlMatchTerm = ocamlVar(name);  -- Match term is the name
+  top.isMatch = false;  -- Let declarations are not matches
 }
 
 abstract production ocamlMatchBranch
@@ -305,6 +307,9 @@ top::OCamlDecl ::= bodies::[OCamlDecl]
     if null(bodies) 
     then "unknown"
     else head(bodies).ocamlRuleType;  -- Use rule type from first body
+  top.isMatch = false;  -- Let full declarations are not matches
+  top.ocamlLetReserve = if null(bodies) then "" else head(bodies).ocamlLetReserve;
+  top.ocamlMatchTerm = if null(bodies) then ocamlVar("unknown") else head(bodies).ocamlMatchTerm;
 }
 
 

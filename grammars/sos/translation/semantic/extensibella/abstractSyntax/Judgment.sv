@@ -145,6 +145,12 @@ top::TopBinOp ::=
   top.eb = eqMetaterm;
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.eb = eqMetaterm;
+}
+
 
 aspect production neqOp
 top::TopBinOp ::=

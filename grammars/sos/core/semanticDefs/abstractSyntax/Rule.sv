@@ -262,7 +262,7 @@ nonterminal JudgmentList with
    toList<Judgment>,
    tyEnv, constructorEnv, judgmentEnv, projectionEnv,
    errors, downSubst, upSubst, finalSubst,
-   downVarTypes, upVarTypes, decoratedJudgmentList,
+   downVarTypes, upVarTypes,
    location;
 propagate errors on JudgmentList;
 
@@ -272,7 +272,6 @@ top::JudgmentList ::=
   top.pp = "";
 
   top.toList = [];
-  top.decoratedJudgmentList = [];
 
   top.upSubst = top.downSubst;
 
@@ -289,7 +288,6 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   rest.moduleName = top.moduleName;
 
   top.toList = ^j::rest.toList;
-  top.decoratedJudgmentList = j::rest.decoratedJudgmentList;
 
   j.tyEnv = top.tyEnv;
   j.constructorEnv = top.constructorEnv;

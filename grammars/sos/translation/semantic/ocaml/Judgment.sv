@@ -6,6 +6,44 @@ attribute ocamlBinOp occurs on BinOp;
 attribute ocamlTopBinOp occurs on TopBinOp;
 attribute ocamlConjunction occurs on JudgmentList;
 
+-- Dummy values for missing judgment productions
+aspect production negationRelation
+top::Judgment ::= rel::QName args::TermList
+{
+  top.matchRes = ocamlVar("dummy_match");
+  top.ocamlLetReserve = "dummy_let";
+  top.ocamlMatchTerm = ocamlVar("dummy_term");
+  top.ocamlJudgmentType = "dummy_judgment";
+    
+}
+
+aspect production projJudgment  
+top::Judgment ::= args::TermList rel::QName projection::Term ty::Term
+{
+  top.matchRes = ocamlVar("dummy_match");
+  top.ocamlLetReserve = "dummy_let";
+  top.ocamlMatchTerm = ocamlVar("dummy_term");
+  top.ocamlJudgmentType = "dummy_judgment";
+}
+
+aspect production binOpJudgment
+top::Judgment ::= t1::Term op::BinOp t2::Term result::Term
+{
+  top.matchRes = ocamlVar("dummy_match");
+  top.ocamlLetReserve = "dummy_let";
+  top.ocamlMatchTerm = ocamlVar("dummy_term");
+  top.ocamlJudgmentType = "dummy_judgment";
+}
+
+aspect production topBinOpJudgment
+top::Judgment ::= t1::Term op::TopBinOp t2::Term
+{
+  top.matchRes = ocamlVar("dummy_match");
+  top.ocamlLetReserve = "dummy_let";
+  top.ocamlMatchTerm = ocamlVar("dummy_term");
+  top.ocamlJudgmentType = "dummy_judgment";
+}
+
 -- so, for example eval_a E A1 V1 O1, 
 -- we loop through the args to get the primary component
 -- and get the index of A1. 
@@ -76,7 +114,11 @@ true, args);
 aspect production relation
 top::Judgment ::= rel::QName args::TermList
 {
-  local pcIndex::Integer = getIndexOfPrimaryArg(^rel, top.judgmentEnv);
+  local pcIndex::Integer = 
+    case lookupEnv(^rel, top.judgmentEnv) of
+    | [] -> 1  -- Default fallback when judgment not found in environment
+    | _ -> getIndexOfPrimaryArg(^rel, top.judgmentEnv)
+    end;
   local letBindingExprs::[String] = map((.pp), drop(pcIndex+1, args.ocamlExprs));
   local letBinding::String = 
     if length(letBindingExprs) == 0 then "()"
@@ -103,7 +145,7 @@ top::Judgment ::= rel::QName args::TermList
   top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.toList)))) ++ " )");
   top.ocamlExpr = 
     -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
-    if top.isConclusion then
+    if true then
     -- ocamlVar(implode(", ",
     --   map(ocamlTermVarGen, args.toList)))
     ocamlVar(letBinding) 

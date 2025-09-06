@@ -1,8 +1,9 @@
 grammar sos:translation:semantic:ocaml;
 
 attribute ocamlDecls occurs on Rule;
-
-type DecoratedJudgment = Decorated Judgment with {};
+attribute decoratedJudgmentList occurs on JudgmentList;
+type DecoratedJudgment = Decorated Judgment with {isConclusion, judgmentEnv};
+synthesized attribute decoratedJudgmentList::[DecoratedJudgment];
 
 function returnIsMatchIndex
 Integer ::= judgments::[DecoratedJudgment]
@@ -107,6 +108,7 @@ aspect production nilJudgmentList
 top::JudgmentList ::=
 {
   top.ocamlConjunction = \ conclusion::OCamlExpr -> conclusion;
+  top.decoratedJudgmentList = [];
 }
 
 aspect production consJudgmentList
@@ -115,4 +117,5 @@ top::JudgmentList ::= j::Judgment rest::JudgmentList
   top.ocamlConjunction = 
     \ conclusion::OCamlExpr ->
       ocamlInfixOp(j.ocamlExpr, "", rest.ocamlConjunction(conclusion));
+  top.decoratedJudgmentList = j::rest.decoratedJudgmentList;
 }

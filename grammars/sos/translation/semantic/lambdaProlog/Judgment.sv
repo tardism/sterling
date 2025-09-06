@@ -132,6 +132,12 @@ top::TopBinOp ::=
              binOpLambdaPrologFormula(t1, eqLambdaPrologBinOp(), t2);
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.lp = \ t1::LambdaPrologTerm t2::LambdaPrologTerm ->
+             binOpLambdaPrologFormula(t1, eqLambdaPrologBinOp(), t2);
+}
 
 aspect production neqOp
 top::TopBinOp ::=

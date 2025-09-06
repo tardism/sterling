@@ -33,13 +33,16 @@ IOVal<DeriveConfig> ::= ioin::IOToken
 {
    return ioval(ioin, ());
 }""";
-
+local ocamlFileStr::String = "\"" ++ ocamlFile ++ "\"";
 local deriveFunction::String =
       s"""function derive
 IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
 { 
-  -- OCaml doesn't need runtime derivation, return nothing
-  return ioval(ioin, nothing());
+  -- OCaml doesn't need runtime derivation, just write a simple message
+  local args::String = j.pp;
+  local written::IOToken =
+      writeFileT(${ocamlFileStr}, args, ioin);
+  return ioval(written, nothing());
 }""";
 
 local endFunction::String =

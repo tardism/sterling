@@ -95,6 +95,12 @@ top::TopBinOp ::=
   top.ppLaTeX = "=";
 }
 
+aspect production ocamlEqOp
+top::TopBinOp ::=
+{
+  top.ppLaTeX = "=";
+}
+
 
 aspect production neqOp
 top::TopBinOp ::=
