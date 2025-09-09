@@ -145,7 +145,7 @@ top::Judgment ::= rel::QName args::TermList
   top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.toList)))) ++ " )");
   top.ocamlExpr = 
     -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
-    if true then
+    if top.isConclusion then
     -- ocamlVar(implode(", ",
     --   map(ocamlTermVarGen, args.toList)))
     ocamlVar(letBinding) 
