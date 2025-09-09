@@ -21,7 +21,7 @@ IOVal<Integer> ::= _ _ _ _ _
                   actionDesc = "OCaml Translation")];
 }
 function genSilverFunctions
-IOVal<Integer> ::= genLoc::String module::String ocamlFile::String
+IOVal<Integer> ::= genLoc::String module::String ocamlFile::String ocamlString::String
                    ioin::IOToken
 {
   local grammarInfo::(String, String) =
@@ -33,14 +33,17 @@ IOVal<DeriveConfig> ::= ioin::IOToken
 {
    return ioval(ioin, ());
 }""";
-local ocamlFileStr::String = "\"" ++ ocamlFile ++ "\"";
+local ocamlFileStr::String = "\"" ++ ocamlFile ++ ".runtime.ml" ++ "\"";
 local deriveFunction::String =
       s"""function derive
 IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
 { 
   -- OCaml doesn't need runtime derivation, just write a simple message
-  local args::String = j.pp;
-  local written::IOToken =
+   local args::String = 
+           foldr(\ p::(String, Term) rest::String -> 
+              p.1 ++ "=" ++ p.2.ocamlExpr.pp ++ ", " ++ rest, 
+                 "", inArgs);  
+    local written::IOToken =
       writeFileT(${ocamlFileStr}, args, ioin);
   return ioval(written, nothing());
 }""";
@@ -90,14 +93,14 @@ IOVal<Integer> ::= m::ModuleList genLoc::String grmmrsLoc::String
   local dir::String =
       genLoc ++ (if endsWith("/", genLoc) then "" else "/") ++
       "ocaml/";
-  local fileLoc::String = dir ++ a.generateModuleName ++ ".ml";
+  local fileLoc::String = dir ++ a.generateModuleName;
   local mkDirectory::IOVal<Integer> =
       systemT("mkdir -p " ++ dir, message);
   local output::IOToken =
-      writeFileT(fileLoc, ocamlString, mkDirectory.io);
+      writeFileT(fileLoc++".ml", ocamlString, mkDirectory.io);
   --write Silver pieces for running
   local genDerive::IOVal<Integer> =
-      genSilverFunctions(genLoc, a.generateModuleName, fileLoc,
+      genSilverFunctions(genLoc, a.generateModuleName, fileLoc, ocamlString,
                          output);
   return
       if mkDirectory.iovalue != 0
