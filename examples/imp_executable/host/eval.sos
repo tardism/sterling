@@ -41,7 +41,7 @@ val_eq intVal(I1) intVal(I2) trueVal
 
 I1 != I2
 -------------------------- [VE-Int-False]
-val_eq intVal(I1) intVal(I2) trueVal
+val_eq intVal(I1) intVal(I2) falseVal
 
 
 ---------------------- [VE-True1]
