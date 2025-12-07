@@ -1,0 +1,30 @@
+Compiling Structured Operational Semantics to Executable OCaml Code
+
+Structured Operational Semantics (SOS) translates naturally to logic programming
+languages like Prolog, which support backtracking and nondeterministic rule selection.
+Functional languages like OCaml, however, require deterministic pattern matching, making
+direct SOS translation challenging.
+
+We present an extension to the Sterling compiler that generates executable OCaml code from
+SOS specifications. We have found that while Prolog can derive unknown values (e.g.,
+given a + 1 =:= 3, Prolog derives a = 2), most programming language semantics only require
+evaluation with known inputs (e.g., c := 1 + 2 or c := a + 2 where a is already in context).
+Since we don't need Prolog-level expressiveness, we can impose constraints on SOS
+inference rules in order to translate SOS to OCaml:
+(1) Inference rules must be explicitly ordered, as OCaml matches patterns sequentially
+rather than through backtracking
+(2) Judgments are divided into inputs and outputs via a "primary component" marker - terms
+before this component are inputs, terms after are outputs. The primary component
+identifies the syntactic form being evaluated; for example, in the judgment
+`eval_a env e v o`, the expression `e` is the primary component, which may be a
+concrete form like `plus(e1, e2)`.
+(3) Premises within an inference rule are combined conjunctively - if any premise
+fails, the entire rule fails and matching proceeds to the next inference rule with the
+same primary component. This requires writing exhaustive premises for inference rules
+sharing the same primary component, carefully ordered to ensure correct matching. 
+
+We demonstrate our approach with implementations of both dynamic semantics (an imperative
+language with arithmetic, booleans, assignment, control flow, and loops) and static semantics
+(typing rules for simply-typed lambda calculus). The same SOS specifications generate both
+executable Prolog and OCaml implementations, showing that carefully designed semantics can
+target both logic and functional paradigms.

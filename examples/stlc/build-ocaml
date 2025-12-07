@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# sterling $@ -I .. imp:composed
+(cd ../.. && ./deep-clean && ./build --clean --mwda)
+echo "---------------------------------"
+echo "Build completed."
+echo "---------------------------------"
+sterling --ocaml --silver-concrete -I .. $@ stlc:host
+# java -jar imp_executable.host.jar examples/hello.imp

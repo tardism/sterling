@@ -28,9 +28,15 @@ hs_err_pid*
 # Silver generated
 build.xml
 
-# LaTeX files
-*.tex
-*.pdf
+# LaTeX auxiliary files (keep .tex and .pdf)
+*.aux
+*.fdb_latexmk
+*.fls
+*.nav
+*.snm
+*.toc
+*.out
+*.synctex.gz
 
 # Prolog files
 *.pl

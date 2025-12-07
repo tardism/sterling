@@ -1,0 +1,184 @@
+\documentclass[final,t]{beamer}
+\mode<presentation>
+\usetheme{default}
+\usepackage[orientation=portrait,size=a0,scale=1.4]{beamerposter}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+\usepackage{amsmath,amsthm,amssymb}
+
+% Colors
+\definecolor{umnmaroon}{RGB}{122,0,25}
+\definecolor{umngold}{RGB}{255,204,51}
+\setbeamercolor{block title}{fg=white,bg=umnmaroon}
+\setbeamercolor{block body}{fg=black,bg=white}
+\setbeamercolor{block alerted title}{fg=white,bg=umngold}
+\setbeamercolor{block alerted body}{fg=black,bg=white}
+
+% Layout
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{caption}[numbered]
+
+\title{\huge Compiling Structured Operational Semantics to Executable OCaml Code}
+\author{Linglong Meng}
+\institute{
+\large
+    University of Minnesota, Twin Cities}
+\date{}
+
+\begin{document}
+
+\begin{frame}[t]
+\begin{columns}[t]
+
+% Header spanning both columns
+\begin{column}{\paperwidth}
+\vskip1cm
+\begin{beamercolorbox}[wd=\paperwidth,center]{title}
+\vskip1cm
+\usebeamerfont{title}\inserttitle\par
+\vskip1cm
+\usebeamerfont{author}\insertauthor\par
+\vskip0.5cm
+\usebeamerfont{institute}\insertinstitute\par
+\vskip1cm
+\end{beamercolorbox}
+
+\begin{beamercolorbox}[wd=\paperwidth,center,sep=1cm]{block body}
+\large
+\textbf{2025 Midwest Programming Languages Summit}\\
+December 13, 2025 | University of Minnesota, Twin Cities
+\end{beamercolorbox}
+\vskip1cm
+\end{column}
+
+\end{columns}
+
+\begin{columns}[t]
+
+% Left Column
+\begin{column}{.48\paperwidth}
+
+\begin{block}{Introduction}
+\large
+When we write down specifications for a programming langauges 
+and reason about it, we usually write down on fancy paper specs, 
+then in someway turn into implementation. 
+However, here we are trying to build a compiler 
+that can directly translate into OCaml code. 
+
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Background}
+\large
+The compiler is build on a existed compiler 
+build upon by UMN graudted Ph.D Dawn Michaelson. 
+The Compiler Sterling can generate Prolog (as 
+one of its many other backends like extensibella 
+but that's for reasoning framework). 
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Spec Language Overview}
+\large
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Constructor declaration:}
+\begin{align*}
+\tau ::= &\; \alpha \\
+       | &\; \beta \\
+       | &\; \kappa(\gamma) \\
+       | &\; \delta(\epsilon, \zeta, \eta)
+\end{align*}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Overall structure:}
+\[
+\frac{\begin{array}{c}
+\langle\text{premise 1}\rangle \\
+\vdots \\
+\langle\text{premise n}\rangle
+\end{array}}{\langle\text{conclusion}\rangle} \; [\text{rule name}]
+\]
+\end{minipage}
+Judgement declaration, you can see it as function signature. 
+
+
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Example}
+\large
+Provide a concrete example of your work here.
+\end{block}
+
+\end{column}
+
+% Right Column
+\begin{column}{.48\paperwidth}
+
+\begin{block}{Results}
+\large
+Present your main results or findings here.
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Implementation}
+\large
+Discuss implementation details, such as:
+\begin{itemize}
+\item OCaml code generation strategy
+\item Key design decisions
+\item Performance considerations
+\end{itemize}
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Evaluation}
+\large
+Include evaluation metrics, benchmarks, or case studies.
+\end{block}
+
+\vskip2ex
+
+\begin{block}{Conclusion \& Future Work}
+\large
+Summarize your contributions and outline future directions.
+\end{block}
+
+\vskip2ex
+
+\begin{block}{References}
+\normalsize
+\begin{thebibliography}{99}
+\bibitem{ref1} Author1. Title1. Conference/Journal, Year.
+\bibitem{ref2} Author2. Title2. Conference/Journal, Year.
+\end{thebibliography}
+\end{block}
+
+\end{column}
+
+\end{columns}
+
+\vskip1cm
+
+% Footer
+\begin{columns}[t]
+\begin{column}{\paperwidth}
+\begin{beamercolorbox}[wd=\paperwidth,center,sep=0.5cm]{block body}
+\small
+\textit{hello}\\
+Contact: meng0181@umn.edu
+\end{beamercolorbox}
+\end{column}
+\end{columns}
+
+\end{frame}
+
+\end{document}
