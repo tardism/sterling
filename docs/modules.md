@@ -31,9 +31,9 @@ user.
 ## Building on Modules
 A module can build on another module using a builds-on declaration:
 ```
-Builds on imp:ort
+ on imp:ort
 ```
-Builds-on declarations can only be given in semantic files, although
+-on declarations can only be given in semantic files, although
 they have the effect of importing all the declarations, regardless of
 category, from the built-on module.
 

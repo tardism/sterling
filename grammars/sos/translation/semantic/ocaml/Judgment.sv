@@ -125,8 +125,6 @@ top::Judgment ::= rel::QName args::TermList
     else if length(letBindingExprs) == 1 then head(letBindingExprs)
     else "(" ++ implode(", ", letBindingExprs) ++ ")";
 
-  -- local matchBindingExprs::String = " match " ++ implode(", ", 
-  --   map(bindingLetOrMatch, drop(pcIndex+1, args.toList))) ++ " with\n";
   local matchBindingExprs::String = 
     ocamlApplication(ocamlVar(rel.ocamlString), take(pcIndex+1, args.ocamlExprs)).pp;
       
@@ -134,9 +132,6 @@ top::Judgment ::= rel::QName args::TermList
   local inputsTermList::[String] = 
     map(ocamlTermVarGen, take(pcIndex+1, args.toList));
   top.ocamlJudgmentType = rel.ocamlString;
-  -- get first pcIndex+1 args 
-  --   top.ocamlLetReserve = rel.ocamlString ++ " " ++ implode(" ", map((.pp), take(pcIndex, args.toList)));
-  -- this is the top of the let binding, only been used if the judgment is a conclusion
   top.ocamlLetReserve = rel.ocamlString ++ " " 
     ++ implode(" ", inputsTermList) 
     ++ " = \n match " 
@@ -144,10 +139,7 @@ top::Judgment ::= rel::QName args::TermList
     ++ " with \n";
   top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.toList)))) ++ " )");
   top.ocamlExpr = 
-    -- ocamlApplication(ocamlVar(rel.ocamlString), args.ocamlExprs);
     if top.isConclusion then
-    -- ocamlVar(implode(", ",
-    --   map(ocamlTermVarGen, args.toList)))
     ocamlVar(letBinding) 
     else if isAllVariables(args.toList) then
     ocamlLet(letBinding, 

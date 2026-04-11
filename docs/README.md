@@ -18,3 +18,6 @@ Documentation is available on several topics:
   [stdLib.md](stdLib.md)
 * Some extensions included as part of Sterling:
   [extensions.md](extensions.md)
+* Some special restrictions on writing the specification for OCaml rules:
+  [OCaml.md](OCaml.md) 
+
