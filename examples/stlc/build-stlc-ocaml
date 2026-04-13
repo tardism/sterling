@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # sterling $@ -I .. imp:composed
-(cd ../.. && ./deep-clean && ./build --clean --mwda)
+# (cd ../.. && ./deep-clean && ./build --clean --mwda)
 echo "---------------------------------"
 echo "Build completed."
 echo "---------------------------------"

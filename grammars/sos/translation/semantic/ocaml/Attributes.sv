@@ -23,3 +23,5 @@ synthesized attribute ocamlTopBinOp::(OCamlExpr ::= OCamlExpr OCamlExpr);
 synthesized attribute ocamlConjunction::(OCamlExpr ::= OCamlExpr);
 synthesized attribute isMatch::Boolean;
 synthesized attribute matchRes::OCamlExpr;
+synthesized attribute openIfCount::Integer;
+synthesized attribute openMatchCount::Integer;

@@ -84,39 +84,52 @@ top::OCamlPattern ::= patterns::[OCamlPattern]
   top.pp = "[" ++ implode("; ", map((.pp), patterns)) ++ "]";
 }
 
-nonterminal OCamlExpr with pp;
+nonterminal OCamlExpr with pp, openIfCount, openMatchCount;
 
 abstract production ocamlVar
 top::OCamlExpr ::= name::String
 {
   top.pp = name;
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlInt
 top::OCamlExpr ::= value::Integer
 {
   top.pp = toString(value);
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlString
 top::OCamlExpr ::= value::String
 {
   top.pp = "\"" ++ value ++ "\"";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlBool
 top::OCamlExpr ::= value::Boolean
 {
   top.pp = if value then "true" else "false";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlSequence
 top::OCamlExpr ::= first::OCamlExpr second::OCamlExpr
 {
-  top.pp = case second of
-           | ocamlIf(_) -> first.pp ++ "\n else " ++ second.pp ++ " "
+  top.pp = case first of
+           | ocamlIf(_) -> first.pp ++ second.pp ++  "\n else "
            | _ -> first.pp ++ "\n" ++ second.pp ++ " "
            end;
+  top.openIfCount = case first of
+                    | ocamlIf(_) -> 1 + second.openIfCount
+                    | _ -> second.openIfCount
+                    end;
+  top.openMatchCount = second.openMatchCount;
 }
 
 abstract production ocamlConstructor
@@ -125,41 +138,55 @@ top::OCamlExpr ::= name::String args::[OCamlExpr]
   top.pp = if null(args)
            then name
            else "(" ++ name ++ " (" ++ implode(", ", map((.pp), args)) ++ ")" ++ ")";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlTuple
 top::OCamlExpr ::= exprs::[OCamlExpr]
 {
   top.pp = "(" ++ implode(", ", map((.pp), exprs)) ++ ")";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlList
 top::OCamlExpr ::= exprs::[OCamlExpr]
 {
   top.pp = "[" ++ implode("; ", map((.pp), exprs)) ++ "]";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlApplication
 top::OCamlExpr ::= func::OCamlExpr args::[OCamlExpr]
 {
   top.pp = func.pp ++ " " ++ implode(" ", map((.pp), args));
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlInfixOp
 top::OCamlExpr ::= left::OCamlExpr op::String right::OCamlExpr
 {
   top.pp = " " ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ " ";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 abstract production ocamlMatchEnd
 top::OCamlExpr ::= left::OCamlExpr op::String right::OCamlExpr
 {
   top.pp = " " ++ left.pp ++ " " ++ op ++ " " ++ right.pp ++ " ";
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlLet
 top::OCamlExpr ::= name::String value::OCamlExpr body::OCamlExpr
 {
   top.pp = "let " ++ name ++ " = " ++ value.pp ++ " in\n" ++ body.pp;
+  top.openIfCount = body.openIfCount;
+  top.openMatchCount = body.openMatchCount;
 }
 
 abstract production ocamlMatch
@@ -167,12 +194,16 @@ top::OCamlExpr ::= expr::OCamlExpr cases::OCamlExpr afterExpr::OCamlExpr
 {
   top.pp = "(match " ++ expr.pp ++ " with\n" ++
           cases.pp ++ " -> " ++ afterExpr.pp ++ "\n";
+  top.openIfCount = afterExpr.openIfCount;
+  top.openMatchCount = 1 + afterExpr.openMatchCount;
 }
 
 abstract production ocamlIf
-top::OCamlExpr ::= cond::OCamlExpr 
+top::OCamlExpr ::= cond::OCamlExpr
 {
   top.pp = "(if " ++ cond.pp ++ " then \n   ";
+  top.openIfCount = 1;
+  top.openMatchCount = 0;
 }
 
 nonterminal OCamlCase with pp;
@@ -210,40 +241,46 @@ top::OCamlConstructor ::= name::String types::[OCamlType]
 }
 
 nonterminal OCamlDecl with pp;
-attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm, isMatch occurs on OCamlDecl;
+attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm, isMatch, openIfCount, openMatchCount occurs on OCamlDecl;
 
 abstract production ocamlLibraryDecl
-top::OCamlDecl ::= 
+top::OCamlDecl ::=
 {
   top.pp = "let rec lookup e x = match e with \n | [] -> raise (Failure (\" not found \"))  \n | (y, v) :: rest -> if x = y then v else lookup rest x";
   top.ocamlRuleType = "unknown";
   top.ocamlLetReserve = "";
   top.ocamlMatchTerm = ocamlVar("unknown");
   top.isMatch = false;
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlTypeDeclaration
 top::OCamlDecl ::= decl::OCamlTypeDecl
 {
   top.pp = decl.pp;
-  top.ocamlRuleType = "type";  -- Type declarations don't have rule types
-  top.ocamlLetReserve = "";  -- No let reserve for type declarations
-  top.ocamlMatchTerm = ocamlVar("unknown");  -- No match term for type declarations
-  top.isMatch = false;  -- Type declarations are not matches
+  top.ocamlRuleType = "type";
+  top.ocamlLetReserve = "";
+  top.ocamlMatchTerm = ocamlVar("unknown");
+  top.isMatch = false;
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 abstract production ocamlLetDeclaration
 top::OCamlDecl ::= name::String params::[String] body::OCamlExpr
 {
-  local paramStr::String = 
+  local paramStr::String =
     if null(params)
     then ""
     else " " ++ implode(" ", params);
   top.pp = "let " ++ name ++ paramStr ++ " =\n  " ++ body.pp;
-  top.ocamlRuleType = "unknown";  -- Default rule type for let declarations
-  top.ocamlLetReserve = name ++ paramStr;  -- Reserve the name and params
-  top.ocamlMatchTerm = ocamlVar(name);  -- Match term is the name
-  top.isMatch = false;  -- Let declarations are not matches
+  top.ocamlRuleType = "unknown";
+  top.ocamlLetReserve = name ++ paramStr;
+  top.ocamlMatchTerm = ocamlVar(name);
+  top.isMatch = false;
+  top.openIfCount = body.openIfCount;
+  top.openMatchCount = body.openMatchCount;
 }
 
 abstract production ocamlMatchBranch
@@ -254,6 +291,8 @@ top::OCamlDecl ::= isMatch::Boolean ruleType::String ocamlLetReserve::String mat
   top.ocamlRuleType = ruleType;
   top.ocamlMatchTerm = ^matchTerm;
   top.isMatch = isMatch;
+  top.openIfCount = body.openIfCount;
+  top.openMatchCount = body.openMatchCount;
 }
 
 function arrowEndString
@@ -274,22 +313,42 @@ function help2
   String ::= d::OCamlDecl
 {
   return if d.isMatch
-  -- then "_ -> hello " ++ d.pp
-  -- else " else what" ++ arrowEndString(^d);
     then " | _ -> \n" ++ arrowEndString(^d)
-  else " else " ++ arrowEndString(^d);
+  else arrowEndString(^d);
 }
-function help1 
+function closeOpenIfs
+String ::= count::Integer
+{
+  return if count > 0
+  then "raise (Failure \"should not reach here\")" ++ implode("", repeat(")", count))
+  else "";
+}
+
+function closeOpenMatches
+String ::= count::Integer
+{
+  return if count > 0
+  then implode("", repeat("\n| _ -> raise (Failure \"should not reach here\"))", count))
+  else "";
+}
+
+function closeOpenExprs
+String ::= ifCount::Integer matchCount::Integer
+{
+  return closeOpenIfs(ifCount) ++ closeOpenMatches(matchCount);
+}
+
+function help1
 String ::= decls::[OCamlDecl]
 {
   return if length(decls) == 1
-  then head(decls).pp
+  then head(decls).pp ++ closeOpenExprs(head(decls).openIfCount, head(decls).openMatchCount)
   else if head(tail(decls)).isMatch
     then head(decls).pp ++ implode("", map(help2, tail(decls)))
       ++ " | _ -> raise (Failure \"should not reach here\")"
       ++ implode("", repeat(")", length(decls))) ++ "\n"
     else head(decls).pp ++ implode("", map(help2, tail(decls)))
-      ++ " else raise (Failure \"should not reach here\")"
+      ++ " raise (Failure \"should not reach here\")"
       ++ implode("", repeat(")", length(decls))) ++ "\n";
 }
 
@@ -307,9 +366,11 @@ top::OCamlDecl ::= bodies::[OCamlDecl]
     if null(bodies) 
     then "unknown"
     else head(bodies).ocamlRuleType;  -- Use rule type from first body
-  top.isMatch = false;  -- Let full declarations are not matches
+  top.isMatch = false;
   top.ocamlLetReserve = if null(bodies) then "" else head(bodies).ocamlLetReserve;
   top.ocamlMatchTerm = if null(bodies) then ocamlVar("unknown") else head(bodies).ocamlMatchTerm;
+  top.openIfCount = 0;
+  top.openMatchCount = 0;
 }
 
 

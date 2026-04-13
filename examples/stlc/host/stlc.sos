@@ -2,27 +2,29 @@ Module stlc:host
 
 
 /*Syntax Constructors*/
-term ::= app(term, term)
-       | abs(string, type, term)
-       | var(string)
 
-type ::= arrow(type, type)
+type_stlc ::= arrow(type_stlc, type_stlc)
        | base
+
+term ::= app(term, term)
+       | abs(string, type_stlc, term)
+       | var(string)
 
 
 
 /*Judgments*/
-Judgment typeOf : [(string, type)] term* type
+Judgment typeOf : [(string, type_stlc)] term* type_stlc
 
 /*Projection Types*/
-Projection term : [(string, type)] /*ctx |- term ~~> term*/
-Projection type :                  /*|- type ~~> type*/
+Projection term : [(string, type_stlc)] /*ctx |- term ~~> term*/
+Projection type_stlc :                  /*|- type_stlc ~~> type_stlc*/
 
 
 /*Typing Rules*/
 
-typeOf G T1 arrow(Ty1, Ty2)
-typeOf G T2 Ty1
+typeOf G T1 arrow(Ty11, Ty2)
+typeOf G T2 Ty12
+Ty11 == Ty12
 --------------------------- [T-App]
 typeOf G app(T1, T2) Ty2
 

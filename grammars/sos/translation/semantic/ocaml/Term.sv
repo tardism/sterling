@@ -48,10 +48,10 @@ top::Term ::=
 aspect production consTerm
 top::Term ::= hd::Term tl::Term
 {
-  top.ocamlExpr = 
+  top.ocamlExpr =
     case tl.ocamlExpr of
     | ocamlList(exprs) -> ocamlList(hd.ocamlExpr :: exprs)
-    | _ -> ocamlInfixOp(hd.ocamlExpr, " :: ", tl.ocamlExpr)
+    | _ -> ocamlVar("(" ++ hd.ocamlExpr.pp ++ " :: " ++ tl.ocamlExpr.pp ++ ")")
     end;
 }
 
