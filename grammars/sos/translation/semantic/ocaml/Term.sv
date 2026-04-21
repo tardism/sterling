@@ -3,10 +3,17 @@ grammar sos:translation:semantic:ocaml;
 attribute ocamlExpr occurs on Term;
 attribute ocamlExprs occurs on TermList;
 
+synthesized attribute decoratedTermList::[Decorated Term with {constructorEnv}] occurs on TermList;
+
 aspect production const
 top::Term ::= name::QName
 {
-  top.ocamlExpr = ocamlConstructor(capitalizeFirst(name.ocamlString), []);
+  top.ocamlExpr =
+    ocamlConstructor(
+      capitalizeFirst(if name.isQualified
+                      then name.ocamlString
+                      else name.fullConstrName.ocamlString),
+      []);
 }
 
 aspect production var
@@ -30,7 +37,12 @@ top::Term ::= s::String
 aspect production appTerm
 top::Term ::= constructor::QName args::TermList
 {
-  top.ocamlExpr = ocamlConstructor(capitalizeFirst(constructor.ocamlString), args.ocamlExprs);
+  top.ocamlExpr =
+    ocamlConstructor(
+      capitalizeFirst(if constructor.isQualified
+                      then constructor.ocamlString
+                      else constructor.fullConstrName.ocamlString),
+      args.ocamlExprs);
 }
 
 aspect production tupleTerm
@@ -65,10 +77,12 @@ aspect production nilTermList
 top::TermList ::=
 {
   top.ocamlExprs = [];
+  top.decoratedTermList = [];
 }
 
 aspect production consTermList
 top::TermList ::= t::Term rest::TermList
 {
   top.ocamlExprs = t.ocamlExpr :: rest.ocamlExprs;
+  top.decoratedTermList = t :: rest.decoratedTermList;
 }

@@ -5,4 +5,4 @@
 echo "---------------------------------"
 echo "Build completed."
 echo "---------------------------------"
-sterling --silver-concrete --prolog -I .. $@ imp_executable:host
+sterling --silver-concrete --lambda-prolog -I .. $@ imp_executable:host

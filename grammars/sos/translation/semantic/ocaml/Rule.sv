@@ -2,7 +2,7 @@ grammar sos:translation:semantic:ocaml;
 
 attribute ocamlDecls occurs on Rule;
 attribute decoratedJudgmentList occurs on JudgmentList;
-type DecoratedJudgment = Decorated Judgment with {isConclusion, judgmentEnv};
+type DecoratedJudgment = Decorated Judgment with {isConclusion, judgmentEnv, constructorEnv};
 synthesized attribute decoratedJudgmentList::[DecoratedJudgment];
 
 function returnIsMatchIndex

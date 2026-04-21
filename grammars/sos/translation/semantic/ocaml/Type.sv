@@ -6,7 +6,14 @@ attribute ocamlTypes occurs on TypeList;
 aspect production nameType
 top::Type ::= name::QName
 {
-  top.ocamlType = ocamlVariantType(name.ocamlString);
+  top.ocamlType =
+    ocamlVariantType(
+      if name.isQualified
+      then name.ocamlString
+      else case name.fullTy of
+           | nameType(fn) -> fn.ocamlString
+           | _ -> name.ocamlString
+           end);
 }
 
 aspect production varType

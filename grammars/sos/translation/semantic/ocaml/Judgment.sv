@@ -65,7 +65,7 @@ Integer ::= rel::QName judgmentEnv::Env<JudgmentEnvItem>
 }
 
 function ocamlTermVarGen
-String ::= term::Term
+String ::= term::Decorated Term with {constructorEnv}
 {
   return if term.isVariable then
     lowercaseFirst(term.pp)
@@ -74,7 +74,7 @@ String ::= term::Term
 }
 
 function ocamlTermVarGen2
-String ::= term::Term
+String ::= term::Decorated Term with {constructorEnv}
 {
   return if term.isVariable then
     " _ "
@@ -83,7 +83,7 @@ String ::= term::Term
 }
 
 function bindingLetOrMatch
-String ::= T::Term
+String ::= T::Decorated Term with {constructorEnv}
 {
   return if T.isVariable then
     -- " _ "
@@ -114,36 +114,37 @@ true, args);
 aspect production relation
 top::Judgment ::= rel::QName args::TermList
 {
-  local pcIndex::Integer = 
+  local pcIndex::Integer =
     case lookupEnv(^rel, top.judgmentEnv) of
     | [] -> 1  -- Default fallback when judgment not found in environment
     | _ -> getIndexOfPrimaryArg(^rel, top.judgmentEnv)
     end;
+  local qualifiedRel::String = rel.fullJudgment.name.ocamlString;
   local letBindingExprs::[String] = map((.pp), drop(pcIndex+1, args.ocamlExprs));
-  local letBinding::String = 
+  local letBinding::String =
     if length(letBindingExprs) == 0 then "()"
     else if length(letBindingExprs) == 1 then head(letBindingExprs)
     else "(" ++ implode(", ", letBindingExprs) ++ ")";
 
-  local matchBindingExprs::String = 
-    ocamlApplication(ocamlVar(rel.ocamlString), take(pcIndex+1, args.ocamlExprs)).pp;
-      
-  top.matchRes = ocamlVar("(" ++ implode(", ", map(bindingLetOrMatch, drop(pcIndex+1, args.toList))) ++ ")");
-  local inputsTermList::[String] = 
-    map(ocamlTermVarGen, take(pcIndex+1, args.toList));
-  top.ocamlJudgmentType = rel.ocamlString;
-  top.ocamlLetReserve = rel.ocamlString ++ " " 
-    ++ implode(" ", inputsTermList) 
-    ++ " = \n match " 
-    ++ implode(" , ", inputsTermList) 
+  local matchBindingExprs::String =
+    ocamlApplication(ocamlVar(qualifiedRel), take(pcIndex+1, args.ocamlExprs)).pp;
+
+  top.matchRes = ocamlVar("(" ++ implode(", ", map(bindingLetOrMatch, drop(pcIndex+1, args.decoratedTermList))) ++ ")");
+  local inputsTermList::[String] =
+    map(ocamlTermVarGen, take(pcIndex+1, args.decoratedTermList));
+  top.ocamlJudgmentType = qualifiedRel;
+  top.ocamlLetReserve = qualifiedRel ++ " "
+    ++ implode(" ", inputsTermList)
+    ++ " = \n match "
+    ++ implode(" , ", inputsTermList)
     ++ " with \n";
-  top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.toList)))) ++ " )");
-  top.ocamlExpr = 
+  top.ocamlMatchTerm = ocamlVar("( " ++ implode(", ", map(ocamlTermVarGen2, (take(pcIndex+1, args.decoratedTermList)))) ++ " )");
+  top.ocamlExpr =
     if top.isConclusion then
-    ocamlVar(letBinding) 
+    ocamlVar(letBinding)
     else if isAllVariables(args.toList) then
-    ocamlLet(letBinding, 
-      ocamlApplication(ocamlVar(rel.ocamlString), 
+    ocamlLet(letBinding,
+      ocamlApplication(ocamlVar(qualifiedRel),
       take(pcIndex+1, args.ocamlExprs)), ocamlVar(""))
     else
     ocamlVar(matchBindingExprs);

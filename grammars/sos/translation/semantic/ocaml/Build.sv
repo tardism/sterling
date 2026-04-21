@@ -33,19 +33,26 @@ IOVal<DeriveConfig> ::= ioin::IOToken
 {
    return ioval(ioin, ());
 }""";
-local ocamlFileStr::String = "\"" ++ ocamlFile ++ ".runtime.ml" ++ "\"";
 local deriveFunction::String =
       s"""function derive
 IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
-{ 
-  -- OCaml doesn't need runtime derivation, just write a simple message
-   local args::String = 
-           foldr(\ p::(String, Term) rest::String -> 
-              p.1 ++ "=" ++ p.2.ocamlExpr.pp ++ ", " ++ rest, 
-                 "", inArgs);  
-    local written::IOToken =
-      writeFileT(${ocamlFileStr}, args, ioin);
-  return ioval(written, nothing());
+{
+  -- Build an OCaml function call from the input judgment and print to terminal.
+   local funcName::String =
+     case j of
+     | relation(rel, _) -> rel.ocamlString
+     | _ -> "unknown_judgment"
+     end;
+   local argsStr::String =
+     foldr(\ p::(String, Term) rest::String ->
+              " (" ++ p.2.ocamlExpr.pp ++ ")" ++ rest,
+           "", inArgs);
+   local callExpr::String = funcName ++ argsStr;
+   local output::String =
+     "\n(* Generated OCaml call for input program *)\n"
+     ++ "let _ = " ++ callExpr ++ "\n";
+   local printed::IOToken = printT(output, ioin);
+   return ioval(printed, nothing());
 }""";
 
 local endFunction::String =
