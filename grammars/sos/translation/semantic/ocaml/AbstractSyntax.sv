@@ -73,8 +73,10 @@ aspect production oneConstructorDecl
 top::AbsConstructorDecls ::= name::String tyargs::TypeList
 {
   local constructorTypes::[OCamlType] = tyargs.ocamlTypes;
-  local qualifiedName::String = addQNameBase(top.moduleName, name).ocamlString;
-  local capitalizedName::String = capitalizeFirst(qualifiedName);
+  -- Old (module-qualified) version:
+  -- local qualifiedName::String = addQNameBase(top.moduleName, name).ocamlString;
+  -- local capitalizedName::String = capitalizeFirst(qualifiedName);
+  local capitalizedName::String = capitalizeFirst(name);
   top.ocamlConstructors = [ocamlVariantConstructor(capitalizedName, constructorTypes)];
 }
 
@@ -93,14 +95,20 @@ top::AbsConstructorDecls ::=
 aspect production initialAbsSyntaxDecl
 top::AbsSyntaxDecl ::= type::String constructors::AbsConstructorDecls
 {
-  local qualifiedType::String = addQNameBase(top.moduleName, type).ocamlString;
+  -- Old (module-qualified) version:
+  -- local qualifiedType::String = addQNameBase(top.moduleName, type).ocamlString;
+  -- top.ocamlDecls =
+  --   [ocamlTypeDeclaration(ocamlVariantDecl(qualifiedType, constructors.ocamlConstructors))];
   top.ocamlDecls =
-    [ocamlTypeDeclaration(ocamlVariantDecl(qualifiedType, constructors.ocamlConstructors))];
+    [ocamlTypeDeclaration(ocamlVariantDecl(type, constructors.ocamlConstructors))];
 }
 
 aspect production addAbsSyntaxDecl
 top::AbsSyntaxDecl ::= type::QName constructors::AbsConstructorDecls
 {
-  top.ocamlDecls = 
-    [ocamlTypeDeclaration(ocamlVariantDecl(type.ocamlString, constructors.ocamlConstructors))];
+  -- Old (module-qualified) version:
+  -- top.ocamlDecls =
+  --   [ocamlTypeDeclaration(ocamlVariantDecl(type.ocamlString, constructors.ocamlConstructors))];
+  top.ocamlDecls =
+    [ocamlTypeDeclaration(ocamlVariantDecl(type.base, constructors.ocamlConstructors))];
 }

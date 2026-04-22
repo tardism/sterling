@@ -40,7 +40,9 @@ IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String,
   -- Build an OCaml function call from the input judgment and print to terminal.
    local funcName::String =
      case j of
-     | relation(rel, _) -> rel.ocamlString
+     -- Old (module-qualified) version:
+     -- | relation(rel, _) -> rel.ocamlString
+     | relation(rel, _) -> rel.base
      | _ -> "unknown_judgment"
      end;
    local argsStr::String =

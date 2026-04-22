@@ -6,13 +6,22 @@ attribute ocamlTypes occurs on TypeList;
 aspect production nameType
 top::Type ::= name::QName
 {
+  -- Old (module-qualified) version:
+  -- top.ocamlType =
+  --   ocamlVariantType(
+  --     if name.isQualified
+  --     then name.ocamlString
+  --     else case name.fullTy of
+  --          | nameType(fn) -> fn.ocamlString
+  --          | _ -> name.ocamlString
+  --          end);
   top.ocamlType =
     ocamlVariantType(
       if name.isQualified
-      then name.ocamlString
+      then name.base
       else case name.fullTy of
-           | nameType(fn) -> fn.ocamlString
-           | _ -> name.ocamlString
+           | nameType(fn) -> fn.base
+           | _ -> name.base
            end);
 }
 

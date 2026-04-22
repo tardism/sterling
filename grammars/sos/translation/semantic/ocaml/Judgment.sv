@@ -119,7 +119,9 @@ top::Judgment ::= rel::QName args::TermList
     | [] -> 1  -- Default fallback when judgment not found in environment
     | _ -> getIndexOfPrimaryArg(^rel, top.judgmentEnv)
     end;
-  local qualifiedRel::String = rel.fullJudgment.name.ocamlString;
+  -- Old (module-qualified) version:
+  -- local qualifiedRel::String = rel.fullJudgment.name.ocamlString;
+  local qualifiedRel::String = rel.fullJudgment.name.base;
   local letBindingExprs::[String] = map((.pp), drop(pcIndex+1, args.ocamlExprs));
   local letBinding::String =
     if length(letBindingExprs) == 0 then "()"

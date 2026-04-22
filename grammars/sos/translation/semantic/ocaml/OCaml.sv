@@ -342,15 +342,6 @@ function help1
 String ::= decls::[OCamlDecl]
 {
   return implode("\n", map(\decl::OCamlDecl -> decl.pp ++ closeOpenExprs(decl.openIfCount, decl.openMatchCount), decls));
-  -- return if length(decls) == 1
-  -- then head(decls).pp ++ closeOpenExprs(head(decls).openIfCount, head(decls).openMatchCount)
-  -- else if head(tail(decls)).isMatch
-  --   then head(decls).pp ++ implode("", map(help2, tail(decls)))
-  --     ++ " | _ -> raise (Failure \"should not reach here\")"
-  --     ++ implode("", repeat(")", length(decls))) ++ "\n"
-  --   else head(decls).pp ++ implode("", map(help2, tail(decls)))
-  --     ++ " raise (Failure \"should not reach here\")"
-  --     ++ implode("", repeat(")", length(decls))) ++ "\n";
 }
 
 --   local temp::[OCamlDecl] = map( 

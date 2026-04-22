@@ -8,11 +8,18 @@ synthesized attribute decoratedTermList::[Decorated Term with {constructorEnv}] 
 aspect production const
 top::Term ::= name::QName
 {
+  -- Old (module-qualified) version:
+  -- top.ocamlExpr =
+  --   ocamlConstructor(
+  --     capitalizeFirst(if name.isQualified
+  --                     then name.ocamlString
+  --                     else name.fullConstrName.ocamlString),
+  --     []);
   top.ocamlExpr =
     ocamlConstructor(
       capitalizeFirst(if name.isQualified
-                      then name.ocamlString
-                      else name.fullConstrName.ocamlString),
+                      then name.base
+                      else name.fullConstrName.base),
       []);
 }
 
@@ -37,11 +44,18 @@ top::Term ::= s::String
 aspect production appTerm
 top::Term ::= constructor::QName args::TermList
 {
+  -- Old (module-qualified) version:
+  -- top.ocamlExpr =
+  --   ocamlConstructor(
+  --     capitalizeFirst(if constructor.isQualified
+  --                     then constructor.ocamlString
+  --                     else constructor.fullConstrName.ocamlString),
+  --     args.ocamlExprs);
   top.ocamlExpr =
     ocamlConstructor(
       capitalizeFirst(if constructor.isQualified
-                      then constructor.ocamlString
-                      else constructor.fullConstrName.ocamlString),
+                      then constructor.base
+                      else constructor.fullConstrName.base),
       args.ocamlExprs);
 }
 
