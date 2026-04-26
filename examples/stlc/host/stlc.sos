@@ -3,21 +3,21 @@ Module stlc:host
 
 /*Syntax Constructors*/
 
-type ::= arrow(type, type)
+type_stlc ::= arrow(type_stlc, type_stlc)
        | base
 
 term ::= app(term, term)
-       | abs(string, type, term)
+       | abs(string, type_stlc, term)
        | var(string)
 
 
 
 /*Judgments*/
-Judgment typeOf : [(string, type)] term* type
+Judgment typeOf : [(string, type_stlc)] term* type_stlc
 
 /*Projection Types*/
-Projection term : [(string, type)] /*ctx |- term ~~> term*/
-Projection type :                  /*|- type ~~> type*/
+Projection term : [(string, type_stlc)] /*ctx |- term ~~> term*/
+Projection type_stlc :                  /*|- type_stlc ~~> type_stlc*/
 
 
 /*Typing Rules*/

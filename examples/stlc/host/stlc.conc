@@ -25,7 +25,7 @@ term3_c<term> ::= Name::name_t ~~> var(Name)
                 | lparen_t T::term_c rparen_t ~~> T
 
 
-type_c<type> ::= Ty1::type2_c arrow_t Ty2::type_c ~~> arrow(Ty1, Ty2)
+type_c<type_stlc> ::= Ty1::type2_c arrow_t Ty2::type_c ~~> arrow(Ty1, Ty2)
                | T::type2_c ~~> T
-type2_c<type> ::= base_t ~~> base
+type2_c<type_stlc> ::= base_t ~~> base
                 | lparen_t T::type_c rparen_t ~~> T
