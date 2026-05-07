@@ -7,6 +7,8 @@ int_t    /[0-9]+/
 eq_t      /=/
 deq_t     /==/
 plus_t    /\+/
+minus_t   /-/
+inc_t     /\+\+/
 or_t      /\|\|/
 and_t     /&&/
 gt_t      />/
@@ -27,9 +29,11 @@ print_t   /print/
 name_t   /[A-Z][a-zA-Z0-9_]*/
 
 a2_conc<a> ::= I::int_t ~~> num($to_int(I))
+             | inc_t Name::name_t ~~> preInc(Name)
              | Name::name_t ~~> name(Name)
 a_conc<a> ::= L::a_conc plus_t R::a2_conc ~~> plus(L, R)
-            | T::a2_conc ~~> T 
+            | L::a_conc minus_t R::a2_conc ~~> minus(L, R)
+            | T::a2_conc ~~> T
 
 
 b_conc<b> ::= L::b_conc or_t R::b2_conc ~~> or(L, R)

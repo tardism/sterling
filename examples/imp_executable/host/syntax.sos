@@ -3,6 +3,8 @@ Module imp_executable:host
 /*Arithmetic Expressions*/
 a ::= num(int)
     | plus(a, a)
+    | minus(a, a)
+    | preInc(string)
     | name(string)
 Projection a :
 

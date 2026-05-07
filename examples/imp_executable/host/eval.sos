@@ -22,9 +22,20 @@ appendOutput O1 O2 O3
 ------------------------------------------------- [AO-Add]
 appendOutput O1 addOutput(O2, V) addOutput(O3, V)
 
-Judgment eval_a : [(string, value)] a* value output
+Judgment eval_a : [(string, value)] a* value [(string, value)] output
 Judgment eval_b : [(string, value)] b* value output
 Judgment eval_c : [(string, value)] c* [(string, value)] output
+
+/* Update an existing binding in the env (used by preInc).  Returns the new env. 
+Judgment updateEnv : [(string, value)] string value* [(string, value)]
+
+------------------------------------------------- [UE-Hit]
+updateEnv (X, _)::Rest X V (X, V)::Rest
+
+updateEnv Rest X V Rest2
+------------------------------------------------- [UE-Miss]
+updateEnv (Y, U)::Rest X V (Y, U)::Rest2 
+*/
 
 /*Check equality in a way appropriate to each value type*/
 
@@ -63,20 +74,50 @@ val_eq falseVal trueVal falseVal
 /*Arithmetic Evaluation*/
 
 ----------------- [E-Num]
-eval_a E num(I) intVal(I) emptyOutput
+eval_a E num(I) intVal(I) E emptyOutput
 
 
-eval_a E A1 intVal(I1) O1
-eval_a E A2 intVal(I2) O2
+eval_a E A1 intVal(I1) E2 O1
+eval_a E2 A2 intVal(I2) E3 O2
 I1 + I2 = I
 appendOutput O1 O2 O
 ----------------------- [E-Plus]
-eval_a E plus(A1, A2) intVal(I) O
+eval_a E plus(A1, A2) intVal(I) E3 O
+
+
+/* Two competing rules for `minus` -- the order in which the two operands are
+   evaluated is unspecified (mirroring C's `foo(++x, x)` undefined behavior). */
+
+eval_a E A1 intVal(I1) E2 O1
+eval_a E2 A2 intVal(I2) E3 O2
+I1 - I2 = I
+appendOutput O1 O2 O
+----------------------- [E-Minus-LR]
+eval_a E minus(A1, A2) intVal(I) E3 O
+
+
+/* Note OCaml doesn't support this way of writing non-deterministic rules
+it will pop out compile error in utop */
+/*
+eval_a E A2 intVal(I2) E2 O2
+eval_a E2 A1 intVal(I1) E3 O1
+I1 - I2 = I
+appendOutput O1 O2 O
+----------------------- [E-Minus-RL]
+eval_a E minus(A1, A2) intVal(I) E3 O
+*/
+
+
+/* Pre-increment: ++X reads X, writes X+1, returns X+1, mutates env. */
+lookup E X intVal(Iv)
+Iv + 1 = I
+------------------------------ [E-PreInc]
+eval_a E preInc(X) intVal(I) (X, intVal(I))::E emptyOutput
 
 
 lookup E X I
 ------------------ [E-Name]
-eval_a E name(X) I emptyOutput
+eval_a E name(X) I E emptyOutput
 
 
 
@@ -91,32 +132,32 @@ eval_b E true trueVal emptyOutput
 eval_b E false falseVal emptyOutput
 
 
-eval_a E A1 intVal(I1) O1
-eval_a E A2 intVal(I2) O2
+eval_a E A1 intVal(I1) E2 O1
+eval_a E2 A2 intVal(I2) E3 O2
 I1 > I2
 appendOutput O1 O2 O
 ------------------------------ [E-GreaterTrue]
 eval_b E greater(A1, A2) trueVal O
 
 
-eval_a E A1 intVal(I1) O1
-eval_a E A2 intVal(I2) O2
+eval_a E A1 intVal(I1) E2 O1
+eval_a E2 A2 intVal(I2) E3 O2
 I1 <= I2
 appendOutput O1 O2 O
 ------------------------------ [E-GreaterFalse]
 eval_b E greater(A1, A2) falseVal O
 
 
-eval_a E A1 V1 O1
-eval_a E A2 V2 O2
+eval_a E A1 V1 E2 O1
+eval_a E2 A2 V2 E3 O2
 val_eq V1 V2 trueVal
 appendOutput O1 O2 O
 ------------------------- [E-EqTrue]
 eval_b E eq(A1, A2) trueVal O
 
 
-eval_a E A1 V1 O1
-eval_a E A2 V2 O2
+eval_a E A1 V1 E2 O1
+eval_a E2 A2 V2 E3 O2
 val_eq V1 V2 falseVal
 appendOutput O1 O2 O
 -------------------------- [E-EqFalse]
@@ -168,9 +209,9 @@ eval_b E or(B1, B2) falseVal O
 --------------- [E-Noop]
 eval_c E noop E emptyOutput
 
-eval_a E A V O1
+eval_a E A V E2 O1
 --------------------------[E-Print]
-eval_c E printVal(A) E addOutput(O1, V)
+eval_c E printVal(A) E2 addOutput(O1, V)
 
 
 eval_c E C1 E2 O1
@@ -180,9 +221,9 @@ appendOutput O1 O2 O
 eval_c E seq(C1, C2) E3 O
 
 
-eval_a E A I O
+eval_a E A I E2 O
 ------------------------------- [E-Assign]
-eval_c E assign(X, A) (X, I)::E O
+eval_c E assign(X, A) (X, I)::E2 O
 
 
 eval_b E B trueVal O1
