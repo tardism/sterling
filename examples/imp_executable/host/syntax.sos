@@ -6,6 +6,9 @@ a ::= num(int)
     | minus(a, a)
     | preInc(string)
     | name(string)
+    | nilA                 /* empty list expression */
+    | consA(a, a)          /* cons cell expression */
+    | indexA(string, a)    /* arr[i] read */
 Projection a :
 
 
@@ -23,6 +26,7 @@ Projection b :
 c ::= noop
     | seq(c, c)
     | assign(string, a)
+    | arrAssign(string, a, a)   /* arr[i] = e */
     | ifThenElse(b, c, c)
     | while(b, c)
     | printVal(a)

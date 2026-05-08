@@ -1,0 +1,6 @@
+I = 0;
+Arr = [10, 20, 30];
+Arr[I] = ++I;
+print Arr[0];
+print Arr[1];
+print Arr[2]

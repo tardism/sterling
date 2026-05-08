@@ -12,6 +12,9 @@ inc_t     /\+\+/
 or_t      /\|\|/
 and_t     /&&/
 gt_t      />/
+lbrack_t  /\[/
+rbrack_t  /\]/
+comma_t   /,/
 
 true_t    /true/
 false_t   /false/
@@ -30,7 +33,12 @@ name_t   /[A-Z][a-zA-Z0-9_]*/
 
 a2_conc<a> ::= I::int_t ~~> num($to_int(I))
              | inc_t Name::name_t ~~> preInc(Name)
+             | Name::name_t lbrack_t Idx::a_conc rbrack_t ~~> indexA(Name, Idx)
              | Name::name_t ~~> name(Name)
+             | lbrack_t rbrack_t ~~> nilA
+             | lbrack_t Es::a_list rbrack_t ~~> Es
+a_list<a> ::= E::a_conc ~~> consA(E, nilA)
+            | E::a_conc comma_t Rest::a_list ~~> consA(E, Rest)
 a_conc<a> ::= L::a_conc plus_t R::a2_conc ~~> plus(L, R)
             | L::a_conc minus_t R::a2_conc ~~> minus(L, R)
             | T::a2_conc ~~> T
@@ -46,11 +54,13 @@ b3_conc<b> ::= L::a_conc gt_t R::a_conc ~~> greater(L, R)
              | false_t ~~> false
 
 c_atom<c> ::= noop_t ~~> noop
-            | Name::name_t eq_t A::a_conc ~~> assign(Name, A) 
-            | if_t Cond::b_conc then_t Th_block::c_conc else_t El_block::c_conc end_t ~~> 
-                  ifThenElse(Cond, Th_block, El_block) 
-            | while_t Cond::b_conc do_t Body_block::c_conc end_t ~~> 
-                  while(Cond, Body_block) 
+            | Name::name_t eq_t A::a_conc ~~> assign(Name, A)
+            | Name::name_t lbrack_t Idx::a_conc rbrack_t eq_t RHS::a_conc
+                  ~~> arrAssign(Name, Idx, RHS)
+            | if_t Cond::b_conc then_t Th_block::c_conc else_t El_block::c_conc end_t ~~>
+                  ifThenElse(Cond, Th_block, El_block)
+            | while_t Cond::b_conc do_t Body_block::c_conc end_t ~~>
+                  while(Cond, Body_block)
             | print_t A::a_conc ~~> printVal(A)
 
 c_conc<c> ::= L::c_conc seq_t R::c_atom ~~> seq(L, R)

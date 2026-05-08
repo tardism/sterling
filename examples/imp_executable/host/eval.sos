@@ -5,6 +5,8 @@ Module imp_executable:host
 value ::= intVal(int)
         | trueVal
         | falseVal
+        | nilVal
+        | consVal(value, value)
 Projection value :
 /*Output from the program printing*/
 output ::= emptyOutput
@@ -21,6 +23,36 @@ appendOutput O1 emptyOutput O1
 appendOutput O1 O2 O3
 ------------------------------------------------- [AO-Add]
 appendOutput O1 addOutput(O2, V) addOutput(O3, V)
+
+
+/* List get: read element at index I from a cons-list value. */
+Judgment listGet : value value* value
+
+I == 0
+------------------------------ [LG-Zero]
+listGet consVal(H, T) intVal(I) H
+
+
+I > 0
+I - 1 = J
+listGet T intVal(J) V
+------------------------------ [LG-Succ]
+listGet consVal(H, T) intVal(I) V
+
+
+/* List set: replace element at index I in a cons-list, returning a new list. */
+Judgment listSet : value value value* value
+
+I == 0
+------------------------------------------- [LS-Zero]
+listSet consVal(H, T)  intVal(I) V consVal(V, T)
+
+
+I > 0
+I - 1 = J
+listSet T intVal(J) V T2
+------------------------------------------- [LS-Succ]
+listSet consVal(H, T) intVal(I) V consVal(H, T2)
 
 Judgment eval_a : [(string, value)] a* value [(string, value)] output
 Judgment eval_b : [(string, value)] b* value output
@@ -118,6 +150,25 @@ eval_a E preInc(X) intVal(I) (X, intVal(I))::E emptyOutput
 lookup E X I
 ------------------ [E-Name]
 eval_a E name(X) I E emptyOutput
+
+
+------------------------------ [E-NilA]
+eval_a E nilA nilVal E emptyOutput
+
+
+eval_a E A1 V1 E2 O1
+eval_a E2 A2 V2 E3 O2
+appendOutput O1 O2 O
+------------------------------ [E-ConsA]
+eval_a E consA(A1, A2) consVal(V1, V2) E3 O
+
+
+/* arr[i] read: evaluate the index, look up the array, get the I-th element. */
+eval_a E IExpr intVal(I) E2 O
+lookup E2 Arr Lst
+listGet Lst intVal(I) V
+------------------------------ [E-IndexA]
+eval_a E indexA(Arr, IExpr) V E2 O
 
 
 
@@ -224,6 +275,28 @@ eval_c E seq(C1, C2) E3 O
 eval_a E A I E2 O
 ------------------------------- [E-Assign]
 eval_c E assign(X, A) (X, I)::E2 O
+
+
+/* arr[i] = e — two competing rules for the unspecified order
+   of evaluating the index versus the right-hand side. */
+
+eval_a E IExpr intVal(I) E2 O1
+eval_a E2 RHS V E3 O2
+lookup E3 Arr Lst
+listSet Lst intVal(I) V Lst2
+appendOutput O1 O2 O
+------------------------------- [E-ArrAssign-LR]
+eval_c E arrAssign(Arr, IExpr, RHS) (Arr, Lst2)::E3 O
+
+/*
+eval_a E RHS V E2 O2
+eval_a E2 IExpr intVal(I) E3 O1
+lookup E3 Arr Lst
+listSet Lst intVal(I) V Lst2
+appendOutput O1 O2 O
+------------------------------- [E-ArrAssign-RL]
+eval_c E arrAssign(Arr, IExpr, RHS) (Arr, Lst2)::E3 O
+*/
 
 
 eval_b E B trueVal O1
