@@ -58,16 +58,18 @@ Judgment eval_a : [(string, value)] a* value [(string, value)] output
 Judgment eval_b : [(string, value)] b* value output
 Judgment eval_c : [(string, value)] c* [(string, value)] output
 
-/* Update an existing binding in the env (used by preInc).  Returns the new env. 
+/* Update an existing binding in the env (used by preInc).  Returns the new env. */
 Judgment updateEnv : [(string, value)] string value* [(string, value)]
 
+X == Y
 ------------------------------------------------- [UE-Hit]
-updateEnv (X, _)::Rest X V (X, V)::Rest
+updateEnv (Y, U)::Rest X V (X, V)::Rest
 
+X != Y
 updateEnv Rest X V Rest2
 ------------------------------------------------- [UE-Miss]
 updateEnv (Y, U)::Rest X V (Y, U)::Rest2 
-*/
+
 
 /*Check equality in a way appropriate to each value type*/
 
@@ -75,6 +77,8 @@ updateEnv (Y, U)::Rest X V (Y, U)::Rest2
 We should ban this way of declaring Judgment, Judgment val_eq : value* value
 which only has one inputs. All judgement should have at least have 2 inputs.
  */
+
+/* 
 
 Judgment val_eq : value value* value
 
@@ -101,6 +105,7 @@ val_eq trueVal falseVal falseVal
 
 ------------------------ [VE-False2]
 val_eq falseVal trueVal falseVal
+ */
 
 
 /*Arithmetic Evaluation*/
@@ -201,7 +206,7 @@ eval_b E greater(A1, A2) falseVal O
 
 eval_a E A1 V1 E2 O1
 eval_a E2 A2 V2 E3 O2
-val_eq V1 V2 trueVal
+V1 == V2 
 appendOutput O1 O2 O
 ------------------------- [E-EqTrue]
 eval_b E eq(A1, A2) trueVal O
@@ -209,7 +214,7 @@ eval_b E eq(A1, A2) trueVal O
 
 eval_a E A1 V1 E2 O1
 eval_a E2 A2 V2 E3 O2
-val_eq V1 V2 falseVal
+V1 != V2
 appendOutput O1 O2 O
 -------------------------- [E-EqFalse]
 eval_b E eq(A1, A2) falseVal O
