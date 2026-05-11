@@ -37,7 +37,9 @@ local deriveFunction::String =
       s"""function derive
 IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String, Term)] ioin::IOToken
 {
-  -- Build an OCaml function call from the input judgment and print to terminal.
+  -- Build an OCaml function call from the input judgment, print it to the
+  -- terminal, and append it to the generated .ml file so the user can run it
+  -- directly in utop / ocaml.
    local funcName::String =
      case j of
      -- Old (module-qualified) version:
@@ -49,12 +51,15 @@ IOVal<Maybe<[(String, Term)]>> ::= d::DeriveConfig j::Judgment inArgs::[(String,
      foldr(\ p::(String, Term) rest::String ->
               " (" ++ p.2.ocamlExpr.pp ++ ")" ++ rest,
            "", inArgs);
-   local callExpr::String = funcName ++ argsStr;
+   local callExpr::String = funcName ++ " [] " ++ argsStr;
    local output::String =
-     "\n(* Generated OCaml call for input program *)\n"
-     ++ "let _ = " ++ callExpr ++ "\n";
+     "\n(* Generated OCaml call for input program. *)\n"
+     ++ "(* In utop, the binding to `result` will be auto-displayed. *)\n"
+     ++ "let () = print_endline \"-- see result in utop --\"\n"
+     ++ "let result = " ++ callExpr ++ "\n";
    local printed::IOToken = printT(output, ioin);
-   return ioval(printed, nothing());
+   local appended::IOToken = appendFileT("${ocamlFile}.ml", output, printed);
+   return ioval(appended, nothing());
 }""";
 
 local endFunction::String =

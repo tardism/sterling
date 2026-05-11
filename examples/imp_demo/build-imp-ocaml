@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# sterling $@ -I .. imp:composed
+(cd ../.. && ./deep-clean && ./build --clean --mwda)
+echo "---------------------------------"
+echo "Build completed."
+echo "---------------------------------"
+sterling --ocaml --silver-concrete -I .. $@ imp_demo:host
+java -jar imp_demo.host.jar examples/undef.imp 
+# /home/linglong/sterling/generated/ocaml/imp_demo:host.ml

@@ -1,0 +1,140 @@
+Module imp_demo:host
+
+
+/*Expressions and statements are unified into a single `expr` datatype.
+  This is a minimal IMP variant for demonstrating side effects: there is
+  no output (no print), no booleans, no while/if.  Everything an expr
+  evaluates to is a `value`, and each evaluation may also update the env. */
+expr ::= num(int)
+       | minus(expr, expr)
+       | preInc(string)
+       | name(string)
+       | nil                          /* empty list expression */
+       | cons(expr, expr)             /* cons cell expression */
+       | index(string, expr)          /* arr[i] read */
+       | assign(string, expr)          /* x = e */
+       | arrAssign(string, expr, expr) /* arr[i] = e */
+       | seq(expr, expr)               /* e1 ; e2 */
+Projection expr :
+
+
+value ::= intVal(int)
+        | nilVal
+        | consVal(value, value)
+Projection value :
+
+
+/* List get: read element at index I from a cons-list value. */
+Judgment listGet : value value* value
+
+I == 0
+------------------------------ [LG-Zero]
+listGet consVal(H, T) intVal(I) H
+
+
+I > 0
+I - 1 = J
+listGet T intVal(J) V
+------------------------------ [LG-Succ]
+listGet consVal(H, T) intVal(I) V
+
+
+/* List set: replace element at index I in a cons-list, returning a new list. */
+Judgment listSet : value value value* value
+
+I == 0
+------------------------------------------- [LS-Zero]
+listSet consVal(H, T) intVal(I) V consVal(V, T)
+
+
+I > 0
+I - 1 = J
+listSet T intVal(J) V T2
+------------------------------------------- [LS-Succ]
+listSet consVal(H, T) intVal(I) V consVal(H, T2)
+
+
+Judgment eval : [(string, value)] expr* value [(string, value)]
+
+
+----------------- [E-Num]
+eval E num(I) intVal(I) E
+
+
+/* Two competing rules for `minus` — the order in which the two
+   operands are evaluated is unspecified, mirroring C's `foo(++x, x)`. */
+
+eval E A1 intVal(I1) E2
+eval E2 A2 intVal(I2) E3
+I1 - I2 = I
+----------------------- [E-Minus-LR]
+eval E minus(A1, A2) intVal(I) E3
+
+/*
+eval E A2 intVal(I2) E2
+eval E2 A1 intVal(I1) E3
+I1 - I2 = I
+----------------------- [E-Minus-RL]
+eval E minus(A1, A2) intVal(I) E3
+*/
+
+
+/* Pre-increment: ++X reads X, returns X+1, prepends new binding. */
+lookup E X intVal(Iv)
+Iv + 1 = I
+------------------------------ [E-PreInc]
+eval E preInc(X) intVal(I) (X, intVal(I))::E
+
+
+lookup E X V
+------------------ [E-Name]
+eval E name(X) V E
+
+
+------------------------------ [E-Nil]
+eval E nil nilVal E
+
+
+eval E A1 V1 E2
+eval E2 A2 V2 E3
+------------------------------ [E-Cons]
+eval E cons(A1, A2) consVal(V1, V2) E3
+
+
+/* arr[i] read: evaluate the index, look up the array, get the I-th element. */
+eval E IExpr intVal(I) E2
+lookup E2 Arr Lst
+listGet Lst intVal(I) V
+------------------------------ [E-Index]
+eval E index(Arr, IExpr) V E2
+
+
+eval E A V E2
+------------------------------- [E-Assign]
+eval E assign(X, A) V (X, V)::E2
+
+
+/* arr[i] = e — two competing rules for the unspecified order
+   of evaluating the index versus the right-hand side. */
+
+eval E IExpr intVal(I) E2
+eval E2 RHS V E3
+lookup E3 Arr Lst
+listSet Lst intVal(I) V Lst2
+------------------------------- [E-ArrAssign-LR]
+eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
+
+/*
+eval E RHS V E2
+eval E2 IExpr intVal(I) E3
+lookup E3 Arr Lst
+listSet Lst intVal(I) V Lst2
+------------------------------- [E-ArrAssign-RL]
+eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
+*/
+
+/* Sequencing: evaluate first, discard its value, evaluate second. */
+eval E E1 V1 E2
+eval E2 E2x V2 E3
+------------------------ [E-Seq]
+eval E seq(E1, E2x) V2 E3

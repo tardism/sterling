@@ -1,0 +1,46 @@
+Module imp_demo:host
+
+ignore /[\n\r\t\ ]+/
+
+
+int_t     /[0-9]+/
+eq_t      /=/
+minus_t   /-/
+inc_t     /\+\+/
+seq_t     /;/
+lbrack_t  /\[/
+rbrack_t  /\]/
+comma_t   /,/
+
+name_t    /[A-Z][a-zA-Z0-9_]*/
+
+
+/* Atoms: literals, names, ++X, list literals, indexing. */
+e_atom<expr> ::= I::int_t ~~> num($to_int(I))
+              | inc_t Name::name_t ~~> preInc(Name)
+              | Name::name_t lbrack_t Idx::e_expr rbrack_t ~~> index(Name, Idx)
+              | Name::name_t ~~> name(Name)
+              | lbrack_t rbrack_t ~~> nil
+              | lbrack_t Es::e_list rbrack_t ~~> Es
+
+
+/* Comma-separated list literal:  [E1, E2, E3]  ~~>  cons(E1, cons(E2, cons(E3, nil))) */
+e_list<expr> ::= E::e_expr ~~> cons(E, nil)
+              | E::e_expr comma_t Rest::e_list ~~> cons(E, Rest)
+
+
+/* Subtraction (left-associative). */
+e_expr<expr> ::= L::e_expr minus_t R::e_atom ~~> minus(L, R)
+              | T::e_atom ~~> T
+
+
+/* Statements (still produce a value, so they are also expressions): */
+e_stmt<expr> ::= Name::name_t eq_t E::e_expr ~~> assign(Name, E)
+              | Name::name_t lbrack_t Idx::e_expr rbrack_t eq_t RHS::e_expr
+                    ~~> arrAssign(Name, Idx, RHS)
+              | E::e_expr ~~> E
+
+
+/* Sequencing with `;` (left-associative). */
+e_top<expr> ::= L::e_top seq_t R::e_stmt ~~> seq(L, R)
+              | S::e_stmt ~~> S
