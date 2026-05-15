@@ -246,7 +246,8 @@ attribute ocamlRuleType, ocamlLetReserve, ocamlMatchTerm, isMatch, openIfCount, 
 abstract production ocamlLibraryDecl
 top::OCamlDecl ::=
 {
-  top.pp = "let rec lookup e x = match e with \n | [] -> raise (Failure (\" not found \"))  \n | (y, v) :: rest -> if x = y then v else lookup rest x";
+  -- top.pp = "let rec lookup e x = match e with \n | [] -> raise (Failure (\" not found \"))  \n | (y, v) :: rest -> if x = y then v else lookup rest x";
+  top.pp = "";
   top.ocamlRuleType = "unknown";
   top.ocamlLetReserve = "";
   top.ocamlMatchTerm = ocamlVar("unknown");

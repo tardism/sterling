@@ -17,7 +17,7 @@ name_t    /[A-Z][a-zA-Z0-9_]*/
 
 /* Atoms: literals, names, ++X, list literals, indexing. */
 e_atom<expr> ::= I::int_t ~~> num($to_int(I))
-              | inc_t Name::name_t ~~> preInc(Name)
+              | inc_t Name::name_t ~~> inc(Name)
               | Name::name_t lbrack_t Idx::e_expr rbrack_t ~~> index(Name, Idx)
               | Name::name_t ~~> name(Name)
               | lbrack_t rbrack_t ~~> nil

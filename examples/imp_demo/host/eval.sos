@@ -7,7 +7,7 @@ Module imp_demo:host
   evaluates to is a `value`, and each evaluation may also update the env. */
 expr ::= num(int)
        | minus(expr, expr)
-       | preInc(string)
+       | inc(string)
        | name(string)
        | nil                          /* empty list expression */
        | cons(expr, expr)             /* cons cell expression */
@@ -22,6 +22,20 @@ value ::= intVal(int)
         | nilVal
         | consVal(value, value)
 Projection value :
+
+
+/* Find the first item associated with the key in an env list. */
+Judgment lookup : [(string, value)] expr* value
+
+K == Key
+----------------------------------- [Lkp-Here]
+lookup (K, Value)::Rest name(Key) Value
+
+
+K != Key
+lookup Rest name(Key) V
+----------------------------------- [Lkp-Later]
+lookup (K, Value)::Rest name(Key) V
 
 
 /* List get: read element at index I from a cons-list value. */
@@ -80,13 +94,13 @@ eval E minus(A1, A2) intVal(I) E3
 
 
 /* Pre-increment: ++X reads X, returns X+1, prepends new binding. */
-lookup E X intVal(Iv)
+lookup E name(X) intVal(Iv)
 Iv + 1 = I
------------------------------- [E-PreInc]
-eval E preInc(X) intVal(I) (X, intVal(I))::E
+------------------------------ [E-inc]
+eval E inc(X) intVal(I) (X, intVal(I))::E
 
 
-lookup E X V
+lookup E name(X) V
 ------------------ [E-Name]
 eval E name(X) V E
 
@@ -103,7 +117,7 @@ eval E cons(A1, A2) consVal(V1, V2) E3
 
 /* arr[i] read: evaluate the index, look up the array, get the I-th element. */
 eval E IExpr intVal(I) E2
-lookup E2 Arr Lst
+lookup E2 name(Arr) Lst
 listGet Lst intVal(I) V
 ------------------------------ [E-Index]
 eval E index(Arr, IExpr) V E2
@@ -119,7 +133,7 @@ eval E assign(X, A) V (X, V)::E2
 
 eval E IExpr intVal(I) E2
 eval E2 RHS V E3
-lookup E3 Arr Lst
+lookup E3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 ------------------------------- [E-ArrAssign-LR]
 eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
@@ -127,7 +141,7 @@ eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
 /*
 eval E RHS V E2
 eval E2 IExpr intVal(I) E3
-lookup E3 Arr Lst
+lookup E3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 ------------------------------- [E-ArrAssign-RL]
 eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
