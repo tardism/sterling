@@ -10,18 +10,26 @@ inc_t     /\+\+/
 seq_t     /;/
 lbrack_t  /\[/
 rbrack_t  /\]/
+lparen_t  /\(/
+rparen_t  /\)/
 comma_t   /,/
+or_t      /\|\|/
+true_t    /true/
+false_t   /false/
 
 name_t    /[A-Z][a-zA-Z0-9_]*/
 
 
-/* Atoms: literals, names, ++X, list literals, indexing. */
+/* Atoms: literals, names, ++X, list literals, indexing, parenthesized expr. */
 e_atom<expr> ::= I::int_t ~~> num($to_int(I))
+              | true_t ~~> true
+              | false_t ~~> false
               | inc_t Name::name_t ~~> inc(Name)
               | Name::name_t lbrack_t Idx::e_expr rbrack_t ~~> index(Name, Idx)
               | Name::name_t ~~> name(Name)
               | lbrack_t rbrack_t ~~> nil
               | lbrack_t Es::e_list rbrack_t ~~> Es
+              | lparen_t E::e_expr rparen_t ~~> E
 
 
 /* Comma-separated list literal:  [E1, E2, E3]  ~~>  cons(E1, cons(E2, cons(E3, nil))) */
@@ -29,8 +37,9 @@ e_list<expr> ::= E::e_expr ~~> cons(E, nil)
               | E::e_expr comma_t Rest::e_list ~~> cons(E, Rest)
 
 
-/* Subtraction (left-associative). */
+/* `-` and `||` at one left-associative level. Use `(...)` to override grouping. */
 e_expr<expr> ::= L::e_expr minus_t R::e_atom ~~> minus(L, R)
+              | L::e_expr or_t R::e_atom ~~> or(L, R)
               | T::e_atom ~~> T
 
 

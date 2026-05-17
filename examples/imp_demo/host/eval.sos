@@ -15,12 +15,17 @@ expr ::= num(int)
        | assign(string, expr)          /* x = Env */
        | arrAssign(string, expr, expr) /* arr[i] = Env */
        | seq(expr, expr)               /* e1 ; e2 */
+       | or(expr, expr)                /* short-circuit boolean or */
+       | true                          /* boolean literal true */
+       | false                         /* boolean literal false */
 Projection expr :
 
 
 value ::= intVal(int)
         | nilVal
         | consVal(value, value)
+        | trueVal
+        | falseVal
 Projection value :
 
 
@@ -109,6 +114,14 @@ eval Env name(X) V Env
 eval Env nil nilVal Env
 
 
+------------------------------ [E-True]
+eval Env true trueVal Env
+
+
+------------------------------ [E-False]
+eval Env false falseVal Env
+
+
 eval Env A1 V1 Env2
 eval Env2 A2 V2 Env3
 ------------------------------ [E-Cons]
@@ -152,3 +165,42 @@ eval Env E1 V1 Env2
 eval Env2 E2x V2 Env3
 ------------------------ [E-Seq]
 eval Env seq(E1, E2x) V2 Env3
+/* Can't write this way!!! there's interdependency in premises */
+/*
+eval Env B1 trueVal Env2
+------------------------- [E-OrTrue1]
+eval Env or(B1, B2) trueVal Env2
+
+
+eval Env B1 falseVal Env2
+eval Env2 B2 trueVal Env3
+------------------------- [E-OrTrue2]
+eval Env or(B1, B2) trueVal Env3
+
+
+eval Env B1 falseVal Env2
+eval Env2 B2 falseVal Env3
+-------------------------- [E-OrFalse]
+eval Env or(B1, B2) falseVal Env3
+*/
+
+/* this works */
+
+
+eval Env B1 trueVal Env2
+------------------------- [E-OrTrue1]
+eval Env or(B1, B2) trueVal Env2
+
+
+eval Env B1 falseVal Env2
+eval Env2 B2 V Env3
+V == trueVal
+------------------------- [E-OrTrue2]
+eval Env or(B1, B2) trueVal Env3
+
+
+eval Env B1 falseVal Env2
+eval Env2 B2 V Env3
+V == falseVal
+-------------------------- [E-OrFalse]
+eval Env or(B1, B2) falseVal Env3
