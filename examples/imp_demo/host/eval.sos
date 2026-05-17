@@ -12,8 +12,8 @@ expr ::= num(int)
        | nil                          /* empty list expression */
        | cons(expr, expr)             /* cons cell expression */
        | index(string, expr)          /* arr[i] read */
-       | assign(string, expr)          /* x = e */
-       | arrAssign(string, expr, expr) /* arr[i] = e */
+       | assign(string, expr)          /* x = Env */
+       | arrAssign(string, expr, expr) /* arr[i] = Env */
        | seq(expr, expr)               /* e1 ; e2 */
 Projection expr :
 
@@ -72,83 +72,83 @@ Judgment eval : [(string, value)] expr* value [(string, value)]
 
 
 ----------------- [E-Num]
-eval E num(I) intVal(I) E
+eval Env num(I) intVal(I) Env
 
 
 /* Two competing rules for `minus` — the order in which the two
    operands are evaluated is unspecified, mirroring C's `foo(++x, x)`. */
 
-eval E A1 intVal(I1) E2
-eval E2 A2 intVal(I2) E3
+eval Env A1 intVal(I1) Env2
+eval Env2 A2 intVal(I2) Env3
 I1 - I2 = I
 ----------------------- [E-Minus-LR]
-eval E minus(A1, A2) intVal(I) E3
+eval Env minus(A1, A2) intVal(I) Env3
 
 /*
-eval E A2 intVal(I2) E2
-eval E2 A1 intVal(I1) E3
+eval Env A2 intVal(I2) Env2
+eval Env2 A1 intVal(I1) Env3
 I1 - I2 = I
 ----------------------- [E-Minus-RL]
-eval E minus(A1, A2) intVal(I) E3
+eval Env minus(A1, A2) intVal(I) Env3
 */
 
 
 /* Pre-increment: ++X reads X, returns X+1, prepends new binding. */
-lookup E name(X) intVal(Iv)
+lookup Env name(X) intVal(Iv)
 Iv + 1 = I
 ------------------------------ [E-inc]
-eval E inc(X) intVal(I) (X, intVal(I))::E
+eval Env inc(X) intVal(I) (X, intVal(I))::Env
 
 
-lookup E name(X) V
+lookup Env name(X) V
 ------------------ [E-Name]
-eval E name(X) V E
+eval Env name(X) V Env
 
 
 ------------------------------ [E-Nil]
-eval E nil nilVal E
+eval Env nil nilVal Env
 
 
-eval E A1 V1 E2
-eval E2 A2 V2 E3
+eval Env A1 V1 Env2
+eval Env2 A2 V2 Env3
 ------------------------------ [E-Cons]
-eval E cons(A1, A2) consVal(V1, V2) E3
+eval Env cons(A1, A2) consVal(V1, V2) Env3
 
 
 /* arr[i] read: evaluate the index, look up the array, get the I-th element. */
-eval E IExpr intVal(I) E2
-lookup E2 name(Arr) Lst
+eval Env IExpr intVal(I) Env2
+lookup Env2 name(Arr) Lst
 listGet Lst intVal(I) V
 ------------------------------ [E-Index]
-eval E index(Arr, IExpr) V E2
+eval Env index(Arr, IExpr) V Env2
 
 
-eval E A V E2
+eval Env A V Env2
 ------------------------------- [E-Assign]
-eval E assign(X, A) V (X, V)::E2
+eval Env assign(X, A) V (X, V)::Env2
 
 
-/* arr[i] = e — two competing rules for the unspecified order
+/* arr[i] = e -- two competing rules for the unspecified order
    of evaluating the index versus the right-hand side. */
 
-eval E IExpr intVal(I) E2
-eval E2 RHS V E3
-lookup E3 name(Arr) Lst
+eval Env IExpr intVal(I) Env2
+eval Env2 RHS V Env3
+lookup Env3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 ------------------------------- [E-ArrAssign-LR]
-eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
+eval Env arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::Env3
 
 /*
-eval E RHS V E2
-eval E2 IExpr intVal(I) E3
-lookup E3 name(Arr) Lst
+eval Env RHS V Env2
+eval Env2 IExpr intVal(I) Env3
+lookup Env3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 ------------------------------- [E-ArrAssign-RL]
-eval E arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::E3
+eval Env arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::Env3
 */
 
 /* Sequencing: evaluate first, discard its value, evaluate second. */
-eval E E1 V1 E2
-eval E2 E2x V2 E3
+eval Env E1 V1 Env2
+eval Env2 E2x V2 Env3
 ------------------------ [E-Seq]
-eval E seq(E1, E2x) V2 E3
+eval Env seq(E1, E2x) V2 Env3
