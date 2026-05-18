@@ -1,6 +1,4 @@
 A = 12; 
 B = 34; 
 C = A + B; 
-Hello = 56; 
-print C;
-print Hello
+Hello = 56

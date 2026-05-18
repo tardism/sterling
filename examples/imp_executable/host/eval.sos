@@ -71,6 +71,19 @@ updateEnv Rest X V Rest2
 updateEnv (Y, U)::Rest X V (Y, U)::Rest2 
 
 
+/* Find the first item associated with the key in an env list. */
+Judgment lookup : [(string, value)] a* value
+
+K == Key
+----------------------------------- [Lkp-Here]
+lookup (K, Value)::Rest name(Key) Value
+
+
+K != Key
+lookup Rest name(Key) V
+----------------------------------- [Lkp-Later]
+lookup (K, Value)::Rest name(Key) V
+
 /*Check equality in a way appropriate to each value type*/
 
 /* 
@@ -146,13 +159,13 @@ eval_a E minus(A1, A2) intVal(I) E3 O
 
 
 /* Pre-increment: ++X reads X, writes X+1, returns X+1, mutates env. */
-lookup E X intVal(Iv)
+lookup E preInc(X) intVal(Iv)
 Iv + 1 = I
 ------------------------------ [E-PreInc]
 eval_a E preInc(X) intVal(I) (X, intVal(I))::E emptyOutput
 
 
-lookup E X I
+lookup E name(X) I
 ------------------ [E-Name]
 eval_a E name(X) I E emptyOutput
 
@@ -170,7 +183,7 @@ eval_a E consA(A1, A2) consVal(V1, V2) E3 O
 
 /* arr[i] read: evaluate the index, look up the array, get the I-th element. */
 eval_a E IExpr intVal(I) E2 O
-lookup E2 Arr Lst
+lookup E2 name(Arr) Lst
 listGet Lst intVal(I) V
 ------------------------------ [E-IndexA]
 eval_a E indexA(Arr, IExpr) V E2 O
@@ -287,7 +300,7 @@ eval_c E assign(X, A) (X, I)::E2 O
 
 eval_a E IExpr intVal(I) E2 O1
 eval_a E2 RHS V E3 O2
-lookup E3 Arr Lst
+lookup E3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 appendOutput O1 O2 O
 ------------------------------- [E-ArrAssign-LR]
@@ -296,7 +309,7 @@ eval_c E arrAssign(Arr, IExpr, RHS) (Arr, Lst2)::E3 O
 /*
 eval_a E RHS V E2 O2
 eval_a E2 IExpr intVal(I) E3 O1
-lookup E3 Arr Lst
+lookup E3 name(Arr) Lst
 listSet Lst intVal(I) V Lst2
 appendOutput O1 O2 O
 ------------------------------- [E-ArrAssign-RL]
