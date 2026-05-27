@@ -59,18 +59,18 @@ listGet consVal(H, T) intVal(I) V
 
 
 /* List set: replace element at index I in a cons-list, returning a new list. */
-Judgment listSet : value value value* value
+Judgment listSet : value int value* value
 
 I == 0
 ------------------------------------------- [LS-Zero]
-listSet consVal(H, T) intVal(I) V consVal(V, T)
+listSet consVal(H, T) I V consVal(V, T)
 
 
 I > 0
 I - 1 = J
-listSet T intVal(J) V T2
+listSet T J V T2
 ------------------------------------------- [LS-Succ]
-listSet consVal(H, T) intVal(I) V consVal(H, T2)
+listSet consVal(H, T) I V consVal(H, T2)
 
 
 Judgment eval : [(string, value)] expr* value [(string, value)]
@@ -147,7 +147,7 @@ eval Env assign(X, A) V (X, V)::Env2
 eval Env IExpr intVal(I) Env2
 eval Env2 RHS V Env3
 lookup Env3 name(Arr) Lst
-listSet Lst intVal(I) V Lst2
+listSet Lst I V Lst2
 ------------------------------- [E-ArrAssign-LR]
 eval Env arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::Env3
 
@@ -155,7 +155,7 @@ eval Env arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::Env3
 eval Env RHS V Env2
 eval Env2 IExpr intVal(I) Env3
 lookup Env3 name(Arr) Lst
-listSet Lst intVal(I) V Lst2
+listSet Lst I V Lst2
 ------------------------------- [E-ArrAssign-RL]
 eval Env arrAssign(Arr, IExpr, RHS) V (Arr, Lst2)::Env3
 */

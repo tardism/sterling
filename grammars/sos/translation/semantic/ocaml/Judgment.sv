@@ -264,7 +264,7 @@ top::TopBinOp ::=
 {
   top.ocamlTopBinOp = 
     \ t1::OCamlExpr t2::OCamlExpr ->
-      ocamlIf(ocamlInfixOp(t1, "==", t2));
+      ocamlIf(ocamlInfixOp(t1, "=", t2));
 }
 
 aspect production neqOp

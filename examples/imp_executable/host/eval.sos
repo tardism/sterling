@@ -41,6 +41,7 @@ listGet consVal(H, T) intVal(I) V
 
 
 /* List set: replace element at index I in a cons-list, returning a new list. */
+/* second can just be INT!!!!! type */
 Judgment listSet : value value value* value
 
 I == 0

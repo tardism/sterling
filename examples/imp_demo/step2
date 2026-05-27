@@ -1,0 +1,4 @@
+#!/bin/bash
+
+java -jar imp_demo.host.jar examples/arr.imp
+echo "arr.imp OCaml now is append at /home/linglong/sterling/generated/ocaml/imp_demo:host.ml"
