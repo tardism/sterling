@@ -6,7 +6,7 @@ Module imp_demo:host
   no output (no print), no booleans, no while/if.  Everything an expr
   evaluates to is a `value`, and each evaluation may also update the env. */
 expr ::= num(int)
-       | minus(expr, expr)
+       | add(expr, expr)
        | inc(string)
        | name(string)
        | nil                          /* empty list expression */
@@ -80,22 +80,13 @@ Judgment eval : [(string, value)] expr* value [(string, value)]
 eval Env num(I) intVal(I) Env
 
 
-/* Two competing rules for `minus` — the order in which the two
-   operands are evaluated is unspecified, mirroring C's `foo(++x, x)`. */
 
 eval Env A1 intVal(I1) Env2
 eval Env2 A2 intVal(I2) Env3
-I1 - I2 = I
+I1 + I2 = I
 ----------------------- [E-Minus-LR]
-eval Env minus(A1, A2) intVal(I) Env3
+eval Env add(A1, A2) intVal(I) Env3
 
-/*
-eval Env A2 intVal(I2) Env2
-eval Env2 A1 intVal(I1) Env3
-I1 - I2 = I
------------------------ [E-Minus-RL]
-eval Env minus(A1, A2) intVal(I) Env3
-*/
 
 
 /* Pre-increment: ++X reads X, returns X+1, prepends new binding. */

@@ -5,7 +5,7 @@ ignore /[\n\r\t\ ]+/
 
 int_t     /[0-9]+/
 eq_t      /=/
-minus_t   /-/
+add_t     /\+/
 inc_t     /\+\+/
 seq_t     /;/
 lbrack_t  /\[/
@@ -38,7 +38,7 @@ e_list<expr> ::= E::e_expr ~~> cons(E, nil)
 
 
 /* `-` and `||` at one left-associative level. Use `(...)` to override grouping. */
-e_expr<expr> ::= L::e_expr minus_t R::e_atom ~~> minus(L, R)
+e_expr<expr> ::= L::e_expr add_t R::e_atom ~~> add(L, R)
               | L::e_expr or_t R::e_atom ~~> or(L, R)
               | T::e_atom ~~> T
 

@@ -1,6 +1,0 @@
-Module imp:less
-
-ls_t   /</
-
-b_conc ::= ...
-         | L::a_conc ls_t R::a_conc ~~> less(L, R)

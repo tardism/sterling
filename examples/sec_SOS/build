@@ -1,9 +1,0 @@
-#!/bin/bash
-
-(cd ../.. && ./build)
-echo "---------------------------------"
-echo "Build completed."
-echo "---------------------------------"
-MODULE="sec_SOS:composed"
-
-sterling --prolog -I .. $@ $MODULE
